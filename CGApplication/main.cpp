@@ -1,16 +1,11 @@
 #include <iostream>
+#include <fstream>
+using namespace std;
 
 #define GLEW_STATIC
 #include <gl/glew.h>
 
 #include <GLFW/glfw3.h>
-
-
-const GLchar* vertexShaderSource =
-"#version 330 core\n"
-"layout(location=0) in vec3 position;\n"
-"void main()\n"
-"{gl_Position=vec4(position.x,position.y,position.z,1.0);}";
 
 const GLuint WIDTH = 800, HEIGHT = 600;
 GLfloat vertics[] = {
@@ -18,25 +13,25 @@ GLfloat vertics[] = {
 	0.5f, 0.5f, 0.0f,
 	0.0f, 0.5f, 0.0f
 };
-void initShader();
+void initVertexShader();
+void initFragmentShader();
+void initShaderProgram(GLuint vertexShader,GLuint fragmentShader);
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
+void readShaderSource(GLuint shader, char *fileName);
 
-// The MAIN function, from here we start the application and run the game loop
 int main()
 {
 	// Init GLFW
 	glfwInit();
-	// Set all the required options for GLFW
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	// Create a GLFWwindow object that we can use for GLFW's functions
 	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
 	if (window == nullptr)
 	{
-		std::cout << "Failed to create GLFW window" << std::endl;
+		cout << "Failed to create GLFW window" << endl;
 		glfwTerminate();
 		return -1;
 	}
@@ -46,7 +41,7 @@ int main()
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
 	{
-		std::cout << "Failed to initialize GLEW" << std::endl;
+		cout << "Failed to initialize GLEW" << endl;
 		return -1;
 	}
 
@@ -66,16 +61,12 @@ int main()
 	return 0;
 }
 
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
-{
-	if (key == GLFW_KEY_ESCAPE&&action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, GL_TRUE);
-}
-void initShader()
+
+void initVertexShader()
 {
 	GLuint vertexShader;
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+	readShaderSource(vertexShader, "first.vert");
 	glCompileShader(vertexShader);
 	GLint success;
 	GLchar infoLog[512];
@@ -85,4 +76,51 @@ void initShader()
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
 	}
 }
-
+void initFragmentShader()
+{
+	GLuint fragmentShader;
+	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	readShaderSource(fragmentShader, "first.frag");
+	glCompileShader(fragmentShader);
+	GLint success;
+	GLchar infoLog[512];
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+	}
+}
+void initShaderProgram(GLuint vertexShader, GLuint fragmentShader)
+{
+	GLuint shaderProgram;
+	shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram,vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	glLinkProgram(shaderProgram);
+	GLint success;
+	GLchar infoLog[512];
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+	}
+	glUseProgram(shaderProgram);
+}
+void readShaderSource(GLuint shader,char *fileName)
+{
+	ifstream infile;
+	GLchar* sourceCode;
+	infile.open(fileName);
+	if (!infile)
+	{
+		cout << fileName<< " open error" << endl;
+		return;
+	}
+	infile >> sourceCode;
+	glShaderSource(shader, 1, &sourceCode, NULL);
+}
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
+{
+	if (key == GLFW_KEY_ESCAPE&&action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GL_TRUE);
+}

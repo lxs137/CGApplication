@@ -23,5 +23,8 @@
     <None Include="first.vert">
       <Filter>源文件</Filter>
     </None>
+    <None Include="first.frag">
+      <Filter>源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>
