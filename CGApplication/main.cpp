@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include "shader.h"
 using namespace std;
 
 #define GLEW_STATIC
@@ -10,14 +11,12 @@ using namespace std;
 const GLuint WIDTH = 800, HEIGHT = 600;
 GLfloat vertics[] = {
 	-0.5f, -0.5f, 0.0f,
-	0.5f, 0.5f, 0.0f,
+	0.5f, -0.5f, 0.0f,
 	0.0f, 0.5f, 0.0f
 };
-void initVertexShader();
-void initFragmentShader();
-void initShaderProgram(GLuint vertexShader,GLuint fragmentShader);
+
+GLuint initVAO();
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
-void readShaderSource(GLuint shader, char *fileName);
 
 int main()
 {
@@ -49,75 +48,50 @@ int main()
 	glfwGetFramebufferSize(window, &width, &height);
 	glViewport(0, 0, width, height);
 
+	//set shader program
+	GLuint myShaderProgram;
+	shader *myShader = new shader("first.vert", "first.frag");
+	myShaderProgram = myShader->shaderProgram;
+
+	//set VAO
+	GLuint myVAO;
+	myVAO = initVAO();
+
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
-		glClearColor(0.2f, 0.3f, 0.1f, 1.0f);
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		glUseProgram(myShaderProgram);
+		glBindVertexArray(myVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindVertexArray(0);
+
 		glfwSwapBuffers(window);
 	}
-
+	//clean all resources
+	glDeleteVertexArrays(1, &myVAO);
 	glfwTerminate();
 	return 0;
 }
 
 
-void initVertexShader()
+GLuint initVAO()
 {
-	GLuint vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	readShaderSource(vertexShader, "first.vert");
-	glCompileShader(vertexShader);
-	GLint success;
-	GLchar infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-	}
-}
-void initFragmentShader()
-{
-	GLuint fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	readShaderSource(fragmentShader, "first.frag");
-	glCompileShader(fragmentShader);
-	GLint success;
-	GLchar infoLog[512];
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-	}
-}
-void initShaderProgram(GLuint vertexShader, GLuint fragmentShader)
-{
-	GLuint shaderProgram;
-	shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram,vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-	GLint success;
-	GLchar infoLog[512];
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-	}
-	glUseProgram(shaderProgram);
-}
-void readShaderSource(GLuint shader,char *fileName)
-{
-	ifstream infile;
-	GLchar* sourceCode;
-	infile.open(fileName);
-	if (!infile)
-	{
-		cout << fileName<< " open error" << endl;
-		return;
-	}
-	infile >> sourceCode;
-	glShaderSource(shader, 1, &sourceCode, NULL);
+	GLuint VBO, VAO;
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	//set vertex buffer and attribute point
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertics), vertics, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+	//unbind VBO&VAO
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	return VBO;
 }
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
