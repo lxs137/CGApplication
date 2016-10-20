@@ -96,9 +96,9 @@ GLuint initVAO()
 	//set vertex buffer and attribute point
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	line myLine(glm::ivec3(200, 50, 0), glm::ivec3(-200, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
-	myLine.lineUseBresenham();
-	//myLine.lineUseDDA();
+	line myLine(glm::ivec3(200, 200, 0), glm::ivec3(-200, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
+	/*myLine.lineUseBresenham();*/
+	myLine.lineUseDDA();
 	glBufferData(GL_ARRAY_BUFFER,myLine.getPointsNum()*myLine.getPointSize(), 
 		&(myLine.getLineVertics())[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
