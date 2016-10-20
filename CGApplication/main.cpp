@@ -96,9 +96,10 @@ GLuint initVAO()
 	//set vertex buffer and attribute point
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	vector<GLfloat> vertics=lineDDA(-300, -200, 350, 150,glm::vec3(1.0f, 0.0f, 0.0f));
-	cout <<vertics.size()/6<<endl;
-	glBufferData(GL_ARRAY_BUFFER,vertics.size()*sizeof(vertics[0]),&vertics[0], GL_STATIC_DRAW);
+	line myLine(glm::ivec3(-300, -200, 0), glm::ivec3(350, 150, 0), glm::vec3(1.0f, 0.0f, 0.0f));
+	myLine.lineUseDDA();
+	glBufferData(GL_ARRAY_BUFFER,myLine.getPointsNum()*myLine.getPointSize(), 
+		&(myLine.getLineVertics())[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
