@@ -96,8 +96,9 @@ GLuint initVAO()
 	//set vertex buffer and attribute point
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	line myLine(glm::ivec3(-300, -200, 0), glm::ivec3(350, 150, 0), glm::vec3(1.0f, 0.0f, 0.0f));
-	myLine.lineUseDDA();
+	line myLine(glm::ivec3(200, 50, 0), glm::ivec3(-200, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
+	myLine.lineUseBresenham();
+	//myLine.lineUseDDA();
 	glBufferData(GL_ARRAY_BUFFER,myLine.getPointsNum()*myLine.getPointSize(), 
 		&(myLine.getLineVertics())[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
@@ -117,7 +118,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 glm::mat4 getTransformMatrix()
 {
 	glm::mat4 transformMat;
-	transformMat = glm::rotate(transformMat,(GLfloat)glfwGetTime()*PI/2, glm::vec3(0, 0, 1));
+	//transformMat = glm::rotate(transformMat,(GLfloat)glfwGetTime()*PI/2, glm::vec3(0, 0, 1));
 	transformMat = glm::scale(transformMat, glm::vec3(1.0,1.0,1.0));
 	return transformMat;
 }

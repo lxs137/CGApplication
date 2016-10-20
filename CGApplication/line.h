@@ -42,6 +42,7 @@ class line
 		}
 		void mergeVector(vector<glm::ivec3> pointsPosition)
 		{
+			vertics.clear();
 			this->pointsNum = pointsPosition.size();
 			for (int i = 0; i < this->pointsNum; i++)
 			{
@@ -53,28 +54,59 @@ class line
 				vertics.push_back(color.z);
 			}
 		}
-		void lineBresenham()
+		void lineUseBresenham()
 		{
-			vector<glm::ivec3> pointGrids;
-			GLfloat m = (y2 - y1) / (x2 - x1);
-			GLint x_next, y_next;
-			if (m > 0)
+			vector<glm::ivec3> pointsPosition;
+			if (x1 > x2)
 			{
-				if (m > 1 && x2 > x1) y_next = 1, x_next = 1;
-				else if (m > 1 && x2 < x1) y_next = -1, x_next = -1;
-				else if (m < 1 && x2 > x1) y_next = 1, x_next = 1;
-				else if (m < 1 && x2 < x1) y_next = -1, x_next = -1;
+				swap(x1, x2);
+				swap(y1, y2);
+			}
+			GLfloat m = ((GLfloat)(y2 - y1)) / (x2 - x1);
+			GLint x_next=1, y_next;
+			GLint dertX = x2 - x1, dertY = y2 - y1, dert2Y = dertY + dertY,
+				dert2X2Y = dertY + dertY - dertX - dertX, p0 = dertY + dertY - dertX;
+			if (m>-1 && m < 1)
+			{
+				GLfloat y = y1;
+				pointsPosition.push_back(glm::ivec3(x1, y1, 0));
+				for (GLint x = x1+x_next; x != x2; x += x_next)
+				{
+					if (p0 <= 0)
+					{
+						pointsPosition.push_back(glm::ivec3(x, y, 0));
+						p0 = p0 + dert2Y;
+					}
+					else
+					{
+						y += y_next;
+						pointsPosition.push_back(glm::ivec3(x,y,0));
+						p0 = p0 + dert2X2Y;
+					}
+				}
+				pointsPosition.push_back(glm::ivec3(x2, y2, 0));
 			}
 			else
 			{
-				if (m < -1 && x2 > x1) y_next = -1, x_next = 1;
-				else if (m < -1 && x2 < x1) y_next = 1, x_next = -1;
-				else if (m > -1 && x2 > x1) y_next = -1, x_next = 1;
-				else if (m > -1 && x2 < x1) y_next = 1, x_next = -1;
+				GLfloat x = x1;
+ 				pointsPosition.push_back(glm::ivec3(x1, y1, 0));
+				for (GLint y = y1+y_next; y != y2; y += y_next)
+				{
+					if (p0 <= 0)
+					{
+						pointsPosition.push_back(glm::ivec3(x, y, 0));
+						p0 = p0 + dert2Y;
+					}
+					else
+					{
+						x += x_next;
+						pointsPosition.push_back(glm::ivec3(x, y, 0));
+						p0 = p0 + dert2X2Y;
+					}
+				}
+				pointsPosition.push_back(glm::ivec3(x2, y2, 0));
 			}
-			GLint dertX = x2 - x1, dertY = y2 - y1, dert2Y = dertY + dertY,
-				dert2X2Y = dertY + dertY - dertX - dertX, p0 = dertY + dertY - dertX;
-
+			mergeVector(pointsPosition);
 		}
 		void lineUseDDA()
 		{
@@ -99,7 +131,8 @@ class line
 			{
 				GLfloat y = y1;
 				x_dert = (GLint)x_dert;
-				for (GLint x = x1; x < x2; x += x_dert)
+				pointsPosition.push_back(glm::ivec3(x1, y1, 0));
+				for (GLint x = x1+x_dert; x != x2; x += x_dert)
 				{
 					y += y_dert;
 					pointsPosition.push_back(glm::ivec3(x, GLint(y), 0));
@@ -110,7 +143,8 @@ class line
 			{
 				GLfloat x = x1;
 				y_dert = (GLint)y_dert;
-				for (GLint y = y1; y < y2; y += y_dert)
+				pointsPosition.push_back(glm::ivec3(x1, y1, 0));
+				for (GLint y = y1+y_dert; y != y2; y += y_dert)
 				{
 					x += x_dert;
 					pointsPosition.push_back(glm::ivec3(GLint(x), y, 0));
