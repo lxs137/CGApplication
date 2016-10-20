@@ -74,7 +74,9 @@
     <None Include="first.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="line.h" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="windowSetting.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

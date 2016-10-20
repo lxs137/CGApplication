@@ -31,5 +31,11 @@
     <ClInclude Include="shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="windowSetting.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="line.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
