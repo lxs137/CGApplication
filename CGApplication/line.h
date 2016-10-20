@@ -9,7 +9,7 @@
 #include <vector>
 using namespace std;
 
-vector<GLfloat> vector2Array(vector<glm::ivec3> pointsPosition, glm::vec3 lineColor);
+vector<GLfloat> vectorMerge(vector<glm::ivec3> pointsPosition, glm::vec3 lineColor);
 void lineBresenham(GLint x1, GLint y1, GLint x2, GLint y2);
 vector<GLfloat> lineDDA(GLint x1, GLint y1, GLint x2, GLint y2,glm::vec3 lineColor);
 
@@ -55,7 +55,7 @@ vector<GLfloat> lineDDA(GLint x1, GLint y1, GLint x2, GLint y2,glm::vec3 lineCol
 		pointsPosition.push_back(glm::ivec3(x2, y2, 0));
 	}
 
-	return vector2Array(pointsPosition, lineColor);
+	return vectorMerge(pointsPosition, lineColor);
 }
 void lineBresenham(GLint x1, GLint y1, GLint x2, GLint y2)
 {
@@ -80,7 +80,7 @@ void lineBresenham(GLint x1, GLint y1, GLint x2, GLint y2)
 		dert2X2Y = dertY + dertY - dertX - dertX, p0 = dertY + dertY - dertX;
 
 }
-vector<GLfloat> vector2Array(vector<glm::ivec3> pointsPosition, glm::vec3 lineColor)
+vector<GLfloat> vectorMerge(vector<glm::ivec3> pointsPosition, glm::vec3 lineColor)
 {
 	vector<GLfloat> vertics;
 	int pointsNum = pointsPosition.size();
