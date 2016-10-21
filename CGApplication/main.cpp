@@ -3,15 +3,16 @@
 #include <vector>
 #include "shader.h"
 #include "line.h"
+#include "circle.h"
 #include "windowSetting.h"
 using namespace std;
 
 #define GLEW_STATIC
-#include <gl/glew.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <gl\glew.h>
+#include <GLFW\glfw3.h>
+#include <glm\glm.hpp>
+#include <glm\gtc\matrix_transform.hpp>
+#include <glm\gtc\type_ptr.hpp>
 
 const GLfloat PI = 3.14159f;
 //GLfloat vertics[] = {
@@ -96,11 +97,15 @@ GLuint initVAO()
 	//set vertex buffer and attribute point
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	line myLine(glm::ivec3(200, 200, 0), glm::ivec3(-200, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
-	/*myLine.lineUseBresenham();*/
+	/*line myLine(glm::ivec3(200, 200, 0), glm::ivec3(-200, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
+	myLine.lineUseBresenham();
 	myLine.lineUseDDA();
 	glBufferData(GL_ARRAY_BUFFER,myLine.getPointsNum()*myLine.getPointSize(), 
-		&(myLine.getLineVertics())[0], GL_STATIC_DRAW);
+		&(myLine.getLineVertics())[0], GL_STATIC_DRAW);*/
+	circle myCircle(glm::ivec3(0,0,0),115,glm::vec3(1.0f,0.0f,0.0f));
+	myCircle.circleUseMidpoint();
+	glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
+		&(myCircle.getCircleVertics())[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));

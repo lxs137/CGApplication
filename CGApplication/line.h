@@ -3,8 +3,8 @@
 
 #include "windowSetting.h"
 #define GLEW_STATIC
-#include <gl/glew.h>
-#include <glm/glm.hpp>
+#include <gl\glew.h>
+#include <glm\glm.hpp>
 #include <cmath>
 #include <vector>
 using namespace std;
@@ -13,10 +13,47 @@ class line
 {
 	private:
 		GLint pointsNum;
+		//each points' space in memory
 		GLint pointSize;
 		vector<GLfloat> vertics;
 		GLint x1, y1, x2, y2;
 		glm::vec3 color;
+		void mergeVector(vector<glm::ivec3> pointsPosition)
+		{
+			vertics.clear();
+			this->pointsNum = pointsPosition.size();
+			for (int i = 0; i < this->pointsNum; i++)
+			{
+				vertics.push_back(pointsPosition[i].x / (GLfloat)WIDTH);
+				vertics.push_back(pointsPosition[i].y / (GLfloat)HEIGHT);
+				vertics.push_back((GLfloat)pointsPosition[i].z);
+				vertics.push_back(color.x);
+				vertics.push_back(color.y);
+				vertics.push_back(color.z);
+			}
+		}
+		void lineSlope1()
+		{
+			vector<glm::ivec3> pointsPosition;
+			if ((x2 - x1)*(y2 - y1) > 0)
+			{
+				int dx = abs(x2 - x1);
+				x1 = (x1 < x2) ? x1 : x2;
+				y1 = (y1 < y2) ? y1 : y2;
+				for (int i = 0; i <= dx; i++)
+					pointsPosition.push_back(glm::ivec3(x1 + i, y1 + i, 0));
+			}
+			else
+			{
+				int dx = abs(y2 - y1);
+				x1 = (x1 < x2) ? x1 : x2;
+				y1 = (y1 < y2) ? y2 : y1;
+				for (int i = 0; i <= dx; i++)
+					pointsPosition.push_back(glm::ivec3(x1 + i, y1 - i, 0));
+			}
+			mergeVector(pointsPosition);
+			return;
+		}
 	public:
 		line(glm::ivec3 p1, glm::ivec3 p2,glm::vec3 lineColor)
 		{
@@ -39,21 +76,7 @@ class line
 		GLint getPointSize()
 		{
 			return this->pointSize;
-		}
-		void mergeVector(vector<glm::ivec3> pointsPosition)
-		{
-			vertics.clear();
-			this->pointsNum = pointsPosition.size();
-			for (int i = 0; i < this->pointsNum; i++)
-			{
-				vertics.push_back(pointsPosition[i].x / (GLfloat)WIDTH);
-				vertics.push_back(pointsPosition[i].y / (GLfloat)HEIGHT);
-				vertics.push_back((GLfloat)pointsPosition[i].z);
-				vertics.push_back(color.x);
-				vertics.push_back(color.y);
-				vertics.push_back(color.z);
-			}
-		}
+		}		
 		void lineUseBresenham()
 		{
 			if (abs(x2 - x1) == abs(y2 - y1))
@@ -227,28 +250,6 @@ class line
 				pointsPosition.push_back(glm::ivec3(x2, y2, 0));
 			}
 			mergeVector(pointsPosition);
-		}
-		void lineSlope1()
-		{
-			vector<glm::ivec3> pointsPosition;
-			if ((x2 - x1)*(y2 - y1) > 0)
-			{
-				int dx = abs(x2 - x1);
-				x1 = (x1 < x2) ? x1 : x2;
-				y1 = (y1 < y2) ? y1 : y2;
-				for (int i = 0; i <= dx; i++)
-					pointsPosition.push_back(glm::ivec3(x1 + i, y1 + i, 0));
-			}
-			else
-			{
-				int dx = abs(y2 - y1);
-				x1 = (x1 < x2) ? x1 : x2;
-				y1 = (y1 < y2) ? y2 : y1;
-				for (int i = 0; i <= dx; i++)
-					pointsPosition.push_back(glm::ivec3(x1 + i, y1 - i, 0));
-			}
-			mergeVector(pointsPosition);
-			return;
 		}
 };
 

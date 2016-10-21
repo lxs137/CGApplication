@@ -74,6 +74,7 @@
     <None Include="first.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="circle.h" />
     <ClInclude Include="line.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="windowSetting.h" />
