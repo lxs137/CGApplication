@@ -4,6 +4,7 @@
 #include "shader.h"
 #include "line.h"
 #include "circle.h"
+#include "ellipse.h"
 #include "windowSetting.h"
 using namespace std;
 
@@ -22,6 +23,7 @@ const GLfloat PI = 3.14159f;
 //};
 
 circle myCircle;
+ellipse myEllipse;
 
 GLuint initVAO();
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -79,7 +81,7 @@ int main()
 		glUseProgram(myShaderProgram);
 		glBindVertexArray(myVAO);
 		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
-		glDrawArrays(GL_POINTS, 0, myCircle.getPointsNum());
+		glDrawArrays(GL_POINTS, 0, myEllipse.getPointsNum());
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
@@ -104,10 +106,14 @@ GLuint initVAO()
 	myLine.lineUseDDA();
 	glBufferData(GL_ARRAY_BUFFER,myLine.getPointsNum()*myLine.getPointSize(), 
 		&(myLine.getLineVertics())[0], GL_STATIC_DRAW);*/
-	myCircle=circle(glm::ivec3(0,0,0),150,glm::vec3(1.0f,0.0f,0.0f));
-	myCircle.circleUseMidpoint();
-	glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
-		&(myCircle.getCircleVertics())[0], GL_STATIC_DRAW);
+	//myCircle=circle(glm::ivec3(0,0,0),150,glm::vec3(1.0f,0.0f,0.0f));
+	//myCircle.circleUseMidpoint();
+	//glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
+	//	&(myCircle.getCircleVertics())[0], GL_STATIC_DRAW);
+	myEllipse = ellipse(glm::ivec3(0, 0, 0), 100, 50, glm::vec3(1.0f,0.0f,0.0f));
+	myEllipse.ellipseUseMidpoint();
+	glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
+		&(myEllipse.getEllipseVertics())[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
