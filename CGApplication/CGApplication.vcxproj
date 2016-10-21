@@ -76,6 +76,7 @@
   <ItemGroup>
     <ClInclude Include="circle.h" />
     <ClInclude Include="line.h" />
+    <ClInclude Include="ellipse.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="windowSetting.h" />
   </ItemGroup>

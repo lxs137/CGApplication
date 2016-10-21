@@ -40,5 +40,8 @@
     <ClInclude Include="circle.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ellipse.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

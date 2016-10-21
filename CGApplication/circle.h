@@ -78,6 +78,15 @@ private:
 		this->pointsNum += 8;
 	}
 public:
+	circle()
+	{
+		this->centerX = 0;
+		this->centerY = 0;
+		this->radius = 0;
+		this->color = glm::vec3(0.0f,0.0f,0.0f);
+		this->pointsNum = 0;
+		this->pointSize = 6 * sizeof(GLfloat);
+	}
 	circle(glm::ivec3 center,GLint r,glm::vec3 circleColor)
 	{
 		this->centerX = center.x;
@@ -101,6 +110,7 @@ public:
 	}
 	void circleUseMidpoint()
 	{
+		vertics.clear();
 		GLint x = 0, y = radius;
 		GLfloat p0 = 5.0f / 4 - radius;
 		pushSymmetryPoint(glm::ivec3(x,y,0));
