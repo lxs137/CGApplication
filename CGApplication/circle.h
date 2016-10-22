@@ -20,57 +20,57 @@ private:
 	glm::vec3 color;
 	void pushSymmetryPoint(glm::ivec3 pointPosition)
 	{
-		vertics.push_back((pointPosition.x +centerX)/ (GLfloat)WIDTH);
-		vertics.push_back((pointPosition.y +centerY)/ (GLfloat)HEIGHT);
+		vertics.push_back((pointPosition.x +centerX)/ (GLfloat)WIDTH_HALF);
+		vertics.push_back((pointPosition.y +centerY)/ (GLfloat)HEIGHT_HALF);
 		vertics.push_back((GLfloat)pointPosition.z);
 		vertics.push_back(color.x);
 		vertics.push_back(color.y);
 		vertics.push_back(color.z);
 
-		vertics.push_back((pointPosition.y +centerX)/ (GLfloat)WIDTH);
-		vertics.push_back((pointPosition.x +centerY)/ (GLfloat)HEIGHT);
+		vertics.push_back((pointPosition.y +centerX)/ (GLfloat)WIDTH_HALF);
+		vertics.push_back((pointPosition.x +centerY)/ (GLfloat)HEIGHT_HALF);
 		vertics.push_back((GLfloat)pointPosition.z);
 		vertics.push_back(color.x);
 		vertics.push_back(color.y);
 		vertics.push_back(color.z);
 
-		vertics.push_back((-pointPosition.x +centerX)/ (GLfloat)WIDTH);
-		vertics.push_back((pointPosition.y +centerY)/ (GLfloat)HEIGHT);
+		vertics.push_back((-pointPosition.x +centerX)/ (GLfloat)WIDTH_HALF);
+		vertics.push_back((pointPosition.y +centerY)/ (GLfloat)HEIGHT_HALF);
 		vertics.push_back((GLfloat)pointPosition.z);
 		vertics.push_back(color.x);
 		vertics.push_back(color.y);
 		vertics.push_back(color.z);
 
-		vertics.push_back((-pointPosition.y +centerX)/ (GLfloat)WIDTH);
-		vertics.push_back((pointPosition.x +centerY)/ (GLfloat)HEIGHT);
+		vertics.push_back((-pointPosition.y +centerX)/ (GLfloat)WIDTH_HALF);
+		vertics.push_back((pointPosition.x +centerY)/ (GLfloat)HEIGHT_HALF);
 		vertics.push_back((GLfloat)pointPosition.z);
 		vertics.push_back(color.x);
 		vertics.push_back(color.y);
 		vertics.push_back(color.z);
 
-		vertics.push_back((pointPosition.x +centerX)/ (GLfloat)WIDTH);
-		vertics.push_back((-pointPosition.y +centerY) / (GLfloat)HEIGHT);
+		vertics.push_back((pointPosition.x +centerX)/ (GLfloat)WIDTH_HALF);
+		vertics.push_back((-pointPosition.y +centerY) / (GLfloat)HEIGHT_HALF);
 		vertics.push_back((GLfloat)pointPosition.z);
 		vertics.push_back(color.x);
 		vertics.push_back(color.y);
 		vertics.push_back(color.z);
 
-		vertics.push_back((pointPosition.y +centerX) / (GLfloat)WIDTH);
-		vertics.push_back((-pointPosition.x +centerY)/ (GLfloat)HEIGHT);
+		vertics.push_back((pointPosition.y +centerX) / (GLfloat)WIDTH_HALF);
+		vertics.push_back((-pointPosition.x +centerY)/ (GLfloat)HEIGHT_HALF);
 		vertics.push_back((GLfloat)pointPosition.z);
 		vertics.push_back(color.x);
 		vertics.push_back(color.y);
 		vertics.push_back(color.z);
 
-		vertics.push_back((-pointPosition.x +centerX) / (GLfloat)WIDTH);
-		vertics.push_back((-pointPosition.y +centerY)/ (GLfloat)HEIGHT);
+		vertics.push_back((-pointPosition.x +centerX) / (GLfloat)WIDTH_HALF);
+		vertics.push_back((-pointPosition.y +centerY)/ (GLfloat)HEIGHT_HALF);
 		vertics.push_back((GLfloat)pointPosition.z);
 		vertics.push_back(color.x);
 		vertics.push_back(color.y);
 		vertics.push_back(color.z);
 
-		vertics.push_back((-pointPosition.y +centerX)/ (GLfloat)WIDTH);
-		vertics.push_back((-pointPosition.x +centerY)/ (GLfloat)HEIGHT);
+		vertics.push_back((-pointPosition.y +centerX)/ (GLfloat)WIDTH_HALF);
+		vertics.push_back((-pointPosition.x +centerY)/ (GLfloat)HEIGHT_HALF);
 		vertics.push_back((GLfloat)pointPosition.z);
 		vertics.push_back(color.x);
 		vertics.push_back(color.y);

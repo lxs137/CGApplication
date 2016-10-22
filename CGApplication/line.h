@@ -24,8 +24,8 @@ class line
 			this->pointsNum = pointsPosition.size();
 			for (int i = 0; i < this->pointsNum; i++)
 			{
-				vertics.push_back(pointsPosition[i].x / (GLfloat)WIDTH);
-				vertics.push_back(pointsPosition[i].y / (GLfloat)HEIGHT);
+				vertics.push_back(pointsPosition[i].x / (GLfloat)WIDTH_HALF);
+				vertics.push_back(pointsPosition[i].y / (GLfloat)HEIGHT_HALF);
 				vertics.push_back((GLfloat)pointsPosition[i].z);
 				vertics.push_back(color.x);
 				vertics.push_back(color.y);
@@ -55,6 +55,16 @@ class line
 			return;
 		}
 	public:
+		line()
+		{
+			this->x1 = 0;
+			this->y1 = 0;
+			this->x2 = 0;
+			this->y2 = 0;
+			this->pointsNum = 0;
+			this->color = glm::vec3(0.0f,0.0f,0.0f);
+			this->pointSize = 6 * sizeof(GLfloat);
+		}
 		line(glm::ivec3 p1, glm::ivec3 p2,glm::vec3 lineColor)
 		{
 			this->x1 = p1.x;

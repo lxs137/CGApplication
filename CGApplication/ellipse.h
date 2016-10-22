@@ -21,29 +21,29 @@ private:
 	glm::vec3 color;
 	void pushSymmetryPoint(glm::ivec3 pointPosition)
 	{
-		vertics.push_back((pointPosition.x + centerX) / (GLfloat)WIDTH);
-		vertics.push_back((pointPosition.y + centerY) / (GLfloat)HEIGHT);
+		vertics.push_back((pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
+		vertics.push_back((pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
 		vertics.push_back((GLfloat)pointPosition.z);
 		vertics.push_back(color.x);
 		vertics.push_back(color.y);
 		vertics.push_back(color.z);
 
-		vertics.push_back((-pointPosition.x + centerX) / (GLfloat)WIDTH);
-		vertics.push_back((pointPosition.y + centerY) / (GLfloat)HEIGHT);
+		vertics.push_back((-pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
+		vertics.push_back((pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
 		vertics.push_back((GLfloat)pointPosition.z);
 		vertics.push_back(color.x);
 		vertics.push_back(color.y);
 		vertics.push_back(color.z);
 
-		vertics.push_back((pointPosition.x + centerX) / (GLfloat)WIDTH);
-		vertics.push_back((-pointPosition.y + centerY) / (GLfloat)HEIGHT);
+		vertics.push_back((pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
+		vertics.push_back((-pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
 		vertics.push_back((GLfloat)pointPosition.z);
 		vertics.push_back(color.x);
 		vertics.push_back(color.y);
 		vertics.push_back(color.z);
 
-		vertics.push_back((-pointPosition.x + centerX) / (GLfloat)WIDTH);
-		vertics.push_back((-pointPosition.y + centerY) / (GLfloat)HEIGHT);
+		vertics.push_back((-pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
+		vertics.push_back((-pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
 		vertics.push_back((GLfloat)pointPosition.z);
 		vertics.push_back(color.x);
 		vertics.push_back(color.y);
@@ -78,8 +78,9 @@ public:
 		GLint x = 0, y = radiusY;
 		GLfloat p1 = radiusY*radiusY - radiusX*radiusX*radiusY + radiusX*radiusX*0.25f;
 		pushSymmetryPoint(glm::ivec3(0,radiusY,0));
-		for (x = 1; radiusY*radiusY*x <= radiusX*radiusX*y; x++)
+		do 
 		{
+			x++;
 			if (p1 <= 0)
 			{
 				pushSymmetryPoint(glm::ivec3(x, y, 0));
@@ -91,21 +92,20 @@ public:
 				pushSymmetryPoint(glm::ivec3(x, y, 0));
 				p1 = p1 + 2 * radiusY*radiusY*x - 2 * radiusX*radiusX*y + radiusY*radiusY;
 			}
-		}
-		x--;
-		p1 = radiusY*radiusY*(x + 0.5)*(x + 0.5) + radiusX*radiusX*(y - 1) - radiusX*radiusX*radiusY*radiusY;
-		for (y--; y > 0&&x<radiusX; y--)
+		} while (radiusY*radiusY*x<=radiusX*radiusX*y);
+		p1 = radiusY*radiusY*(x*x + x+0.25) + radiusX*radiusX*(y - 1)*(y-1) - radiusX*radiusX*radiusY*radiusY;
+		for (y--; y > 0; y--)
 		{
 			if (p1 <= 0)
 			{
 				x = x + 1;
 				pushSymmetryPoint(glm::ivec3(x, y, 0));
-				p1 = p1 - 2 * radiusX*radiusX*y + radiusX*radiusX;
+				p1 = p1 + 2 * radiusY*radiusY*x - 2 * radiusX*radiusX*y + radiusX*radiusX;
 			}
 			else
 			{
 				pushSymmetryPoint(glm::ivec3(x, y, 0));
-				p1 = p1 + 2 * radiusY*radiusY*x - 2 * radiusX*radiusX*y + radiusX*radiusX;
+				p1 = p1 - 2 * radiusX*radiusX*y + radiusX*radiusX;
 			}
 		}
 		pushSymmetryPoint(glm::ivec3(radiusX, 0, 0));

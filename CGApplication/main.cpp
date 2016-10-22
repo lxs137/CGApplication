@@ -22,6 +22,7 @@ const GLfloat PI = 3.14159f;
 //	30.0f / WIDTH, -30.0f / HEIGHT, 0.0f, 0.0f, 0.0f, 1.0f
 //};
 
+line myLine;
 circle myCircle;
 ellipse myEllipse;
 
@@ -81,7 +82,7 @@ int main()
 		glUseProgram(myShaderProgram);
 		glBindVertexArray(myVAO);
 		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
-		glDrawArrays(GL_POINTS, 0, myEllipse.getPointsNum());
+		glDrawArrays(GL_POINTS, 0, myLine.getPointsNum());
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
@@ -101,19 +102,19 @@ GLuint initVAO()
 	//set vertex buffer and attribute point
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	/*line myLine(glm::ivec3(200, 200, 0), glm::ivec3(-200, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
+    myLine=line(glm::ivec3(200, 200, 0), glm::ivec3(-200, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
 	myLine.lineUseBresenham();
-	myLine.lineUseDDA();
+	//myLine.lineUseDDA();
 	glBufferData(GL_ARRAY_BUFFER,myLine.getPointsNum()*myLine.getPointSize(), 
-		&(myLine.getLineVertics())[0], GL_STATIC_DRAW);*/
-	//myCircle=circle(glm::ivec3(0,0,0),150,glm::vec3(1.0f,0.0f,0.0f));
+		&(myLine.getLineVertics())[0], GL_STATIC_DRAW);
+	//myCircle=circle(glm::ivec3(0,0,0),200,glm::vec3(1.0f,0.0f,0.0f));
 	//myCircle.circleUseMidpoint();
 	//glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
 	//	&(myCircle.getCircleVertics())[0], GL_STATIC_DRAW);
-	myEllipse = ellipse(glm::ivec3(0, 0, 0), 100, 50, glm::vec3(1.0f,0.0f,0.0f));
-	myEllipse.ellipseUseMidpoint();
-	glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
-		&(myEllipse.getEllipseVertics())[0], GL_STATIC_DRAW);
+	//myEllipse = ellipse(glm::ivec3(50, -80, 0), 200, 100, glm::vec3(1.0f,0.0f,0.0f));
+	//myEllipse.ellipseUseMidpoint();
+	//glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
+	//	&(myEllipse.getEllipseVertics())[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
