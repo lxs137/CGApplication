@@ -43,5 +43,8 @@
     <ClInclude Include="ellipse.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="bezier.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

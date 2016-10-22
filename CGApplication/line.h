@@ -18,19 +18,15 @@ class line
 		vector<GLfloat> vertics;
 		GLint x1, y1, x2, y2;
 		glm::vec3 color;
-		void mergeVector(vector<glm::ivec3> pointsPosition)
+		void pushPoint(glm::ivec3 pointPosition)
 		{
-			vertics.clear();
-			this->pointsNum = pointsPosition.size();
-			for (int i = 0; i < this->pointsNum; i++)
-			{
-				vertics.push_back(pointsPosition[i].x / (GLfloat)WIDTH_HALF);
-				vertics.push_back(pointsPosition[i].y / (GLfloat)HEIGHT_HALF);
-				vertics.push_back((GLfloat)pointsPosition[i].z);
-				vertics.push_back(color.x);
-				vertics.push_back(color.y);
-				vertics.push_back(color.z);
-			}
+			vertics.push_back(pointPosition.x  / (GLfloat)WIDTH_HALF);
+			vertics.push_back(pointPosition.y  / (GLfloat)HEIGHT_HALF);
+			vertics.push_back((GLfloat)pointPosition.z);
+			vertics.push_back(color.x);
+			vertics.push_back(color.y);
+			vertics.push_back(color.z);
+			pointsNum++;
 		}
 		void lineSlope1()
 		{
@@ -41,7 +37,7 @@ class line
 				x1 = (x1 < x2) ? x1 : x2;
 				y1 = (y1 < y2) ? y1 : y2;
 				for (int i = 0; i <= dx; i++)
-					pointsPosition.push_back(glm::ivec3(x1 + i, y1 + i, 0));
+					pushPoint(glm::ivec3(x1 + i, y1 + i, 0));
 			}
 			else
 			{
@@ -49,9 +45,8 @@ class line
 				x1 = (x1 < x2) ? x1 : x2;
 				y1 = (y1 < y2) ? y2 : y1;
 				for (int i = 0; i <= dx; i++)
-					pointsPosition.push_back(glm::ivec3(x1 + i, y1 - i, 0));
+					pushPoint(glm::ivec3(x1 + i, y1 - i, 0));
 			}
-			mergeVector(pointsPosition);
 			return;
 		}
 	public:
@@ -106,23 +101,23 @@ class line
 				GLint dertX = x2 - x1, dertY = y2 - y1, dert2Y = dertY + dertY,
 					dert2X2Y = dertY + dertY - dertX - dertX, p0 = dertY + dertY - dertX;
 				GLint x_next = 1, y_next = (y2>y1) ? 1 : -1;
-				GLfloat y = y1;
-				pointsPosition.push_back(glm::ivec3(x1, y1, 0));
+				GLint y = y1;
+				pushPoint(glm::ivec3(x1, y1, 0));
 					for (GLint x = x1 + x_next; x != x2; x += x_next)
 					{
 						if (p0 <= 0)
 						{
-							pointsPosition.push_back(glm::ivec3(x, y, 0));
+							pushPoint(glm::ivec3(x, y, 0));
 							p0 = p0 + dert2Y;
 						}
 						else
 						{
 							y += y_next;
-							pointsPosition.push_back(glm::ivec3(x, y, 0));
+							pushPoint(glm::ivec3(x, y, 0));
 							p0 = p0 + dert2X2Y;
 						}
 					}				
-				pointsPosition.push_back(glm::ivec3(x2, y2, 0));
+				pushPoint(glm::ivec3(x2, y2, 0));
 			}
 			else if (m > -1 && m < 0)
 			{
@@ -130,23 +125,23 @@ class line
 				GLint dertX = x2 - x1, dertY = y2 - y1, dert2Y = dertY + dertY,
 					dert2X2Y = dertY + dertY - dertX - dertX, p0 = dertY + dertY - dertX;
 				GLint x_next = 1, y_next = (y2>y1) ? 1 : -1;
-				GLfloat y = y1;
-				pointsPosition.push_back(glm::ivec3(x1, -y1, 0));
+				GLint y = y1;
+				pushPoint(glm::ivec3(x1, -y1, 0));
 				for (GLint x = x1 + x_next; x != x2; x += x_next)
 				{
 					if (p0 <= 0)
 					{
-						pointsPosition.push_back(glm::ivec3(x, -y, 0));
+						pushPoint(glm::ivec3(x, -y, 0));
 						p0 = p0 + dert2Y;
 					}
 					else
 					{
 						y += y_next;
-						pointsPosition.push_back(glm::ivec3(x, -y, 0));
+						pushPoint(glm::ivec3(x, -y, 0));
 						p0 = p0 + dert2X2Y;
 					}
 				}
-				pointsPosition.push_back(glm::ivec3(x2, -y2, 0));
+				pushPoint(glm::ivec3(x2, -y2, 0));
 			}
 			else if (m > 1)
 			{
@@ -160,23 +155,23 @@ class line
 				GLint dertX = x2 - x1, dertY = y2 - y1, dert2Y = dertY + dertY,
 					dert2X2Y = dertY + dertY - dertX - dertX, p0 = dertY + dertY - dertX;
 				GLint x_next = 1, y_next = (y2>y1) ? 1 : -1;
-				GLfloat y = y1;
-				pointsPosition.push_back(glm::ivec3(y1, x1, 0));
+				GLint y = y1;
+				pushPoint(glm::ivec3(y1, x1, 0));
 				for (GLint x = x1 + x_next; x != x2; x += x_next)
 				{
 					if (p0 <= 0)
 					{
-						pointsPosition.push_back(glm::ivec3(y, x, 0));
+						pushPoint(glm::ivec3(y, x, 0));
 						p0 = p0 + dert2Y;
 					}
 					else
 					{
 						y += y_next;
-						pointsPosition.push_back(glm::ivec3(y, x, 0));
+						pushPoint(glm::ivec3(y, x, 0));
 						p0 = p0 + dert2X2Y;
 					}
 				}
-				pointsPosition.push_back(glm::ivec3(y2, x2, 0));
+				pushPoint(glm::ivec3(y2, x2, 0));
 			}
 			else
 			{
@@ -191,25 +186,24 @@ class line
 				GLint dertX = x2 - x1, dertY = y2 - y1, dert2Y = dertY + dertY,
 					dert2X2Y = dertY + dertY - dertX - dertX, p0 = dertY + dertY - dertX;
 				GLint x_next = 1, y_next = (y2 > y1) ? 1 : -1;
-				GLfloat y = y1;
-				pointsPosition.push_back(glm::ivec3(-y1, x1, 0));
+				GLint y = y1;
+				pushPoint(glm::ivec3(-y1, x1, 0));
 				for (GLint x = x1 + x_next; x != x2; x += x_next)
 				{
 					if (p0 <= 0)
 					{
-						pointsPosition.push_back(glm::ivec3(-y, x, 0));
+						pushPoint(glm::ivec3(-y, x, 0));
 						p0 = p0 + dert2Y;
 					}
 					else
 					{
 						y += y_next;
-						pointsPosition.push_back(glm::ivec3(-y, x, 0));
+						pushPoint(glm::ivec3(-y, x, 0));
 						p0 = p0 + dert2X2Y;
 					}
 				}
-				pointsPosition.push_back(glm::ivec3(-y2, x2, 0));
+				pushPoint(glm::ivec3(-y2, x2, 0));
 			}
-			mergeVector(pointsPosition);
 		}
 		void lineUseDDA()
 		{
@@ -237,29 +231,28 @@ class line
 			}
 			if (m>-1 && m < 1)
 			{
-				GLfloat y = y1;
+				GLfloat y = (GLfloat)y1;
 				x_dert = (GLint)x_dert;
-				pointsPosition.push_back(glm::ivec3(x1, y1, 0));
+				pushPoint(glm::ivec3(x1, y1, 0));
 				for (GLint x = x1+x_dert; x != x2; x += x_dert)
 				{
 					y += y_dert;
-					pointsPosition.push_back(glm::ivec3(x, GLint(y), 0));
+					pushPoint(glm::ivec3(x, GLint(y), 0));
 				}
-				pointsPosition.push_back(glm::ivec3(x2, y2, 0));
+				pushPoint(glm::ivec3(x2, y2, 0));
 			}
 			else
 			{
 				GLfloat x = x1;
 				y_dert = (GLint)y_dert;
-				pointsPosition.push_back(glm::ivec3(x1, y1, 0));
+				pushPoint(glm::ivec3(x1, y1, 0));
 				for (GLint y = y1+y_dert; y != y2; y += y_dert)
 				{
 					x += x_dert;
-					pointsPosition.push_back(glm::ivec3(GLint(x), y, 0));
+					pushPoint(glm::ivec3(GLint(x), y, 0));
 				}
-				pointsPosition.push_back(glm::ivec3(x2, y2, 0));
+				pushPoint(glm::ivec3(x2, y2, 0));
 			}
-			mergeVector(pointsPosition);
 		}
 };
 

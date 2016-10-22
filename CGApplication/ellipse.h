@@ -93,7 +93,7 @@ public:
 				p1 = p1 + 2 * radiusY*radiusY*x - 2 * radiusX*radiusX*y + radiusY*radiusY;
 			}
 		} while (radiusY*radiusY*x<=radiusX*radiusX*y);
-		p1 = radiusY*radiusY*(x*x + x+0.25) + radiusX*radiusX*(y - 1)*(y-1) - radiusX*radiusX*radiusY*radiusY;
+		p1 = radiusY*radiusY*(x*x + x+0.25f) + radiusX*radiusX*(y - 1)*(y-1) - radiusX*radiusX*radiusY*radiusY;
 		for (y--; y > 0; y--)
 		{
 			if (p1 <= 0)
