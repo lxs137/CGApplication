@@ -6,6 +6,7 @@
 #include "circle.h"
 #include "ellipse.h"
 #include "bezier.h"
+#include "splineCurve.h"
 #include "windowSetting.h"
 using namespace std;
 
@@ -27,6 +28,7 @@ line myLine;
 circle myCircle;
 ellipse myEllipse;
 bezier myBezier;
+spline mySpline;
 
 GLuint initVAO();
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -84,7 +86,7 @@ int main()
 		glUseProgram(myShaderProgram);
 		glBindVertexArray(myVAO);
 		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
-		glDrawArrays(GL_POINTS, 0, myBezier.getPointsNum());
+		glDrawArrays(GL_POINTS, 0, mySpline.getPointsNum());
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
@@ -121,11 +123,18 @@ GLuint initVAO()
 	//glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
 	//	&(myEllipse.getEllipseVertics())[0], GL_STATIC_DRAW);
 
-	myBezier = bezier(glm::ivec3(-280, -200, 0), glm::ivec3(-30, 250, 0),
+	//myBezier = bezier(glm::ivec3(-280, -200, 0), glm::ivec3(100, 130, 0),
+	//	glm::ivec3(100, 130, 0), glm::ivec3(300, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
+	//myBezier.bezierUseLine();
+	//glBufferData(GL_ARRAY_BUFFER, myBezier.getPointsNum()*myBezier.getPointSize(),
+	//	&(myBezier.getBezierVertics())[0], GL_STATIC_DRAW);
+
+	mySpline = spline(glm::ivec3(-280, -200, 0), glm::ivec3(-100, 250, 0),
 		glm::ivec3(100, 130, 0), glm::ivec3(300, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
-	myBezier.bezierUseLine();
-	glBufferData(GL_ARRAY_BUFFER, myBezier.getPointsNum()*myBezier.getPointSize(),
-		&(myBezier.getBezierVertics())[0], GL_STATIC_DRAW);
+	mySpline.splineUseLine();
+	mySpline.showControlPoints();
+	glBufferData(GL_ARRAY_BUFFER, mySpline.getPointsNum()*mySpline.getPointSize(),
+		&(mySpline.getsplineVertics())[0], GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);

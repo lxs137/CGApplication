@@ -79,6 +79,7 @@
     <ClInclude Include="line.h" />
     <ClInclude Include="ellipse.h" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="splineCurve.h" />
     <ClInclude Include="windowSetting.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

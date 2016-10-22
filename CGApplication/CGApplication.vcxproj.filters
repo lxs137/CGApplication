@@ -46,5 +46,8 @@
     <ClInclude Include="bezier.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="splineCurve.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
