@@ -7,6 +7,7 @@
 #include "ellipse.h"
 #include "bezier.h"
 #include "splineCurve.h"
+#include "polygon.h"
 #include "windowSetting.h"
 using namespace std;
 
@@ -29,6 +30,7 @@ circle myCircle;
 ellipse myEllipse;
 bezier myBezier;
 spline mySpline;
+polygon myPolygon;
 
 GLuint initVAO();
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -86,7 +88,7 @@ int main()
 		glUseProgram(myShaderProgram);
 		glBindVertexArray(myVAO);
 		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
-		glDrawArrays(GL_POINTS, 0, mySpline.getPointsNum());
+		glDrawArrays(GL_POINTS, 0, myPolygon.getPointsNum());
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
@@ -111,30 +113,40 @@ GLuint initVAO()
 	////myLine.lineUseBresenham();
 	//myLine.lineUseDDA();
 	//glBufferData(GL_ARRAY_BUFFER,myLine.getPointsNum()*myLine.getPointSize(), 
-	//	&(myLine.getLineVertics())[0], GL_STATIC_DRAW);
+	//	&(myLine.getLinePixels())[0], GL_STATIC_DRAW);
 
 	//myCircle=circle(glm::ivec3(0,0,0),200,glm::vec3(1.0f,0.0f,0.0f));
 	//myCircle.circleUseMidpoint();
 	//glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
-	//	&(myCircle.getCircleVertics())[0], GL_STATIC_DRAW);
+	//	&(myCircle.getCirclePixels())[0], GL_STATIC_DRAW);
 
 	//myEllipse = ellipse(glm::ivec3(50, -80, 0), 200, 100, glm::vec3(1.0f,0.0f,0.0f));
 	//myEllipse.ellipseUseMidpoint();
 	//glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
-	//	&(myEllipse.getEllipseVertics())[0], GL_STATIC_DRAW);
+	//	&(myEllipse.getEllipsePixels())[0], GL_STATIC_DRAW);
 
 	//myBezier = bezier(glm::ivec3(-280, -200, 0), glm::ivec3(100, 130, 0),
 	//	glm::ivec3(100, 130, 0), glm::ivec3(300, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
 	//myBezier.bezierUseLine();
 	//glBufferData(GL_ARRAY_BUFFER, myBezier.getPointsNum()*myBezier.getPointSize(),
-	//	&(myBezier.getBezierVertics())[0], GL_STATIC_DRAW);
+	//	&(myBezier.getBezierPixels())[0], GL_STATIC_DRAW);
 
-	mySpline = spline(glm::ivec3(-280, -200, 0), glm::ivec3(-100, 250, 0),
-		glm::ivec3(100, 130, 0), glm::ivec3(300, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
-	mySpline.splineUseLine();
-	mySpline.showControlPoints();
-	glBufferData(GL_ARRAY_BUFFER, mySpline.getPointsNum()*mySpline.getPointSize(),
-		&(mySpline.getsplineVertics())[0], GL_STATIC_DRAW);
+	//mySpline = spline(glm::ivec3(-280, -200, 0), glm::ivec3(-100, 250, 0),
+	//	glm::ivec3(100, 130, 0), glm::ivec3(300, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
+	//mySpline.splineUseLine();
+	//mySpline.showControlPoints();
+	//glBufferData(GL_ARRAY_BUFFER, mySpline.getPointsNum()*mySpline.getPointSize(),
+	//	&(mySpline.getSplinePixels())[0], GL_STATIC_DRAW);
+
+	vector<glm::ivec3> verticsPoint;
+	verticsPoint.push_back(glm::ivec3(-280, -200, 0));
+	verticsPoint.push_back(glm::ivec3(-100, 130, 0));
+	verticsPoint.push_back(glm::ivec3(300, 100, 0));
+	verticsPoint.push_back(glm::ivec3(300, -200, 0));
+	myPolygon = polygon(verticsPoint, glm::vec3(1.0f, 0.0f, 0.0f));
+	myPolygon.polygonUseLine();
+	glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+		&(myPolygon.getPolygonPixels())[0], GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);

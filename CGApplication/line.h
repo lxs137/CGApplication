@@ -15,22 +15,21 @@ class line
 		GLint pointsNum;
 		//each points' space in memory
 		GLint pointSize;
-		vector<GLfloat> vertics;
+		vector<GLfloat> pixels;
 		GLint x1, y1, x2, y2;
 		glm::vec3 color;
 		void pushPoint(glm::ivec3 pointPosition)
 		{
-			vertics.push_back(pointPosition.x  / (GLfloat)WIDTH_HALF);
-			vertics.push_back(pointPosition.y  / (GLfloat)HEIGHT_HALF);
-			vertics.push_back((GLfloat)pointPosition.z);
-			vertics.push_back(color.x);
-			vertics.push_back(color.y);
-			vertics.push_back(color.z);
+			pixels.push_back(pointPosition.x  / (GLfloat)WIDTH_HALF);
+			pixels.push_back(pointPosition.y  / (GLfloat)HEIGHT_HALF);
+			pixels.push_back((GLfloat)pointPosition.z);
+			pixels.push_back(color.x);
+			pixels.push_back(color.y);
+			pixels.push_back(color.z);
 			pointsNum++;
 		}
 		void lineSlope1()
 		{
-			vector<glm::ivec3> pointsPosition;
 			if ((x2 - x1)*(y2 - y1) > 0)
 			{
 				int dx = abs(x2 - x1);
@@ -48,6 +47,15 @@ class line
 					pushPoint(glm::ivec3(x1 + i, y1 - i, 0));
 			}
 			return;
+		}
+		void lineVertical()
+		{
+			if (y1>y2)
+				swap(y1, y2);
+			for (GLint y = y1; y <= y2; y++)
+			{
+				pushPoint(glm::ivec3(x1,y,0));
+			}
 		}
 	public:
 		line()
@@ -70,9 +78,9 @@ class line
 			this->color = lineColor;
 			this->pointSize = 6 * sizeof(GLfloat);
 		}
-		vector<GLfloat> getLineVertics()
+		vector<GLfloat> getLinePixels()
 		{
-			return this->vertics;
+			return this->pixels;
 		}
 		GLint getPointsNum()
 		{
@@ -89,12 +97,13 @@ class line
 				lineSlope1();
 				return;
 			}
-			vector<glm::ivec3> pointsPosition;
 			if (x1 > x2)
 			{
 				swap(x1, x2);
 				swap(y1, y2);
 			}
+			else if (x1 == x2)
+				lineVertical();
 			GLfloat m = ((GLfloat)(y2 - y1)) / (x2 - x1);
 			if (m > 0 && m < 1)
 			{
@@ -119,7 +128,7 @@ class line
 					}				
 				pushPoint(glm::ivec3(x2, y2, 0));
 			}
-			else if (m > -1 && m < 0)
+			else if (m > -1 && m <= 0)
 			{
 				y1=-y1,y2=-y2;
 				GLint dertX = x2 - x1, dertY = y2 - y1, dert2Y = dertY + dertY,
@@ -212,7 +221,6 @@ class line
 				lineSlope1();
 				return;
 			}
-			vector<glm::ivec3> pointsPosition;
 			GLfloat x_dert, y_dert;
 			GLfloat m = ((GLfloat)(y2 - y1)) / (x2 - x1);
 			if (m > 0)

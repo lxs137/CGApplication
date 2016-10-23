@@ -16,15 +16,15 @@ private:
 	GLint pointsNum;
 	//each points' space in memory
 	GLint pointSize;
-	vector<GLfloat> vertics;
+	vector<GLfloat> pixels;
 	GLint x1, y1, x2, y2, x3, y3, x4, y4;
 	glm::vec3 color;
 	void pushLine(glm::ivec3 startPoint, glm::ivec3 endPoint)
 	{
 		line tempLine = line(startPoint, endPoint, color);
 		tempLine.lineUseBresenham();	
-		vector<GLfloat> verticesLine = tempLine.getLineVertics();
-		vertics.insert(vertics.end(), verticesLine.begin(),verticesLine.end());
+		vector<GLfloat> verticesLine = tempLine.getLinePixels();
+		pixels.insert(pixels.end(), verticesLine.begin(),verticesLine.end());
 		pointsNum += tempLine.getPointsNum();
 	}
 public:
@@ -44,9 +44,9 @@ public:
 		this->y1 = p1.y, this->y2 = p2.y, this->y3 = p3.y, this->y4 = p4.y;
 		this->color = bezierColor;
 	}
-	vector<GLfloat> getBezierVertics()
+	vector<GLfloat> getBezierPixels()
 	{
-		return this->vertics;
+		return this->pixels;
 	}
 	GLint getPointsNum()
 	{
@@ -58,7 +58,7 @@ public:
 	}
 	void bezierUseLine()
 	{
-		vertics.clear();
+		pixels.clear();
 		glm::ivec3 startPoint=glm::ivec3(x1,y1,0),endPoint;
 		GLfloat a1, a2, a3, a4, x, y;
 		for (GLfloat t = BEZIER_DERT_T; t <= 1.0f; t += BEZIER_DERT_T)

@@ -49,5 +49,8 @@
     <ClInclude Include="splineCurve.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="polygon.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

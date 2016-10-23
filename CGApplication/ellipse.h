@@ -15,39 +15,39 @@ private:
 	GLint pointsNum;
 	//each points' space in memory
 	GLint pointSize;
-	vector<GLfloat> vertics;
+	vector<GLfloat> pixels;
 	GLint centerX, centerY;
 	GLint radiusX, radiusY;
 	glm::vec3 color;
 	void pushSymmetryPoint(glm::ivec3 pointPosition)
 	{
-		vertics.push_back((pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
-		vertics.push_back((pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
-		vertics.push_back((GLfloat)pointPosition.z);
-		vertics.push_back(color.x);
-		vertics.push_back(color.y);
-		vertics.push_back(color.z);
+		pixels.push_back((pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
+		pixels.push_back((pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
+		pixels.push_back((GLfloat)pointPosition.z);
+		pixels.push_back(color.x);
+		pixels.push_back(color.y);
+		pixels.push_back(color.z);
 
-		vertics.push_back((-pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
-		vertics.push_back((pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
-		vertics.push_back((GLfloat)pointPosition.z);
-		vertics.push_back(color.x);
-		vertics.push_back(color.y);
-		vertics.push_back(color.z);
+		pixels.push_back((-pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
+		pixels.push_back((pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
+		pixels.push_back((GLfloat)pointPosition.z);
+		pixels.push_back(color.x);
+		pixels.push_back(color.y);
+		pixels.push_back(color.z);
 
-		vertics.push_back((pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
-		vertics.push_back((-pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
-		vertics.push_back((GLfloat)pointPosition.z);
-		vertics.push_back(color.x);
-		vertics.push_back(color.y);
-		vertics.push_back(color.z);
+		pixels.push_back((pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
+		pixels.push_back((-pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
+		pixels.push_back((GLfloat)pointPosition.z);
+		pixels.push_back(color.x);
+		pixels.push_back(color.y);
+		pixels.push_back(color.z);
 
-		vertics.push_back((-pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
-		vertics.push_back((-pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
-		vertics.push_back((GLfloat)pointPosition.z);
-		vertics.push_back(color.x);
-		vertics.push_back(color.y);
-		vertics.push_back(color.z);
+		pixels.push_back((-pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
+		pixels.push_back((-pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
+		pixels.push_back((GLfloat)pointPosition.z);
+		pixels.push_back(color.x);
+		pixels.push_back(color.y);
+		pixels.push_back(color.z);
 
 		this->pointsNum += 4;
 	}
@@ -74,7 +74,7 @@ public:
 	}
 	void ellipseUseMidpoint()
 	{
-		vertics.clear();
+		pixels.clear();
 		GLint x = 0, y = radiusY;
 		GLfloat p1 = radiusY*radiusY - radiusX*radiusX*radiusY + radiusX*radiusX*0.25f;
 		pushSymmetryPoint(glm::ivec3(0,radiusY,0));
@@ -110,9 +110,9 @@ public:
 		}
 		pushSymmetryPoint(glm::ivec3(radiusX, 0, 0));
 	}
-	vector<GLfloat> getEllipseVertics()
+	vector<GLfloat> getEllipsePertics()
 	{
-		return this->vertics;
+		return this->pixels;
 	}
 	GLint getPointsNum()
 	{

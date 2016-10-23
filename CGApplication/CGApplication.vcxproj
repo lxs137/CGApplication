@@ -78,6 +78,7 @@
     <ClInclude Include="circle.h" />
     <ClInclude Include="line.h" />
     <ClInclude Include="ellipse.h" />
+    <ClInclude Include="polygon.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="splineCurve.h" />
     <ClInclude Include="windowSetting.h" />
