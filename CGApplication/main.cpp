@@ -139,12 +139,12 @@ GLuint initVAO()
 	//	&(mySpline.getSplinePixels())[0], GL_STATIC_DRAW);
 
 	vector<glm::ivec3> verticsPoint;
-	verticsPoint.push_back(glm::ivec3(-280, -200, 0));
-	verticsPoint.push_back(glm::ivec3(-100, 130, 0));
-	verticsPoint.push_back(glm::ivec3(300, 100, 0));
-	verticsPoint.push_back(glm::ivec3(300, -200, 0));
+	verticsPoint.push_back(glm::ivec3(-30, -20, 0));
+	verticsPoint.push_back(glm::ivec3(-10, 20, 0));
+	verticsPoint.push_back(glm::ivec3(30, 0, 0));
 	myPolygon = polygon(verticsPoint, glm::vec3(1.0f, 0.0f, 0.0f));
 	myPolygon.polygonUseLine();
+	myPolygon.fillPolygonScanLine(glm::vec3(0.0f,1.0f,0.0f));
 	glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
 		&(myPolygon.getPolygonPixels())[0], GL_STATIC_DRAW);
 
