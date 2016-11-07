@@ -110,7 +110,7 @@ public:
 		}
 		pushSymmetryPoint(glm::ivec3(radiusX, 0, 0));
 	}
-	vector<GLfloat> getEllipsePertics()
+	vector<GLfloat> getEllipsePixels()
 	{
 		return this->pixels;
 	}

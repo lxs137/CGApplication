@@ -26,6 +26,7 @@
     <None Include="first.frag">
       <Filter>源文件</Filter>
     </None>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.h">

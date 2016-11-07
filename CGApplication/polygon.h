@@ -11,6 +11,7 @@
 #include <list>
 using namespace std;
 
+
 struct Edge
 {
 	GLint yMax;
@@ -73,12 +74,7 @@ private:
 					edge.yMax = verticNext.y - 1;
 				else
 					edge.yMax = verticNext.y;
-				if (SET[verticNow.y - y0].size()==0)
-					SET[verticNow.y - y0].push_back(edge);
-				else if (SET[verticNow.y - y0].begin()->x > edge.x)
-					SET[verticNow.y - y0].push_front(edge);
-				else 
-					SET[verticNow.y - y0].push_back(edge);
+				pushSETEdge(SET[verticNow.y - y0], edge);
 			}
 			else
 			{
@@ -89,13 +85,25 @@ private:
 					edge.yMax = verticNow.y - 1;
 				else
 					edge.yMax = verticNow.y;
-				if (SET[verticNext.y - y0].size()==0)
-					SET[verticNext.y - y0].push_front(edge);
-				else if (SET[verticNext.y - y0].begin()->x > edge.x)
-					SET[verticNext.y - y0].push_front(edge);
-				else
-					SET[verticNext.y - y0].push_back(edge);
+				pushSETEdge(SET[verticNext.y - y0], edge);
 			}
+		}
+	}
+	void pushSETEdge(list<Edge> &SETi,Edge &edge)
+	{
+		if (SETi.size() == 0)
+			SETi.push_back(edge);
+		else
+		{
+			for (list<Edge>::iterator ilist = SETi.begin(); ilist != SETi.end(); ilist++)
+			{
+				if (edge.x < ilist->x || (fabs(edge.x - ilist->x) < 1e-5 && edge.m_1 < ilist->m_1))
+				{
+					SETi.insert(ilist, edge);
+					return;
+				}
+			}
+			SETi.push_back(edge);
 		}
 	}
 	void initActiveEdgeTable(vector<list<Edge>> &SET, vector<list<Edge>> &AET, GLint yMin, GLint yMax)
@@ -116,6 +124,15 @@ private:
 		{
 			itempList->x += itempList->m_1;
 		}
+		for (itempList = tempList.begin(); itempList != tempList.end();)
+		{
+			if (itempList->yMax < y + yMin)
+			{
+				tempList.erase(itempList++);
+			}
+			else
+				itempList++;
+		}
 		if (SET[y].size() == 0)
 		{
 			AET[y].insert(AET[y].end(), tempList.begin(), tempList.end());
@@ -125,15 +142,6 @@ private:
 		{
 			if (ilist->yMax < y + yMin)
 				continue;
-			for (itempList = tempList.begin(); itempList != tempList.end();)
-			{
-				if (itempList->yMax < y + yMin)
-				{
-					tempList.erase(itempList++);
-				}
-				else
-					itempList++;
-			}
 			for (itempList = tempList.begin(); itempList != tempList.end(); itempList++)
 			{
 				if (ilist->x < itempList->x)
@@ -177,8 +185,7 @@ private:
 			GLint n = ((GLint)listEdge.size()) / 2;
 			for (GLint i = 0; i < n; i++)
 			{
-				cout << ilist1->x << "   " << ilist2->x << "   " << (j + yMin) << endl;
-				pushInsideScanLine(ilist1->x, ilist2->x, j + yMin);
+				pushInsideScanLine(ilist1->x+1, ilist2->x-1, j + yMin);
 				if (i + 1 < n)
 				{
 					ilist1++, ilist1++;

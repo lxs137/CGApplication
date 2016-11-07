@@ -82,7 +82,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(myShaderProgram);
@@ -131,7 +131,7 @@ GLuint initVAO()
 	//glBufferData(GL_ARRAY_BUFFER, myBezier.getPointsNum()*myBezier.getPointSize(),
 	//	&(myBezier.getBezierPixels())[0], GL_STATIC_DRAW);
 
-	//mySpline = spline(glm::ivec3(-280, -200, 0), glm::ivec3(-100, 250, 0),
+	//mySpline = spline(glm::ivec3(-280, -200, 0), glm::ivec3(-100, 130, 0),
 	//	glm::ivec3(100, 130, 0), glm::ivec3(300, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
 	//mySpline.splineUseLine();
 	//mySpline.showControlPoints();
@@ -139,12 +139,12 @@ GLuint initVAO()
 	//	&(mySpline.getSplinePixels())[0], GL_STATIC_DRAW);
 
 	vector<glm::ivec3> verticsPoint;
-	verticsPoint.push_back(glm::ivec3(-30, -20, 0));
-	verticsPoint.push_back(glm::ivec3(-10, 20, 0));
-	verticsPoint.push_back(glm::ivec3(30, 0, 0));
-	myPolygon = polygon(verticsPoint, glm::vec3(1.0f, 0.0f, 0.0f));
+	verticsPoint.push_back(glm::ivec3(-60, 0, 0));
+	verticsPoint.push_back(glm::ivec3(20, 40, 0));
+	verticsPoint.push_back(glm::ivec3(30, -20, 0));
+	myPolygon = polygon(verticsPoint, glm::vec3(0.0f, 0.0f, 0.0f));
 	myPolygon.polygonUseLine();
-	myPolygon.fillPolygonScanLine(glm::vec3(0.0f,1.0f,0.0f));
+	myPolygon.fillPolygonScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
 	glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
 		&(myPolygon.getPolygonPixels())[0], GL_STATIC_DRAW);
 
