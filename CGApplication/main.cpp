@@ -8,6 +8,7 @@
 #include "bezier.h"
 #include "splineCurve.h"
 #include "polygon.h"
+#include "textureManager.h"
 #include "windowSetting.h"
 using namespace std;
 
@@ -19,11 +20,12 @@ using namespace std;
 #include <glm\gtc\type_ptr.hpp>
 
 const GLfloat PI = 3.14159f;
-//GLfloat vertics[] = {
-//	10.0f / WIDTH, 20.0f / HEIGHT, 0.0f, 1.0f, 0.0f, 0.0f,
-//	-50.0f / WIDTH, 30.0f / HEIGHT, 0.0f, 0.0f, 1.0f, 0.0f,
-//	30.0f / WIDTH, -30.0f / HEIGHT, 0.0f, 0.0f, 0.0f, 1.0f
-//};
+GLfloat vertices[] = {
+	// Positions // Colors // Texture
+	0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // Top Right
+	0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // Bottom Right
+	-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // Bottom Left
+};
 
 line myLine;
 circle myCircle;
@@ -31,41 +33,20 @@ ellipse myEllipse;
 bezier myBezier;
 spline mySpline;
 polygon myPolygon;
+TextureManager *myTextureManager;
 
+GLFWwindow *window;
+
+void initWindow();  //initGLFWwindow
+void loadImageAsTexture(unsigned int testTextureID);
 GLuint initVAO();
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 glm::mat4 getTransformMatrix();
 
 int main()
 {
-	// Init GLFW
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
-	if (window == nullptr)
-	{
-		cout << "Failed to create GLFW window" << endl;
-		glfwTerminate();
-		return -1;
-	}
-	glfwSetKeyCallback(window, key_callback);
-	glfwMakeContextCurrent(window);
-
-	glewExperimental = GL_TRUE;
-	if (glewInit() != GLEW_OK)
-	{
-		cout << "Failed to initialize GLEW" << endl;
-		return -1;
-	}
-
-	int width, height;
-	glfwGetFramebufferSize(window, &width, &height);
-	glViewport(0, 0, width, height);
-
+	initWindow();
+	
 	//set shader program
 	GLuint myShaderProgram;
 	shader *myShader = new shader("first.vert", "first.frag");
@@ -75,6 +56,10 @@ int main()
 	GLuint myVAO;
 	myVAO = initVAO();
 
+	unsigned int testTextureID=1;
+	myTextureManager = new TextureManager();
+	loadImageAsTexture(testTextureID);
+
 	//set transform
 	GLuint transformLocation = glGetUniformLocation(myShader->shaderProgram, "transform");
 	glm::mat4 transformMat = getTransformMatrix();
@@ -82,13 +67,14 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(myShaderProgram);
+		myTextureManager->bindTexture(testTextureID);
 		glBindVertexArray(myVAO);
 		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
-		glDrawArrays(GL_POINTS, 0, myPolygon.getPointsNum());
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
@@ -99,7 +85,45 @@ int main()
 	return 0;
 }
 
+void initWindow()
+{
+	// Init GLFW
+	glfwInit();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
+	window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
+	if (window == nullptr)
+	{
+		cout << "Failed to create GLFW window" << endl;
+		glfwTerminate();
+		return;
+	}
+	glfwSetKeyCallback(window, key_callback);
+	glfwMakeContextCurrent(window);
+
+	glewExperimental = GL_TRUE;
+	if (glewInit() != GLEW_OK)
+	{
+		cout << "Failed to initialize GLEW" << endl;
+		return;
+	}
+
+	int width, height;
+	glfwGetFramebufferSize(window, &width, &height);
+	glViewport(0, 0, width, height);
+
+}
+void loadImageAsTexture(unsigned int testTextureID)
+{
+	char filename[10] = "logo.jpg";
+	myTextureManager->loadTexture(filename, testTextureID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
 GLuint initVAO()
 {
 	GLuint VBO, VAO;
@@ -138,20 +162,25 @@ GLuint initVAO()
 	//glBufferData(GL_ARRAY_BUFFER, mySpline.getPointsNum()*mySpline.getPointSize(),
 	//	&(mySpline.getSplinePixels())[0], GL_STATIC_DRAW);
 
-	vector<glm::ivec3> verticsPoint;
-	verticsPoint.push_back(glm::ivec3(-60, 0, 0));
-	verticsPoint.push_back(glm::ivec3(20, 40, 0));
-	verticsPoint.push_back(glm::ivec3(30, -20, 0));
-	myPolygon = polygon(verticsPoint, glm::vec3(0.0f, 0.0f, 0.0f));
-	myPolygon.polygonUseLine();
-	myPolygon.fillPolygonScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
-	glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
-		&(myPolygon.getPolygonPixels())[0], GL_STATIC_DRAW);
+	//vector<glm::ivec3> verticsPoint;
+	//verticsPoint.push_back(glm::ivec3(-60, 0, 0));
+	//verticsPoint.push_back(glm::ivec3(20, 40, 0));
+	//verticsPoint.push_back(glm::ivec3(30, -20, 0));
+	//myPolygon = polygon(verticsPoint, glm::vec3(0.0f, 0.0f, 0.0f));
+	//myPolygon.polygonUseLine();
+	//myPolygon.fillPolygonScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
+	//glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+	//	&(myPolygon.getPolygonPixels())[0], GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
+
 	//unbind VBO&VAO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);

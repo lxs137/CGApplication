@@ -53,5 +53,8 @@
     <ClInclude Include="polygon.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="textureManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
