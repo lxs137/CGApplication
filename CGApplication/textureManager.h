@@ -1,0 +1,76 @@
+#ifndef TEXTUREMANAGER_H
+#define TEXTUREMANAGER_H
+
+#define GLEW_STATIC
+#include <gl\glew.h>
+#include <map>
+#include <SOIL.h>
+
+class TextureManager
+{
+public:
+	~TextureManager()
+	{		
+		unloadAllTexture();
+	}
+	bool loadTexture(const char *filename,const unsigned int textureID,GLenum image_format=GL_RGB,
+		GLint internal_format=GL_RGB,GLint level=0,GLint border=0);
+	bool unloadTexture(const unsigned int textureID)
+	{
+		if (myTextureMap.find(textureID) != myTextureMap.end())
+		{
+			glDeleteTextures(1, &(myTextureMap[textureID]));
+			myTextureMap.erase(textureID);
+			return true;
+		}
+		else
+			return false;
+	}
+	bool bindTexture(const unsigned int textureID)
+	{
+		if (myTextureMap.find(textureID) != myTextureMap.end())
+		{
+			glBindTexture(GL_TEXTURE_2D, myTextureMap[textureID]);
+			return true;
+		}
+		else
+			return false;
+	}
+	void unloadAllTexture()
+	{
+		std::map<unsigned int, GLuint>::iterator mapi;
+		for (mapi = myTextureMap.begin(); mapi != myTextureMap.end(); )
+			unloadTexture(mapi->first);
+		myTextureMap.clear();
+	}
+private:
+	std::map<unsigned int, GLuint> myTextureMap;
+};
+
+bool TextureManager::loadTexture(const char* filename, const unsigned int textureID, 
+	GLenum image_format, GLint internal_format, GLint level, GLint border)
+{
+	unsigned char *imageBits(0);
+	int width = 0, height = 0;
+	GLuint glTexture;
+	
+	if (myTextureMap.find(textureID) != myTextureMap.end())
+		glDeleteTextures(1, &(myTextureMap[textureID]));
+
+	glGenTextures(1, &glTexture);
+	myTextureMap[textureID]=glTexture;
+	glBindTexture(GL_TEXTURE_2D, glTexture);
+
+	imageBits=SOIL_load_image(filename, &width, &height, 0, SOIL_LOAD_RGB);
+	if (imageBits == 0 || width == 0 || height == 0)
+		return false;
+
+	glTexImage2D(GL_TEXTURE_2D, level, internal_format, width, height, border, image_format, GL_UNSIGNED_BYTE, imageBits);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	SOIL_free_image_data(imageBits);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return true;
+}
+
+#endif 
