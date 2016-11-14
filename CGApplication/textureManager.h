@@ -57,16 +57,14 @@ bool TextureManager::loadTexture(const char* filename, const unsigned int textur
 	if (myTextureMap.find(textureID) != myTextureMap.end())
 		glDeleteTextures(1, &(myTextureMap[textureID]));
 
-	glGenTextures(1, &glTexture);
-	myTextureMap[textureID]=glTexture;
-	glBindTexture(GL_TEXTURE_2D, glTexture);
-
-	imageBits=SOIL_load_image(filename, &width, &height, 0, SOIL_LOAD_RGB);
+	glTexture=SOIL_load_OGL_texture(filename, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y|SOIL_FLAG_POWER_OF_TWO);
+	myTextureMap[textureID] = glTexture;
+	/*imageBits=SOIL_load_image(filename, &width, &height, 0, SOIL_LOAD_RGB);
 	if (imageBits == 0 || width == 0 || height == 0)
 		return false;
 
 	glTexImage2D(GL_TEXTURE_2D, level, internal_format, width, height, border, image_format, GL_UNSIGNED_BYTE, imageBits);
-	glGenerateMipmap(GL_TEXTURE_2D);
+	glGenerateMipmap(GL_TEXTURE_2D);*/
 	SOIL_free_image_data(imageBits);
 	glBindTexture(GL_TEXTURE_2D, 0);
 

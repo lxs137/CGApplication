@@ -118,7 +118,13 @@ void initWindow()
 }
 void loadImageAsTexture(unsigned int testTextureID)
 {
-	char filename[10] = "logo.jpg";
+	//GLint n, i;
+	//glGetIntegerv(GL_NUM_EXTENSIONS, &n);
+	//for (i = 0; i < n; i++) {
+	//	cout << glGetStringi(GL_EXTENSIONS, i) << endl;
+	//}
+	//cout << strstr("asd", "asd") << endl;
+	char filename[40] = "E:\\CGApplication\\img_test.png";
 	myTextureManager->loadTexture(filename, testTextureID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
