@@ -18,38 +18,60 @@ private:
 	vector<GLfloat> pixels;
 	GLint centerX, centerY;
 	GLint radiusX, radiusY;
-	glm::vec3 color;
+	glm::vec3 lineColor;
+	glm::vec3 fillColor;
 	void pushSymmetryPoint(glm::ivec3 pointPosition)
 	{
 		pixels.push_back((pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
 		pixels.push_back((pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
 		pixels.push_back((GLfloat)pointPosition.z);
-		pixels.push_back(color.x);
-		pixels.push_back(color.y);
-		pixels.push_back(color.z);
+		pixels.push_back(lineColor.x);
+		pixels.push_back(lineColor.y);
+		pixels.push_back(lineColor.z);
 
 		pixels.push_back((-pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
 		pixels.push_back((pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
 		pixels.push_back((GLfloat)pointPosition.z);
-		pixels.push_back(color.x);
-		pixels.push_back(color.y);
-		pixels.push_back(color.z);
+		pixels.push_back(lineColor.x);
+		pixels.push_back(lineColor.y);
+		pixels.push_back(lineColor.z);
 
 		pixels.push_back((pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
 		pixels.push_back((-pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
 		pixels.push_back((GLfloat)pointPosition.z);
-		pixels.push_back(color.x);
-		pixels.push_back(color.y);
-		pixels.push_back(color.z);
+		pixels.push_back(lineColor.x);
+		pixels.push_back(lineColor.y);
+		pixels.push_back(lineColor.z);
 
 		pixels.push_back((-pointPosition.x + centerX) / (GLfloat)WIDTH_HALF);
 		pixels.push_back((-pointPosition.y + centerY) / (GLfloat)HEIGHT_HALF);
 		pixels.push_back((GLfloat)pointPosition.z);
-		pixels.push_back(color.x);
-		pixels.push_back(color.y);
-		pixels.push_back(color.z);
+		pixels.push_back(lineColor.x);
+		pixels.push_back(lineColor.y);
+		pixels.push_back(lineColor.z);
 
 		this->pointsNum += 4;
+	}
+	void pushFillScanLine(GLint xLeft, GLint xRight, GLint yValue)
+	{
+		xLeft += centerX;
+		xRight += centerX;
+		yValue += centerY;
+		for (GLint k = xLeft + 1; k <= xRight - 1; k++)
+		{
+			pixels.push_back(k / (GLfloat)WIDTH_HALF);
+			pixels.push_back((yValue) / (GLfloat)HEIGHT_HALF);
+			pixels.push_back((GLfloat)0);
+			pixels.push_back(fillColor.x);
+			pixels.push_back(fillColor.y);
+			pixels.push_back(fillColor.z);
+			pointsNum++;
+		}
+	}
+	inline void clearPixels()
+	{
+		pointsNum = 0;
+		pixels.clear();
 	}
 public:
 	ellipse()
@@ -60,7 +82,8 @@ public:
 		this->centerY = 0;
 		this->radiusX = 0;
 		this->radiusY = 0;
-		this->color = glm::vec3(0.0f, 0.0f, 0.0f);
+		this->lineColor = glm::vec3(0.0f, 0.0f, 0.0f);
+		this->fillColor = glm::vec3(0.0f, 0.0f, 0.0f);
 	}
 	ellipse(glm::ivec3 center,GLint rx,GLint ry,glm::vec3 ellipseColor)
 	{
@@ -70,15 +93,28 @@ public:
 		this->centerY = center.y;
 		this->radiusX = rx;
 		this->radiusY = ry;
-		this->color = ellipseColor;
+		this->lineColor = ellipseColor;
+		this->fillColor = glm::vec3(0.0f, 0.0f, 0.0f);
+	}
+	vector<GLfloat> getEllipsePixels()
+	{
+		return this->pixels;
+	}
+	GLint getPointsNum()
+	{
+		return this->pointsNum;
+	}
+	GLint getPointSize()
+	{
+		return this->pointSize;
 	}
 	void ellipseUseMidpoint()
 	{
-		pixels.clear();
+		clearPixels();
 		GLint x = 0, y = radiusY;
 		GLfloat p1 = radiusY*radiusY - radiusX*radiusX*radiusY + radiusX*radiusX*0.25f;
-		pushSymmetryPoint(glm::ivec3(0,radiusY,0));
-		do 
+		pushSymmetryPoint(glm::ivec3(0, radiusY, 0));
+		do
 		{
 			x++;
 			if (p1 <= 0)
@@ -92,8 +128,8 @@ public:
 				pushSymmetryPoint(glm::ivec3(x, y, 0));
 				p1 = p1 + 2 * radiusY*radiusY*x - 2 * radiusX*radiusX*y + radiusY*radiusY;
 			}
-		} while (radiusY*radiusY*x<=radiusX*radiusX*y);
-		p1 = radiusY*radiusY*(x*x + x+0.25f) + radiusX*radiusX*(y - 1)*(y-1) - radiusX*radiusX*radiusY*radiusY;
+		} while (radiusY*radiusY*x <= radiusX*radiusX*y);
+		p1 = radiusY*radiusY*(x*x + x + 0.25f) + radiusX*radiusX*(y - 1)*(y - 1) - radiusX*radiusX*radiusY*radiusY;
 		for (y--; y > 0; y--)
 		{
 			if (p1 <= 0)
@@ -110,17 +146,50 @@ public:
 		}
 		pushSymmetryPoint(glm::ivec3(radiusX, 0, 0));
 	}
-	vector<GLfloat> getEllipsePixels()
+	void fillEllipseScanLine(glm::vec3 fillColor)
 	{
-		return this->pixels;
-	}
-	GLint getPointsNum()
-	{
-		return this->pointsNum;
-	}
-	GLint getPointSize()
-	{
-		return this->pointSize;
+		clearPixels();
+		this->fillColor = fillColor;
+		GLint x = 0, y = radiusY;
+		GLfloat p1 = radiusY*radiusY - radiusX*radiusX*radiusY + radiusX*radiusX*0.25f;
+		pushSymmetryPoint(glm::ivec3(0, radiusY, 0));
+		do
+		{
+			x++;
+			if (p1 <= 0)
+			{
+				pushSymmetryPoint(glm::ivec3(x, y, 0));
+				p1 = p1 + 2 * radiusY*radiusY*x + radiusY*radiusY;
+			}
+			else
+			{
+				y = y - 1;
+				pushSymmetryPoint(glm::ivec3(x, y, 0));
+				p1 = p1 + 2 * radiusY*radiusY*x - 2 * radiusX*radiusX*y + radiusY*radiusY;
+			}
+			pushFillScanLine(-x, x, y);
+			pushFillScanLine(-x, x, -y);
+		} while (radiusY*radiusY*x <= radiusX*radiusX*y);
+		p1 = radiusY*radiusY*(x*x + x + 0.25f) + radiusX*radiusX*(y - 1)*(y - 1) - radiusX*radiusX*radiusY*radiusY;
+		for (y--; y > 0; y--)
+		{
+			if (p1 <= 0)
+			{
+				x = x + 1;
+				pushSymmetryPoint(glm::ivec3(x, y, 0));
+				p1 = p1 + 2 * radiusY*radiusY*x - 2 * radiusX*radiusX*y + radiusX*radiusX;
+			}
+			else
+			{
+				pushSymmetryPoint(glm::ivec3(x, y, 0));
+				p1 = p1 - 2 * radiusX*radiusX*y + radiusX*radiusX;
+			}
+			pushFillScanLine(-x, x, y);
+			pushFillScanLine(-x, x, -y);
+		}
+		pushSymmetryPoint(glm::ivec3(radiusX, 0, 0));
+		pushFillScanLine(-radiusX, radiusX, 0);
+
 	}
 };
 #endif 

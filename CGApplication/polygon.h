@@ -165,14 +165,6 @@ private:
 		}
 		AET[y].insert(AET[y].end(), tempList.begin(), tempList.end());
 	}
-	void pushLine(glm::ivec3 startPoint, glm::ivec3 endPoint)
-	{
-		line tempLine = line(startPoint, endPoint, lineColor);
-		tempLine.lineUseBresenham();
-		vector<GLfloat> pixelsLine = tempLine.getLinePixels();
-		pixels.insert(pixels.end(), pixelsLine.begin(), pixelsLine.end());
-		pointsNum += tempLine.getPointsNum();
-	}
 	void fillScanLine(vector<list<Edge>> &AET, GLint yMin)
 	{
 		GLint num=AET.size();
@@ -185,7 +177,16 @@ private:
 			GLint n = ((GLint)listEdge.size()) / 2;
 			for (GLint i = 0; i < n; i++)
 			{
-				pushInsideScanLine(ilist1->x+1, ilist2->x-1, j + yMin);
+				for (GLint k = ilist1->x + 1; k <= ilist2->x - 1; k++)
+				{
+					pixels.push_back(k / (GLfloat)WIDTH_HALF);
+					pixels.push_back((j+yMin) / (GLfloat)HEIGHT_HALF);
+					pixels.push_back((GLfloat)0);
+					pixels.push_back(fillColor.x);
+					pixels.push_back(fillColor.y);
+					pixels.push_back(fillColor.z);
+					pointsNum++;
+				}
 				if (i + 1 < n)
 				{
 					ilist1++, ilist1++;
@@ -193,21 +194,6 @@ private:
 				}
 			}
 		}
-	}
-	void pushInsideScanLine(GLint x1, GLint x2, GLint y)
-	{
-		for (GLint i = x1; i <= x2; i++)
-			pushInsidePoint(glm::ivec3(i, y, 0));
-	}
-	void pushInsidePoint(glm::ivec3 pointPosition)
-	{
-		pixels.push_back(pointPosition.x / (GLfloat)WIDTH_HALF);
-		pixels.push_back(pointPosition.y / (GLfloat)HEIGHT_HALF);
-		pixels.push_back((GLfloat)pointPosition.z);
-		pixels.push_back(fillColor.x);
-		pixels.push_back(fillColor.y);
-		pixels.push_back(fillColor.z);
-		pointsNum++;
 	}
 public:
 	polygon()
@@ -241,14 +227,24 @@ public:
 	{
 		pixels.clear();
 		glm::ivec3 startPoint = glm::ivec3(vertics[0].x, vertics[0].y, 0), endPoint;
+		line tempLine;
+		vector<GLfloat> pixelsLine;
 		for (GLint i = 0; i < vertics.size(); i++)
 		{
 			endPoint = glm::ivec3(vertics[i].x, vertics[i].y, 0);
-			pushLine(startPoint, endPoint);
+			tempLine = line(startPoint, endPoint, lineColor);
+			tempLine.lineUseBresenham();
+			pixelsLine = tempLine.getLinePixels();
+			pixels.insert(pixels.end(), pixelsLine.begin(), pixelsLine.end());
+			pointsNum += tempLine.getPointsNum();
 			startPoint = endPoint;
 		}
 		endPoint = glm::ivec3(vertics[0].x, vertics[0].y, 0);
-		pushLine(startPoint, endPoint);
+		tempLine = line(startPoint, endPoint, lineColor);
+		tempLine.lineUseBresenham();
+		pixelsLine = tempLine.getLinePixels();
+		pixels.insert(pixels.end(), pixelsLine.begin(), pixelsLine.end());
+		pointsNum += tempLine.getPointsNum();
 	}
 	void fillPolygonScanLine(glm::vec3 fillColor)
 	{

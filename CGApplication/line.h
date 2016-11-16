@@ -57,6 +57,41 @@ class line
 				pushPoint(glm::ivec3(x1,y,0));
 			}
 		}
+		GLboolean clipTestLiangBarsky(GLfloat p, GLfloat q, GLfloat &u1, GLfloat &u2)
+		{
+			//Be used in Liang-Barsky Clip function
+			GLfloat r;
+			if (p < 0.0)
+			{
+				r=q / p;
+				if (r > u1)
+				{
+					u1 = r;
+					if (u1 > u2)
+						return false;
+				}				
+			}
+			else if (p > 0.0)
+			{
+				r = q / p;
+				if (r < u2)
+				{
+					u2 = r;
+					if (u1 > u2)
+						return false;
+				}
+			}
+			else
+			{
+				if (q < 0.0)
+					return false;
+			}
+		}
+		inline void clearPixels()
+		{
+			pointsNum = 0;
+			pixels.clear();
+		}
 	public:
 		line()
 		{
@@ -70,10 +105,20 @@ class line
 		}
 		line(glm::ivec3 p1, glm::ivec3 p2,glm::vec3 lineColor)
 		{
-			this->x1 = p1.x;
-			this->y1 = p1.y;
-			this->x2 = p2.x;
-			this->y2 = p2.y;
+			if (p1.x < p2.x)
+			{
+				this->x1 = p1.x;
+				this->y1 = p1.y;
+				this->x2 = p2.x;
+				this->y2 = p2.y;
+			}
+			else
+			{
+				this->x1 = p2.x;
+				this->y1 = p2.y;
+				this->x2 = p1.x;
+				this->y2 = p1.y;
+			}
 			this->pointsNum = 0;
 			this->color = lineColor;
 			this->pointSize = 6 * sizeof(GLfloat);
@@ -92,51 +137,53 @@ class line
 		}		
 		void lineUseBresenham()
 		{
-			if (abs(x2 - x1) == abs(y2 - y1))
+			clearPixels();
+			GLint x_1=this->x1,x_2=this->x2,y_1=this->y1,y_2=this->y2;
+			if (abs(x_2 - x_1) == abs(y_2 - y_1))
 			{
 				lineSlope1();
 				return;
 			}
-			if (x1 > x2)
+			if (x_1 > x_2)
 			{
-				swap(x1, x2);
-				swap(y1, y2);
+				swap(x_1, x_2);
+				swap(y_1, y_2);
 			}
-			else if (x1 == x2)
+			else if (x_1 == x_2)
 				lineVertical();
-			GLfloat m = ((GLfloat)(y2 - y1)) / (x2 - x1);
+			GLfloat m = ((GLfloat)(y_2 - y_1)) / (x_2 - x_1);
 			if (m > 0 && m < 1)
 			{
-				GLint dertX = x2 - x1, dertY = y2 - y1, dert2Y = dertY + dertY,
-					dert2X2Y = dertY + dertY - dertX - dertX, p0 = dertY + dertY - dertX;
-				GLint x_next = 1, y_next = (y2>y1) ? 1 : -1;
-				GLint y = y1;
-				pushPoint(glm::ivec3(x1, y1, 0));
-					for (GLint x = x1 + x_next; x != x2; x += x_next)
+				GLint dertX = x_2 - x_1, dertY = y_2 - y_1, dert2Y = dertY + dertY,
+					dert2x_2Y = dertY + dertY - dertX - dertX, p0 = dertY + dertY - dertX;
+				GLint x_next = 1, y_next = (y_2>y_1) ? 1 : -1;
+				GLint y = y_1;
+				pushPoint(glm::ivec3(x_1, y_1, 0));
+				for (GLint x = x_1 + x_next; x != x_2; x += x_next)
+				{
+					if (p0 <= 0)
 					{
-						if (p0 <= 0)
-						{
-							pushPoint(glm::ivec3(x, y, 0));
-							p0 = p0 + dert2Y;
-						}
-						else
-						{
-							y += y_next;
-							pushPoint(glm::ivec3(x, y, 0));
-							p0 = p0 + dert2X2Y;
-						}
-					}				
-				pushPoint(glm::ivec3(x2, y2, 0));
+						pushPoint(glm::ivec3(x, y, 0));
+						p0 = p0 + dert2Y;
+					}
+					else
+					{
+						y += y_next;
+						pushPoint(glm::ivec3(x, y, 0));
+						p0 = p0 + dert2x_2Y;
+					}
+				}
+				pushPoint(glm::ivec3(x_2, y_2, 0));
 			}
 			else if (m > -1 && m <= 0)
 			{
-				y1=-y1,y2=-y2;
-				GLint dertX = x2 - x1, dertY = y2 - y1, dert2Y = dertY + dertY,
-					dert2X2Y = dertY + dertY - dertX - dertX, p0 = dertY + dertY - dertX;
-				GLint x_next = 1, y_next = (y2>y1) ? 1 : -1;
-				GLint y = y1;
-				pushPoint(glm::ivec3(x1, -y1, 0));
-				for (GLint x = x1 + x_next; x != x2; x += x_next)
+				y_1 = -y_1, y_2 = -y_2;
+				GLint dertX = x_2 - x_1, dertY = y_2 - y_1, dert2Y = dertY + dertY,
+					dert2x_2Y = dertY + dertY - dertX - dertX, p0 = dertY + dertY - dertX;
+				GLint x_next = 1, y_next = (y_2 > y_1) ? 1 : -1;
+				GLint y = y_1;
+				pushPoint(glm::ivec3(x_1, -y_1, 0));
+				for (GLint x = x_1 + x_next; x != x_2; x += x_next)
 				{
 					if (p0 <= 0)
 					{
@@ -147,26 +194,26 @@ class line
 					{
 						y += y_next;
 						pushPoint(glm::ivec3(x, -y, 0));
-						p0 = p0 + dert2X2Y;
+						p0 = p0 + dert2x_2Y;
 					}
 				}
-				pushPoint(glm::ivec3(x2, -y2, 0));
+				pushPoint(glm::ivec3(x_2, -y_2, 0));
 			}
 			else if (m > 1)
 			{
-				swap(x1, y1);
-				swap(x2, y2);
-				if (x1 > x2)
+				swap(x_1, y_1);
+				swap(x_2, y_2);
+				if (x_1 > x_2)
 				{
-					swap(x1, x2);
-					swap(y1, y2);
+					swap(x_1, x_2);
+					swap(y_1, y_2);
 				}
-				GLint dertX = x2 - x1, dertY = y2 - y1, dert2Y = dertY + dertY,
-					dert2X2Y = dertY + dertY - dertX - dertX, p0 = dertY + dertY - dertX;
-				GLint x_next = 1, y_next = (y2>y1) ? 1 : -1;
-				GLint y = y1;
-				pushPoint(glm::ivec3(y1, x1, 0));
-				for (GLint x = x1 + x_next; x != x2; x += x_next)
+				GLint dertX = x_2 - x_1, dertY = y_2 - y_1, dert2Y = dertY + dertY,
+					dert2x_2Y = dertY + dertY - dertX - dertX, p0 = dertY + dertY - dertX;
+				GLint x_next = 1, y_next = (y_2 > y_1) ? 1 : -1;
+				GLint y = y_1;
+				pushPoint(glm::ivec3(y_1, x_1, 0));
+				for (GLint x = x_1 + x_next; x != x_2; x += x_next)
 				{
 					if (p0 <= 0)
 					{
@@ -177,27 +224,27 @@ class line
 					{
 						y += y_next;
 						pushPoint(glm::ivec3(y, x, 0));
-						p0 = p0 + dert2X2Y;
+						p0 = p0 + dert2x_2Y;
 					}
 				}
-				pushPoint(glm::ivec3(y2, x2, 0));
+				pushPoint(glm::ivec3(y_2, x_2, 0));
 			}
 			else
 			{
-				swap(x1, y1);
-				swap(x2, y2);
-				y1=-y1,y2=-y2;
-				if (x1 > x2)
+				swap(x_1, y_1);
+				swap(x_2, y_2);
+				y_1 = -y_1, y_2 = -y_2;
+				if (x_1 > x_2)
 				{
-					swap(x1, x2);
-					swap(y1, y2);
+					swap(x_1, x_2);
+					swap(y_1, y_2);
 				}
-				GLint dertX = x2 - x1, dertY = y2 - y1, dert2Y = dertY + dertY,
-					dert2X2Y = dertY + dertY - dertX - dertX, p0 = dertY + dertY - dertX;
-				GLint x_next = 1, y_next = (y2 > y1) ? 1 : -1;
-				GLint y = y1;
-				pushPoint(glm::ivec3(-y1, x1, 0));
-				for (GLint x = x1 + x_next; x != x2; x += x_next)
+				GLint dertX = x_2 - x_1, dertY = y_2 - y_1, dert2Y = dertY + dertY,
+					dert2x_2Y = dertY + dertY - dertX - dertX, p0 = dertY + dertY - dertX;
+				GLint x_next = 1, y_next = (y_2 > y_1) ? 1 : -1;
+				GLint y = y_1;
+				pushPoint(glm::ivec3(-y_1, x_1, 0));
+				for (GLint x = x_1 + x_next; x != x_2; x += x_next)
 				{
 					if (p0 <= 0)
 					{
@@ -208,14 +255,15 @@ class line
 					{
 						y += y_next;
 						pushPoint(glm::ivec3(-y, x, 0));
-						p0 = p0 + dert2X2Y;
+						p0 = p0 + dert2x_2Y;
 					}
 				}
-				pushPoint(glm::ivec3(-y2, x2, 0));
+				pushPoint(glm::ivec3(-y_2, x_2, 0));
 			}
 		}
 		void lineUseDDA()
 		{
+			clearPixels();
 			if (abs(x2 - x1) == abs(y2 - y1))
 			{
 				lineSlope1();
@@ -261,6 +309,31 @@ class line
 				}
 				pushPoint(glm::ivec3(x2, y2, 0));
 			}
+		}
+		void clipUseRect(glm::ivec3 winP1,glm::ivec3 winP2)
+		{
+			//Clip use Liang-Barsky
+			GLfloat u1 = 0.0, u2 = 1.0;
+			GLint xMin=winP1.x<winP2.x?winP1.x:winP2.x,xMax=winP1.x>winP2.x?winP1.x:winP2.x,
+				yMin=winP1.y<winP2.y?winP1.y:winP2.y,yMax=winP1.y>winP2.y?winP1.y:winP2.y;
+			GLint dx = x2 - x1, dy = y2 - y1;
+			if (clipTestLiangBarsky(-dx, x1 - xMin, u1, u2))
+				if (clipTestLiangBarsky(dx, xMax - x1, u1, u2))
+					if (clipTestLiangBarsky(-dy, y1 - yMin, u1, u2))
+						if (clipTestLiangBarsky(dy, yMax - y1, u1, u2))
+						{
+							if (u2 < 1.0)
+							{
+								x2 = x1 + u2*dx;
+								y2 = y1 + u2*dy;
+							}
+							if (u1 > 0.0)
+							{
+								x1 = x1 + u1*dx;
+								y1 = y1 + u1*dy;
+							}	
+							lineUseBresenham();
+						}		
 		}
 };
 

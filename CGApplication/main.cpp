@@ -38,7 +38,7 @@ TextureManager *myTextureManager;
 GLFWwindow *window;
 
 void initWindow();  //initGLFWwindow
-void loadImageAsTexture(unsigned int testTextureID);
+void loadImageAsTexture(unsigned int testTextureID, const char *filename);
 GLuint initVAO();
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 glm::mat4 getTransformMatrix();
@@ -56,25 +56,25 @@ int main()
 	GLuint myVAO;
 	myVAO = initVAO();
 
-	unsigned int testTextureID=1;
-	myTextureManager = new TextureManager();
-	loadImageAsTexture(testTextureID);
+	//unsigned int testTextureID=1;
+	//myTextureManager = new TextureManager();
+	//loadImageAsTexture(testTextureID, "E:\\CGApplication\\img_test.png");
 
 	//set transform
-	GLuint transformLocation = glGetUniformLocation(myShader->shaderProgram, "transform");
+	GLuint transformLocation = glGetUniformLocation(myShaderProgram, "transform");
 	glm::mat4 transformMat = getTransformMatrix();
 
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
-		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(myShaderProgram);
-		myTextureManager->bindTexture(testTextureID);
+		//myTextureManager->bindTexture(testTextureID);
 		glBindVertexArray(myVAO);
 		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_POINTS, 0, myEllipse.getPointsNum());
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
@@ -116,15 +116,8 @@ void initWindow()
 	glViewport(0, 0, width, height);
 
 }
-void loadImageAsTexture(unsigned int testTextureID)
+void loadImageAsTexture(unsigned int testTextureID,const char *filename)
 {
-	//GLint n, i;
-	//glGetIntegerv(GL_NUM_EXTENSIONS, &n);
-	//for (i = 0; i < n; i++) {
-	//	cout << glGetStringi(GL_EXTENSIONS, i) << endl;
-	//}
-	//cout << strstr("asd", "asd") << endl;
-	char filename[40] = "E:\\CGApplication\\img_test.png";
 	myTextureManager->loadTexture(filename, testTextureID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -140,20 +133,23 @@ GLuint initVAO()
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
  //   myLine=line(glm::ivec3(-100, 300, 0), glm::ivec3(200, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
-	////myLine.lineUseBresenham();
-	//myLine.lineUseDDA();
+	//myLine.lineUseBresenham();
+	////myLine.lineUseDDA();
+	//myLine.clipUseRect(glm::ivec3(100,-200,0), glm::ivec3(0,300,0));
 	//glBufferData(GL_ARRAY_BUFFER,myLine.getPointsNum()*myLine.getPointSize(), 
 	//	&(myLine.getLinePixels())[0], GL_STATIC_DRAW);
 
-	//myCircle=circle(glm::ivec3(0,0,0),200,glm::vec3(1.0f,0.0f,0.0f));
+	//myCircle=circle(glm::ivec3(-50,50,0),100,glm::vec3(1.0f,0.0f,0.0f));
 	//myCircle.circleUseMidpoint();
+	//myCircle.fillCircleScanLine(glm::vec3(0.0f,1.0f,0.0f));
 	//glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
 	//	&(myCircle.getCirclePixels())[0], GL_STATIC_DRAW);
 
-	//myEllipse = ellipse(glm::ivec3(50, -80, 0), 200, 100, glm::vec3(1.0f,0.0f,0.0f));
-	//myEllipse.ellipseUseMidpoint();
-	//glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
-	//	&(myEllipse.getEllipsePixels())[0], GL_STATIC_DRAW);
+	myEllipse = ellipse(glm::ivec3(50, 200, 0), 100, 200, glm::vec3(1.0f,0.0f,0.0f));
+	myEllipse.ellipseUseMidpoint();
+	myEllipse.fillEllipseScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
+	glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
+		&(myEllipse.getEllipsePixels())[0], GL_STATIC_DRAW);
 
 	//myBezier = bezier(glm::ivec3(-280, -200, 0), glm::ivec3(100, 130, 0),
 	//	glm::ivec3(100, 130, 0), glm::ivec3(300, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -168,24 +164,25 @@ GLuint initVAO()
 	//glBufferData(GL_ARRAY_BUFFER, mySpline.getPointsNum()*mySpline.getPointSize(),
 	//	&(mySpline.getSplinePixels())[0], GL_STATIC_DRAW);
 
-	//vector<glm::ivec3> verticsPoint;
-	//verticsPoint.push_back(glm::ivec3(-60, 0, 0));
-	//verticsPoint.push_back(glm::ivec3(20, 40, 0));
-	//verticsPoint.push_back(glm::ivec3(30, -20, 0));
-	//myPolygon = polygon(verticsPoint, glm::vec3(0.0f, 0.0f, 0.0f));
-	//myPolygon.polygonUseLine();
-	//myPolygon.fillPolygonScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
-	//glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
-	//	&(myPolygon.getPolygonPixels())[0], GL_STATIC_DRAW);
+	/*vector<glm::ivec3> verticsPoint;
+	verticsPoint.push_back(glm::ivec3(-300, 0, 0));
+	verticsPoint.push_back(glm::ivec3(100, 200, 0));
+	verticsPoint.push_back(glm::ivec3(150, -100, 0));
+	verticsPoint.push_back(glm::ivec3(0, 50, 0));
+	myPolygon = polygon(verticsPoint, glm::vec3(0.0f, 0.0f, 0.0f));
+	myPolygon.polygonUseLine();
+	myPolygon.fillPolygonScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
+	glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+	&(myPolygon.getPolygonPixels())[0], GL_STATIC_DRAW);*/
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);
+	//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	//glEnableVertexAttribArray(2);
 
 	//unbind VBO&VAO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
