@@ -16,73 +16,35 @@ private:
 	//each points' space in memory
 	GLint pointSize;
 	vector<GLfloat> pixels;
-	GLint centerX, centerY,radius;
+	GLint centerX, centerY, radius;
 	glm::vec3 lineColor;
 	glm::vec3 fillColor;
-	void pushSymmetryPoint(glm::ivec3 pointPosition)
+	GLboolean pushPoint(glm::ivec3 pointPosition,GLint xMin,GLint xMax,GLint yMin,GLint yMax)
 	{
-		pixels.push_back((pointPosition.x +centerX)/ (GLfloat)WIDTH_HALF);
-		pixels.push_back((pointPosition.y +centerY)/ (GLfloat)HEIGHT_HALF);
-		pixels.push_back((GLfloat)pointPosition.z);
-		pixels.push_back(lineColor.x);
-		pixels.push_back(lineColor.y);
-		pixels.push_back(lineColor.z);
-
-		pixels.push_back((pointPosition.y +centerX)/ (GLfloat)WIDTH_HALF);
-		pixels.push_back((pointPosition.x +centerY)/ (GLfloat)HEIGHT_HALF);
-		pixels.push_back((GLfloat)pointPosition.z);
-		pixels.push_back(lineColor.x);
-		pixels.push_back(lineColor.y);
-		pixels.push_back(lineColor.z);
-
-		pixels.push_back((-pointPosition.x +centerX)/ (GLfloat)WIDTH_HALF);
-		pixels.push_back((pointPosition.y +centerY)/ (GLfloat)HEIGHT_HALF);
-		pixels.push_back((GLfloat)pointPosition.z);
-		pixels.push_back(lineColor.x);
-		pixels.push_back(lineColor.y);
-		pixels.push_back(lineColor.z);
-
-		pixels.push_back((-pointPosition.y +centerX)/ (GLfloat)WIDTH_HALF);
-		pixels.push_back((pointPosition.x +centerY)/ (GLfloat)HEIGHT_HALF);
-		pixels.push_back((GLfloat)pointPosition.z);
-		pixels.push_back(lineColor.x);
-		pixels.push_back(lineColor.y);
-		pixels.push_back(lineColor.z);
-
-		pixels.push_back((pointPosition.x +centerX)/ (GLfloat)WIDTH_HALF);
-		pixels.push_back((-pointPosition.y +centerY) / (GLfloat)HEIGHT_HALF);
-		pixels.push_back((GLfloat)pointPosition.z);
-		pixels.push_back(lineColor.x);
-		pixels.push_back(lineColor.y);
-		pixels.push_back(lineColor.z);
-
-		pixels.push_back((pointPosition.y +centerX) / (GLfloat)WIDTH_HALF);
-		pixels.push_back((-pointPosition.x +centerY)/ (GLfloat)HEIGHT_HALF);
-		pixels.push_back((GLfloat)pointPosition.z);
-		pixels.push_back(lineColor.x);
-		pixels.push_back(lineColor.y);
-		pixels.push_back(lineColor.z);
-
-		pixels.push_back((-pointPosition.x +centerX) / (GLfloat)WIDTH_HALF);
-		pixels.push_back((-pointPosition.y +centerY)/ (GLfloat)HEIGHT_HALF);
-		pixels.push_back((GLfloat)pointPosition.z);
-		pixels.push_back(lineColor.x);
-		pixels.push_back(lineColor.y);
-		pixels.push_back(lineColor.z);
-
-		pixels.push_back((-pointPosition.y +centerX)/ (GLfloat)WIDTH_HALF);
-		pixels.push_back((-pointPosition.x +centerY)/ (GLfloat)HEIGHT_HALF);
-		pixels.push_back((GLfloat)pointPosition.z);
-		pixels.push_back(lineColor.x);
-		pixels.push_back(lineColor.y);
-		pixels.push_back(lineColor.z);
-		this->pointsNum += 8;
+		//clip point with window(xMin-xMax,yMin-yMax)
+		if (pointPosition.x >= xMin && pointPosition.x <= xMax
+			&& pointPosition.y >= yMin && pointPosition.y <= yMax)
+		{
+			pixels.push_back(pointPosition.x / (GLfloat)WIDTH_HALF);
+			pixels.push_back(pointPosition.y / (GLfloat)HEIGHT_HALF);
+			pixels.push_back((GLfloat)pointPosition.z);
+			pixels.push_back(lineColor.x);
+			pixels.push_back(lineColor.y);
+			pixels.push_back(lineColor.z);
+			this->pointsNum++;
+			return GL_TRUE;
+		}
+		return GL_FALSE;
 	}
-	void pushFillScanLine(GLint xLeft,GLint xRight,GLint yValue)
+	void pushFillScanLine(GLint xLeft, GLint xRight, GLint yValue, GLint xMin, GLint xMax, GLint yMin, GLint yMax)
 	{
-		xLeft += centerX;
-		xRight += centerX;
-		yValue += centerY;
+		if (yValue<yMin || yValue>yMax)
+			return;
+		else
+		{
+			xLeft = xLeft < xMin ? (xMin-1) : xLeft;
+			xRight = xRight < xMax ? xRight : (xMax+1);
+		}
 		for (GLint k = xLeft + 1; k <= xRight - 1; k++)
 		{
 			pixels.push_back(k / (GLfloat)WIDTH_HALF);
@@ -93,6 +55,43 @@ private:
 			pixels.push_back(fillColor.z);
 			pointsNum++;
 		}
+	}
+	void fillCircleWithWindow(GLint xWMin, GLint xWMax, GLint yWMin, GLint yWMax)
+	{
+		GLint x = 0, y = radius;
+		GLfloat p0 = 5.0f / 4 - radius;
+		pushPoint(glm::ivec3(centerX, radius + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+		pushPoint(glm::ivec3(centerX, -radius + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+		pushFillScanLine(-radius + centerX, radius + centerX, centerY, xWMin, xWMax, yWMin, yWMax);
+		for (x = 1; x < y; x++)
+		{
+			if (p0 < 0)
+			{
+				p0 = p0 + x + x + 1;
+			}
+			else
+			{
+				y--;
+				p0 = p0 + x + x - y - y + 1;
+			}
+			pushPoint(glm::ivec3(x + centerX, y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+			pushPoint(glm::ivec3(-x + centerX, y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+			pushPoint(glm::ivec3(x + centerX, -y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+			pushPoint(glm::ivec3(-x + centerX, -y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+			pushPoint(glm::ivec3(y + centerX, x + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+			pushPoint(glm::ivec3(y + centerX, -x + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+			pushPoint(glm::ivec3(-y + centerX, x + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+			pushPoint(glm::ivec3(-y + centerX, -x + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+			//Fill the Circle with ScanLine
+			pushFillScanLine(-x + centerX, x + centerX, y + centerY, xWMin, xWMax, yWMin, yWMax);
+			pushFillScanLine(-x + centerX, x + centerX, -y + centerY, xWMin, xWMax, yWMin, yWMax);
+			pushFillScanLine(-y + centerX, y + centerX, x + centerY, xWMin, xWMax, yWMin, yWMax);
+			pushFillScanLine(-y + centerX, y + centerX, -x + centerY, xWMin, xWMax, yWMin, yWMax);
+		}
+		pushPoint(glm::ivec3(x + centerX, y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+		pushPoint(glm::ivec3(x + centerX, -y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+		pushPoint(glm::ivec3(-x + centerX, y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+		pushPoint(glm::ivec3(-x + centerX, -y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
 	}
 	inline void clearPixels()
 	{
@@ -137,55 +136,57 @@ public:
 		clearPixels();
 		GLint x = 0, y = radius;
 		GLfloat p0 = 5.0f / 4 - radius;
-		pushSymmetryPoint(glm::ivec3(x,y,0));
+		pushPoint(glm::ivec3(centerX, radius + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+		pushPoint(glm::ivec3(centerX, -radius + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+		pushPoint(glm::ivec3(radius + centerX, centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+		pushPoint(glm::ivec3(-radius + centerX, centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
 		for (x = 1; x < y; x++)
 		{
 			if (p0 < 0)
 			{
-				pushSymmetryPoint(glm::ivec3(x, y, 0));
 				p0 = p0 + x + x  + 1;
 			}
 			else
 			{
 				y--;
-				pushSymmetryPoint(glm::ivec3(x, y, 0));
 				p0 = p0 + x + x - y - y + 1;
 			}
+			pushPoint(glm::ivec3(x + centerX, y + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+			pushPoint(glm::ivec3(-x + centerX, y + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+			pushPoint(glm::ivec3(x + centerX, -y + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+			pushPoint(glm::ivec3(-x + centerX, -y + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+			pushPoint(glm::ivec3(y + centerX, x + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+			pushPoint(glm::ivec3(y + centerX, -x + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+			pushPoint(glm::ivec3(-y + centerX, x + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+			pushPoint(glm::ivec3(-y + centerX, -x + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
 		}
-		pushSymmetryPoint(glm::ivec3(x,y,0));
+		pushPoint(glm::ivec3(x + centerX, y + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+		pushPoint(glm::ivec3(x + centerX, -y + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+		pushPoint(glm::ivec3(-x + centerX, y + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+		pushPoint(glm::ivec3(-x + centerX, -y + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
 	}
 	void fillCircleScanLine(glm::vec3 fillColor)
 	{
 		this->fillColor = fillColor;
 		clearPixels();
-		GLint x = 0, y = radius;
-		GLfloat p0 = 5.0f / 4 - radius;
-		pushSymmetryPoint(glm::ivec3(x, y, 0));
-		pushFillScanLine(-y, y, x);
-		for (x = 1; x < y; x++)
-		{
-			if (p0 < 0)
-			{
-				pushSymmetryPoint(glm::ivec3(x, y, 0));
-				p0 = p0 + x + x + 1;
-			}
-			else
-			{
-				y--;
-				pushSymmetryPoint(glm::ivec3(x, y, 0));
-				p0 = p0 + x + x - y - y + 1;
-			}
-			//Fill the Circle with ScanLine
-			pushFillScanLine(-x, x, y);
-			pushFillScanLine(-x, x, -y);
-			pushFillScanLine(-y, y, x);
-			pushFillScanLine(-y, y, -x);
-		}
-		pushSymmetryPoint(glm::ivec3(x, y, 0));
+		fillCircleWithWindow(-WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
 	}
 	void clipUseRect(glm::ivec3 winP1, glm::ivec3 winP2)
 	{
-
+		GLint xMin = winP1.x<winP2.x ? winP1.x : winP2.x, xMax = winP1.x>winP2.x ? winP1.x : winP2.x,
+			yMin = winP1.y<winP2.y ? winP1.y : winP2.y, yMax = winP1.y>winP2.y ? winP1.y : winP2.y;
+		//check RectWindow and Circle position
+		if ((centerX + radius <= xMin || centerY + radius <= yMin)
+			|| (centerX - radius >= xMax || centerY - radius >= yMax))
+		{
+			return;
+		}
+		else if (centerX - radius >= xMin&&centerX + radius <= xMax&&centerY - radius >= yMin&&centerY + radius <= yMax)
+		{
+			return;
+		}
+		clearPixels();
+		fillCircleWithWindow(xMin, xMax, yMin, yMax);
 	}
 };
 

@@ -189,7 +189,23 @@ public:
 		}
 		pushSymmetryPoint(glm::ivec3(radiusX, 0, 0));
 		pushFillScanLine(-radiusX, radiusX, 0);
-
+	}
+	void clipUseRect(glm::ivec3 winP1, glm::ivec3 winP2)
+	{
+		GLint xMin = winP1.x<winP2.x ? winP1.x : winP2.x, xMax = winP1.x>winP2.x ? winP1.x : winP2.x,
+			yMin = winP1.y<winP2.y ? winP1.y : winP2.y, yMax = winP1.y>winP2.y ? winP1.y : winP2.y;
+		//check RectWindow and Circle position
+		if ((centerX + radiusX <= xMin || centerY + radiusY <= yMin)
+			|| (centerX - radiusX >= xMax || centerY - radiusY >= yMax))
+		{
+			return;
+		}
+		else if (centerX - radiusX >= xMin&&centerX + radiusX <= xMax&&centerY - radiusY >= yMin&&centerY + radiusY <= yMax)
+		{
+			return;
+		}
+		clearPixels();
+		//fillCircleWithWindow(xMin, xMax, yMin, yMax);
 	}
 };
 #endif 

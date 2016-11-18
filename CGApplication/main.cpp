@@ -67,7 +67,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClearColor(1.0f, 0.8f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(myShaderProgram);
@@ -137,32 +137,34 @@ GLuint initVAO()
 	////myLine.lineUseDDA();
 	//myLine.clipUseRect(glm::ivec3(100,-200,0), glm::ivec3(0,300,0));
 	//glBufferData(GL_ARRAY_BUFFER,myLine.getPointsNum()*myLine.getPointSize(), 
-	//	&(myLine.getLinePixels())[0], GL_STATIC_DRAW);
+	//	myLine.getLinePixels().begin()._Ptr, GL_STATIC_DRAW);
 
-	//myCircle=circle(glm::ivec3(-50,50,0),100,glm::vec3(1.0f,0.0f,0.0f));
+	//myCircle = circle(glm::ivec3(-50, -50, 0), 100, glm::vec3(1.0f, 0.0f, 0.0f));
 	//myCircle.circleUseMidpoint();
-	//myCircle.fillCircleScanLine(glm::vec3(0.0f,1.0f,0.0f));
+	//myCircle.fillCircleScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
+	//myCircle.clipUseRect(glm::vec3(-100, -50, 0), glm::vec3(100, 150, 0));
+	///*cout << &(myCircle.getCirclePixels())[0] << endl;*/
 	//glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
-	//	&(myCircle.getCirclePixels())[0], GL_STATIC_DRAW);
+	//	myCircle.getCirclePixels().begin()._Ptr, GL_STATIC_DRAW);
 
-	myEllipse = ellipse(glm::ivec3(50, 200, 0), 100, 200, glm::vec3(1.0f,0.0f,0.0f));
+	myEllipse = ellipse(glm::ivec3(50, 50, 0), 100, 50, glm::vec3(1.0f, 0.0f, 0.0f));
 	myEllipse.ellipseUseMidpoint();
 	myEllipse.fillEllipseScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
 	glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
-		&(myEllipse.getEllipsePixels())[0], GL_STATIC_DRAW);
+		myEllipse.getEllipsePixels().begin()._Ptr, GL_STATIC_DRAW);
 
 	//myBezier = bezier(glm::ivec3(-280, -200, 0), glm::ivec3(100, 130, 0),
 	//	glm::ivec3(100, 130, 0), glm::ivec3(300, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
 	//myBezier.bezierUseLine();
 	//glBufferData(GL_ARRAY_BUFFER, myBezier.getPointsNum()*myBezier.getPointSize(),
-	//	&(myBezier.getBezierPixels())[0], GL_STATIC_DRAW);
+	//	myBezier.getBezierPixels().begin()._Ptr, GL_STATIC_DRAW);
 
 	//mySpline = spline(glm::ivec3(-280, -200, 0), glm::ivec3(-100, 130, 0),
 	//	glm::ivec3(100, 130, 0), glm::ivec3(300, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
 	//mySpline.splineUseLine();
 	//mySpline.showControlPoints();
 	//glBufferData(GL_ARRAY_BUFFER, mySpline.getPointsNum()*mySpline.getPointSize(),
-	//	&(mySpline.getSplinePixels())[0], GL_STATIC_DRAW);
+	//	mySpline.getSplinePixels().begin()._Ptr, GL_STATIC_DRAW);
 
 	/*vector<glm::ivec3> verticsPoint;
 	verticsPoint.push_back(glm::ivec3(-300, 0, 0));
@@ -173,7 +175,7 @@ GLuint initVAO()
 	myPolygon.polygonUseLine();
 	myPolygon.fillPolygonScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
 	glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
-	&(myPolygon.getPolygonPixels())[0], GL_STATIC_DRAW);*/
+	myPolygon.getPolygonPixels().begin()._Ptr, GL_STATIC_DRAW);*/
 
 	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
