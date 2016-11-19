@@ -19,7 +19,7 @@ private:
 	GLint centerX, centerY, radius;
 	glm::vec3 lineColor;
 	glm::vec3 fillColor;
-	GLboolean pushPoint(glm::ivec3 pointPosition,GLint xMin,GLint xMax,GLint yMin,GLint yMax)
+	void pushPoint(glm::ivec3 pointPosition,GLint xMin,GLint xMax,GLint yMin,GLint yMax)
 	{
 		//clip point with window(xMin-xMax,yMin-yMax)
 		if (pointPosition.x >= xMin && pointPosition.x <= xMax
@@ -32,9 +32,7 @@ private:
 			pixels.push_back(lineColor.y);
 			pixels.push_back(lineColor.z);
 			this->pointsNum++;
-			return GL_TRUE;
 		}
-		return GL_FALSE;
 	}
 	void pushFillScanLine(GLint xLeft, GLint xRight, GLint yValue, GLint xMin, GLint xMax, GLint yMin, GLint yMax)
 	{

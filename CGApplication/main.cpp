@@ -147,9 +147,10 @@ GLuint initVAO()
 	//glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
 	//	myCircle.getCirclePixels().begin()._Ptr, GL_STATIC_DRAW);
 
-	myEllipse = ellipse(glm::ivec3(50, 50, 0), 100, 50, glm::vec3(1.0f, 0.0f, 0.0f));
+	myEllipse = ellipse(glm::ivec3(-50, 0, 0), 150, 100, glm::vec3(1.0f, 0.0f, 0.0f));
 	myEllipse.ellipseUseMidpoint();
 	myEllipse.fillEllipseScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
+	myEllipse.clipUseRect(glm::ivec3(-200, -150, 0), glm::ivec3(150, 200, 0));
 	glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
 		myEllipse.getEllipsePixels().begin()._Ptr, GL_STATIC_DRAW);
 
