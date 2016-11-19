@@ -74,6 +74,10 @@ public:
 			startPoint = endPoint;
 		}
 	}
+	void clipWithWindow()
+	{
+
+	}
 };
 
 #endif 

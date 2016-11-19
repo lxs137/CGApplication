@@ -74,7 +74,7 @@ int main()
 		//myTextureManager->bindTexture(testTextureID);
 		glBindVertexArray(myVAO);
 		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
-		glDrawArrays(GL_POINTS, 0, myEllipse.getPointsNum());
+		glDrawArrays(GL_POINTS, 0, myBezier.getPointsNum());
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
@@ -147,18 +147,18 @@ GLuint initVAO()
 	//glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
 	//	myCircle.getCirclePixels().begin()._Ptr, GL_STATIC_DRAW);
 
-	myEllipse = ellipse(glm::ivec3(-50, 0, 0), 150, 100, glm::vec3(1.0f, 0.0f, 0.0f));
-	myEllipse.ellipseUseMidpoint();
-	myEllipse.fillEllipseScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
-	myEllipse.clipUseRect(glm::ivec3(-200, -150, 0), glm::ivec3(150, 200, 0));
-	glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
-		myEllipse.getEllipsePixels().begin()._Ptr, GL_STATIC_DRAW);
+	//myEllipse = ellipse(glm::ivec3(-50, 0, 0), 150, 100, glm::vec3(1.0f, 0.0f, 0.0f));
+	//myEllipse.ellipseUseMidpoint();
+	//myEllipse.fillEllipseScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
+	//myEllipse.clipUseRect(glm::ivec3(-200, -150, 0), glm::ivec3(150, 200, 0));
+	//glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
+	//	myEllipse.getEllipsePixels().begin()._Ptr, GL_STATIC_DRAW);
 
-	//myBezier = bezier(glm::ivec3(-280, -200, 0), glm::ivec3(100, 130, 0),
-	//	glm::ivec3(100, 130, 0), glm::ivec3(300, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
-	//myBezier.bezierUseLine();
-	//glBufferData(GL_ARRAY_BUFFER, myBezier.getPointsNum()*myBezier.getPointSize(),
-	//	myBezier.getBezierPixels().begin()._Ptr, GL_STATIC_DRAW);
+	myBezier = bezier(glm::ivec3(-280, -200, 0), glm::ivec3(100, 130, 0),
+		glm::ivec3(100, 130, 0), glm::ivec3(300, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
+	myBezier.bezierUseLine();
+	glBufferData(GL_ARRAY_BUFFER, myBezier.getPointsNum()*myBezier.getPointSize(),
+		myBezier.getBezierPixels().begin()._Ptr, GL_STATIC_DRAW);
 
 	//mySpline = spline(glm::ivec3(-280, -200, 0), glm::ivec3(-100, 130, 0),
 	//	glm::ivec3(100, 130, 0), glm::ivec3(300, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
