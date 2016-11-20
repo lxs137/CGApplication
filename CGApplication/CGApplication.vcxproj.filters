@@ -56,5 +56,8 @@
     <ClInclude Include="textureManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="cubicEquation.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

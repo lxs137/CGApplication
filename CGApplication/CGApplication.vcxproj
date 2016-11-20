@@ -87,6 +87,7 @@
   <ItemGroup>
     <ClInclude Include="bezier.h" />
     <ClInclude Include="circle.h" />
+    <ClInclude Include="cubicEquation.h" />
     <ClInclude Include="line.h" />
     <ClInclude Include="ellipse.h" />
     <ClInclude Include="polygon.h" />

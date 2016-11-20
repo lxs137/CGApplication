@@ -3,11 +3,13 @@
 
 #include "windowSetting.h"
 #include "line.h"
+#include "cubicEquation.h"
 #define GLEW_STATIC
 #include <gl\glew.h>
 #include <glm\glm.hpp>
 #include <cmath>
 #include <vector>
+#include <algorithm>
 using namespace std;
 
 class bezier
@@ -26,6 +28,33 @@ private:
 		vector<GLfloat> verticesLine = tempLine.getLinePixels();
 		pixels.insert(pixels.end(), verticesLine.begin(),verticesLine.end());
 		pointsNum += tempLine.getPointsNum();
+	}
+	void findIntersection(vector<GLint> x, vector<GLint> y, GLint x0, GLint yMin, GLint yMax,vector<GLfloat> &pointsT)
+	{
+		vector<GLfloat> realRoots;
+		vector<GLfloat>::iterator iVector;
+		GLfloat a, b, c, d;
+		//find intersection of points at xWMin
+		a = -x[0] + 3 * x[1] - 3 * x[2] + x[3], b = 3 * x[0] - 6 * x[1] + 3 * x[2],
+			c = -3 * x[0] + 3 * x[1], d = x[0] - x0;
+		realRoots = findRealRoot(a, b, c, d);
+		for (iVector = realRoots.begin(); iVector != realRoots.end(); iVector++)
+		{
+			if (*iVector >= 0 && *iVector <= 1)
+			{
+				GLint yValue = (GLint)((-y[0] + 3 * y[1] - 3 * y[2] + y[3])*pow(*iVector, 3) +
+					(3 * y[0] - 6 * y[1] + 3 * y[2])*pow(*iVector, 2) + (-3 * y[0] + 3 * y[1])*(*iVector) + y[0]);
+				if (yValue >= yMin&&yValue <= yMax)
+				{
+					pointsT.push_back(*iVector);
+				}
+			}
+		}
+	}
+	inline void clearPixels()
+	{
+		pointsNum = 0;
+		pixels.clear();
 	}
 public:
 	bezier()
@@ -74,10 +103,79 @@ public:
 			startPoint = endPoint;
 		}
 	}
-	void clipWithWindow()
+	void clipUseRect(glm::ivec3 winP1, glm::ivec3 winP2)
 	{
+		//find controlPoint xPMin,xPMax,yPMin,yPMax
+		vector<GLint> x = { x1, x2, x3, x4 };
+		vector<GLint> y = { y1, y2, y3, y4 };
+		GLint xPMin = x[0], xPMax = x[0], yPMin = y[0], yPMax = y[0];
+		for (int i = 0; i < 4; i++)
+		{
+			xPMin = (x[i] < xPMin) ? x[i] : xPMin;
+			yPMin = (y[i] < yPMin) ? y[i] : yPMin;
+			xPMax = (x[i] > xPMax) ? x[i] : xPMax;
+			yPMax = (y[i] > yPMax) ? y[i] : yPMax;
+		}
+		//find rectWindow xWMin,xWMax,yWMin,yWMax
+		GLint xWMin = winP1.x<winP2.x ? winP1.x : winP2.x, xWMax = winP1.x>winP2.x ? winP1.x : winP2.x,
+			yWMin = winP1.y<winP2.y ? winP1.y : winP2.y, yWMax = winP1.y>winP2.y ? winP1.y : winP2.y;
+		if ((xPMax <= xWMin || yPMax <= yWMin)
+			|| (xPMin >= xWMax || yPMin >= yWMax))
+		{
+			clearPixels();
+			return;
+		}
+		else if (xPMin >= xWMin&&xPMax <= xWMax&&yPMin >= yWMin&&yPMax <= yWMax)
+		{
+			return;
+		}
+		clearPixels();
+		vector<GLfloat> intersectPointsT;
+		//find intersection of points at xWMin
+		findIntersection(x, y, xWMin, yWMin, yWMax, intersectPointsT);
+		//find intersection of points at xWMin
+		findIntersection(x, y, xWMax, yWMin, yWMax, intersectPointsT);
+		//find intersection of points at xWMin
+		findIntersection(y, x, yWMin, xWMin, xWMax, intersectPointsT);
+		//find intersection of points at xWMin
+		findIntersection(y, x, yWMax, xWMin, xWMax, intersectPointsT);
+		sort(intersectPointsT.begin(), intersectPointsT.end());
 
+		if (x1 >= xWMin&&x1 <= xWMax&&y1 >= yWMin&&y1 <= yWMax)
+		{
+			intersectPointsT.insert(intersectPointsT.begin(), 0.0f);
+		}
+		if (x4 >= xWMin&&x4 <= xWMax&&y4 >= yWMin&&y4 <= yWMax)
+		{
+			intersectPointsT.push_back(1.0f);
+		}
+		for (int i = 0; (2 * i + 1) < intersectPointsT.size(); i++)
+		{
+			GLfloat tStart = intersectPointsT[2 * i], tEnd = intersectPointsT[2 * i + 1];
+			glm::ivec3 startPoint, endPoint;
+			GLfloat a1, a2, a3, a4, x, y;
+			a1 = (1 - tStart)*(1 - tStart)*(1 - tStart);
+			a2 = (1 - tStart)*(1 - tStart) * 3 * tStart;
+			a3 = 3 * tStart * tStart *(1 - tStart);
+			a4 = tStart * tStart * tStart;
+			x = a1*x1 + a2*x2 + a3*x3 + a4*x4;
+			y = a1*y1 + a2*y2 + a3*y3 + a4*y4;
+			startPoint = glm::ivec3((GLint)x, (GLint)y, 0);
+			for (GLfloat t = tStart + BEZIER_DERT_T; t <= tEnd; t += BEZIER_DERT_T)
+			{
+				a1 = (1 - t)*(1 - t)*(1 - t);
+				a2 = (1 - t)*(1 - t) * 3 * t;
+				a3 = 3 * t * t *(1 - t);
+				a4 = t * t * t;
+				x = a1*x1 + a2*x2 + a3*x3 + a4*x4;
+				y = a1*y1 + a2*y2 + a3*y3 + a4*y4;
+				endPoint = glm::ivec3((GLint)x, (GLint)y, 0);
+				pushLine(startPoint, endPoint);
+				startPoint = endPoint;
+			}
+		}
 	}
+
 };
 
 #endif 

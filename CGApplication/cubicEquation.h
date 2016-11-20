@@ -42,11 +42,12 @@ GLint oneresult(GLfloat nparam[3], GLfloat nrange[2], GLfloat via, GLint positio
 	}
 	return 0;
 }
+//二分法求结果
 GLfloat dichotomy(GLfloat nparam[3], GLfloat x1, GLfloat x2)
 {
 	GLfloat x0;
 	GLfloat x3;
-	while (x0 = (x1 + x2) / 2, (x3 = fabs(fx(nparam, x0))) > 1e-5)
+	while (x0 = (x1 + x2) / 2, (x3 = fabs(fx(nparam, x0))) > 1e-2)
 	{
 		if (fx(nparam, x0)*fx(nparam, x2) > 0)
 			x2 = x0;
@@ -64,7 +65,7 @@ std::vector<GLfloat> findRealRoot(GLfloat a, GLfloat b, GLfloat c, GLfloat d)
 	std::vector<GLfloat> result;
 	GLfloat x1, x2;
 	if (a == 0)
-		return ;
+		return result;
 	param[0] = b / a;
 	param[1] = c / a;
 	param[2] = d / a;
@@ -76,7 +77,7 @@ std::vector<GLfloat> findRealRoot(GLfloat a, GLfloat b, GLfloat c, GLfloat d)
 		//单调递增的,只有一个实数解
 		if (1 == oneresult(param, range, 0, 1) && 1 == oneresult(param, range, 0, 0))
 		{
-			return ;
+			return result;
 		}
 		else
 		{
@@ -102,7 +103,11 @@ std::vector<GLfloat> findRealRoot(GLfloat a, GLfloat b, GLfloat c, GLfloat d)
 		{
 			//极大值和极小值处函数值符号相同,则肯定只有有一个实数解,两个虚数解
 			oneresult(param, range, x1, 1);
-			result.push_back(dichotomy(param, range[0], range[1]));
+			if (fx(param, range[0])*fx(param, range[1]) < 0)
+			{
+				result.push_back(dichotomy(param, range[0], range[1]));
+			}
+			
 		}
 	}
 	return result;

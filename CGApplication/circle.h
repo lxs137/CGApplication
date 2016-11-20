@@ -177,6 +177,7 @@ public:
 		if ((centerX + radius <= xMin || centerY + radius <= yMin)
 			|| (centerX - radius >= xMax || centerY - radius >= yMax))
 		{
+			clearPixels();
 			return;
 		}
 		else if (centerX - radius >= xMin&&centerX + radius <= xMax&&centerY - radius >= yMin&&centerY + radius <= yMax)
