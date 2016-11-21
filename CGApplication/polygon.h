@@ -5,7 +5,6 @@
 #include "line.h"
 #define GLEW_STATIC
 #include <gl\glew.h>
-#include <glm\glm.hpp>
 #include <cmath>
 #include <vector>
 #include <list>
@@ -195,6 +194,42 @@ private:
 			}
 		}
 	}
+	void points2Clockwise(vector<glm::ivec3> &points)
+	{
+		// turn the points to clockwise
+		if (points.size() < 3)
+			return;
+		GLint j, k, count = 0, n=points.size();
+		GLfloat z;
+		for (GLint i = 0; i < n; i++)
+		{
+			j = (i + 1) % n;
+			k = (i + 2) % n;
+			z = (points[j].x - points[i].x) * (points[k].y - points[j].y);
+			z -= (points[j].x - points[i].y) * (points[k].x - points[j].x);
+			if (z < 0)
+				count--;
+			else if (z > 0)
+				count++;
+		}
+		if (count>0)
+			return;
+		else
+		{
+			vector<glm::ivec3> pointsTemp;
+			swap(points, pointsTemp);
+			while (!pointsTemp.empty())
+			{
+				points.push_back(pointsTemp.back());
+				pointsTemp.pop_back();
+			}
+		}
+	}
+	inline void clearPixels()
+	{
+		pointsNum = 0;
+		pixels.clear();
+	}
 public:
 	polygon()
 	{
@@ -225,7 +260,7 @@ public:
 	}
 	void polygonUseLine()
 	{
-		pixels.clear();
+		clearPixels();
 		glm::ivec3 startPoint = glm::ivec3(vertics[0].x, vertics[0].y, 0), endPoint;
 		line tempLine;
 		vector<GLfloat> pixelsLine;
@@ -256,6 +291,11 @@ public:
 		vector<list<Edge>> AET(yMax - yMin + 1);//Active Edge Table
 		initActiveEdgeTable(SET, AET, yMin, yMax);
 		fillScanLine(AET, yMin);
+	}
+	vector<polygon> clipWithPolygon(vector<glm::ivec3> windowVertics)
+	{
+		points2Clockwise(windowVertics);
+		points2Clockwise(vertics);
 	}
 };
 

@@ -123,6 +123,20 @@ class line
 			this->color = lineColor;
 			this->pointSize = 6 * sizeof(GLfloat);
 		}
+		void setPoint(glm::ivec3 p1, glm::ivec3 p2)
+		{
+			this->x1 = p1.x;
+			this->x2 = p2.x;
+			this->y1 = p1.y;
+			this->y2 = p2.y;
+		}
+		glm::ivec3 getPoint(GLint index)
+		{
+			if (index == 0)
+				return glm::ivec3(x1, y1, 0);
+			if (index == 1)
+				return glm::ivec3(x2, y2, 0);
+		}
 		vector<GLfloat> getLinePixels()
 		{
 			return this->pixels;
@@ -334,6 +348,31 @@ class line
 							}	
 							lineUseBresenham();
 						}		
+		}
+		GLboolean findLineIntersect(line line2, glm::ivec3 &point)
+		{
+			//求线段的交点
+			glm::ivec3 pA = glm::ivec3(x1, y1, 0), pB = glm::ivec3(x2, y2, 0),
+				pC = line2.getPoint(0), pD = line2.getPoint(1);
+			GLfloat denominator = (pB.y - pA.y)*(pD.x - pC.x) - (pA.x - pB.x)*(pC.y - pD.y);
+			if (denominator == 0)
+				return false;
+			GLint intersectX, intersectY;
+			intersectX = ((pB.x - pA.x)*(pD.x - pC.x)*(pC.y - pA.y) + (pB.y - pA.y)*(pD.x - pC.x)*pA.x
+				- (pD.y - pC.y)*(pB.x - pA.x)*pC.x) / denominator;
+			intersectY = -((pB.y - pA.y)*(pD.y - pC.y)*(pC.x - pA.x) + (pB.x - pA.x)*(pD.y - pC.y)*pA.y
+				- (pD.x - pC.x)*(pB.y - pA.y)*pC.y) / denominator;
+
+			//判断交点是否在两条线段上
+			if ((intersectX - pA.x)*(intersectX - pB.x) <= 0 && (intersectY - pA.y)*(intersectY - pB.y) <= 0
+				&& (intersectX - pC.x)*(intersectX - pD.x) <= 0 && (intersectY - pC.y)*(intersectY - pD.y) <= 0)
+			{
+				point.x = (GLint)intersectX;
+				point.y = (GLint)intersectY;
+				return true;
+			}
+			else
+				return false;
 		}
 };
 
