@@ -59,5 +59,8 @@
     <ClInclude Include="cubicEquation.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Weiler_Atherton.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
