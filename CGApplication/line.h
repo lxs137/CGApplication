@@ -149,6 +149,17 @@ class line
 		{
 			return this->pointSize;
 		}		
+		glm::ivec3 findNextPoint(glm::ivec3 nowPoint,GLint next_dert)
+		{
+			GLfloat k=((GLfloat)(y2-y1))/(x2-x1);
+			GLint dertX=(GLint)sqrt((next_dert*next_dert)/(1+k*k));
+			if (x2 - x1 >= 0)
+				dertX = abs(dertX);
+			else
+				dertX = -abs(dertX);
+			GLint dertY = (GLint)(k*dertX);
+			return glm::ivec3(nowPoint.x+dertX,nowPoint.y+dertY,0);
+		}
 		void lineUseBresenham()
 		{
 			clearPixels();

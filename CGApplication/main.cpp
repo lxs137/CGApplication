@@ -74,7 +74,7 @@ int main()
 		//myTextureManager->bindTexture(testTextureID);
 		glBindVertexArray(myVAO);
 		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
-		glDrawArrays(GL_POINTS, 0, mySpline.getPointsNum());
+		glDrawArrays(GL_POINTS, 0, myPolygon.getPointsNum());
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
@@ -161,24 +161,36 @@ GLuint initVAO()
 	//glBufferData(GL_ARRAY_BUFFER, myBezier.getPointsNum()*myBezier.getPointSize(),
 	//	myBezier.getBezierPixels().begin()._Ptr, GL_STATIC_DRAW);
 
-	mySpline = spline(glm::ivec3(-250, -200, 0), glm::ivec3(-150, 100, 0),
-			glm::ivec3(150, 250, 0),glm::ivec3(300, -100, 0), glm::vec3(1.0f, 0.0f, 0.0f));
-	mySpline.splineUseLine();
-	//mySpline.clipUseRect(glm::ivec3(-100, 0, 0), glm::ivec3(250, 150, 0));
-	mySpline.showControlPoints();
-	glBufferData(GL_ARRAY_BUFFER, mySpline.getPointsNum()*mySpline.getPointSize(),
-		mySpline.getSplinePixels().begin()._Ptr, GL_STATIC_DRAW);
+	//mySpline = spline(glm::ivec3(-250, -200, 0), glm::ivec3(-150, 100, 0),
+	//		glm::ivec3(150, 250, 0),glm::ivec3(300, -100, 0), glm::vec3(1.0f, 0.0f, 0.0f));
+	//mySpline.splineUseLine();
+	////mySpline.clipUseRect(glm::ivec3(-100, 0, 0), glm::ivec3(250, 150, 0));
+	//mySpline.showControlPoints();
+	//glBufferData(GL_ARRAY_BUFFER, mySpline.getPointsNum()*mySpline.getPointSize(),
+	//	mySpline.getSplinePixels().begin()._Ptr, GL_STATIC_DRAW);
 
-	/*vector<glm::ivec3> verticsPoint;
-	verticsPoint.push_back(glm::ivec3(-300, 0, 0));
-	verticsPoint.push_back(glm::ivec3(100, 200, 0));
-	verticsPoint.push_back(glm::ivec3(150, -100, 0));
-	verticsPoint.push_back(glm::ivec3(0, 50, 0));
+	vector<glm::ivec3> verticsPoint;
+	vector<glm::ivec3> windowPoint;
+	verticsPoint.push_back(glm::ivec3(-200, -100, 0));
+	verticsPoint.push_back(glm::ivec3(-200, 100, 0));
+	verticsPoint.push_back(glm::ivec3(200, 100, 0));
+	verticsPoint.push_back(glm::ivec3(200, -100, 0));
+
+	windowPoint.push_back(glm::ivec3(250, -200, 0));
+	windowPoint.push_back(glm::ivec3(250, 150, 0));
+	windowPoint.push_back(glm::ivec3(100, 150, 0));
+	windowPoint.push_back(glm::ivec3(100, -150, 0));
+	windowPoint.push_back(glm::ivec3(-50, -150, 0));
+	windowPoint.push_back(glm::ivec3(-50, 150, 0));
+	windowPoint.push_back(glm::ivec3(-100, 150, 0));
+	windowPoint.push_back(glm::ivec3(-100, -200, 0));
 	myPolygon = polygon(verticsPoint, glm::vec3(0.0f, 0.0f, 0.0f));
 	myPolygon.polygonUseLine();
-	myPolygon.fillPolygonScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
+	myPolygon.clipWithPolygon(windowPoint);
+	//myPolygon.fillPolygonScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
+
 	glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
-	myPolygon.getPolygonPixels().begin()._Ptr, GL_STATIC_DRAW);*/
+	myPolygon.getPolygonPixels().begin()._Ptr, GL_STATIC_DRAW);
 
 	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 

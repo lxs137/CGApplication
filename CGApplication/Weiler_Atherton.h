@@ -2,7 +2,6 @@
 #define WEILERATHERTON_H
 #include "windowSetting.h"
 #include "line.h"
-#include "polygon.h"
 #define GLEW_STATIC
 #include <gl\glew.h>
 #include <cmath>
@@ -44,9 +43,21 @@ GLboolean pointIfInPoly(glm::ivec3 point,vector<glm::ivec3> vertics,glm::ivec2 x
 	return result;
 }
 
-vector<polygon> clipPolygonUseWA(vector<glm::ivec3> polygonVertics,vector<glm::ivec3> windowVertics)
+GLint findIndexInVertics(glm::ivec3 point,vector<InterSectPoint> verticsInject)
+{
+	GLint n=verticsInject.size();
+	for (GLint i = 0; i < n; i++)
+	{
+		if (verticsInject[i].point==point)
+			return i;
+	}
+	return -1;
+}
+
+vector<vector<glm::ivec3>> clipPolygonUseWA(vector<glm::ivec3> polygonVertics,vector<glm::ivec3> windowVertics)
 {
 	vector<InterSectPoint> injectPoints, polygonAddInject, windowAddInject;
+	vector<vector<glm::ivec3>> resultPolygon;
 
 	//求出被裁减多边形的横纵坐标极值
 	glm::vec2 polygonXYMin, polygonXYMax;
@@ -76,7 +87,8 @@ vector<polygon> clipPolygonUseWA(vector<glm::ivec3> polygonVertics,vector<glm::i
 			lineWindow.setPoint(windowVertics[j % numWindow], windowVertics[(j + 1) % numWindow]);
 			if (linePolygon.findLineIntersect(lineWindow, interPoint))
 			{
-				if (pointIfInPoly(windowVertics[(j + 1) % numWindow], polygonVertics, polygonXYMin, polygonXYMax))
+				glm::ivec3 nextPoint=linePolygon.findNextPoint(interPoint,NEXT_POINT_DERT);
+				if (pointIfInPoly(nextPoint, windowVertics, polygonXYMin, polygonXYMax))
 					injectPoints.push_back({ glm::ivec3(interPoint.x, interPoint.y, 0), 1, i, j, 0 });
 				else
 					injectPoints.push_back({ glm::ivec3(interPoint.x, interPoint.y, 0), 1, i, j, 1 });
@@ -100,7 +112,7 @@ vector<polygon> clipPolygonUseWA(vector<glm::ivec3> polygonVertics,vector<glm::i
 		sort(pointsDis.begin(), pointsDis.end(), distanceCompare);
 		for (GLint k = 0; k < pointsDis.size(); k++)
 		{
-			windowAddInject.push_back({ injectPoints[pointsDis[k].indexInInject] });
+			windowAddInject.push_back( injectPoints[pointsDis[k].indexInInject] );
 		}
 	}
 
@@ -120,16 +132,70 @@ vector<polygon> clipPolygonUseWA(vector<glm::ivec3> polygonVertics,vector<glm::i
 		sort(pointsDis.begin(), pointsDis.end(), distanceCompare);
 		for (GLint k = 0; k < pointsDis.size(); k++)
 		{
-			polygonAddInject.push_back({ injectPoints[pointsDis[k].indexInInject] });
+			polygonAddInject.push_back(injectPoints[pointsDis[k].indexInInject]);
 		}
 	}
 
-	//标记出入点
-	for (GLint i = 0; i < windowAddInject.size(); i++)
+	GLint numPolygonAdd = polygonAddInject.size(), numWindowAdd = windowAddInject.size();
+	vector<glm::ivec3> onePolygon;
+	GLint whichInjectVertics = 1;//1:在polygonAddInject中搜索   2:在windowAddInject中搜索
+	GLint indexInPolygon, indexInWindow;
+	for (GLint i = 0; i < numPolygonAdd; i++)
 	{
-
+		if (polygonAddInject[i].flag==1&&polygonAddInject[i].status == 0)
+		{
+			onePolygon.clear();
+			onePolygon.push_back(polygonAddInject[i].point);
+			polygonAddInject[i].status = -1;
+			indexInPolygon = i+1, indexInWindow = 0;
+			whichInjectVertics = 1;
+			while (indexInPolygon < numPolygonAdd && indexInPolygon >=0 
+				&& indexInWindow < numWindowAdd && indexInWindow >= 0)
+			{
+				if (whichInjectVertics == 1)
+				{
+					if (polygonAddInject[indexInPolygon].status != 1)
+					{
+						onePolygon.push_back(polygonAddInject[indexInPolygon].point);
+						polygonAddInject[indexInPolygon].status = -1;
+						indexInPolygon++;
+					}
+					else
+					{
+						whichInjectVertics = 2;
+						indexInWindow = findIndexInVertics(polygonAddInject[indexInPolygon].point, windowAddInject);
+					}
+				}
+				else if (whichInjectVertics == 2)
+				{
+					if (windowAddInject[indexInWindow].status != 0)
+					{
+						onePolygon.push_back(windowAddInject[indexInWindow].point);
+						windowAddInject[indexInWindow].status = -1;
+						indexInWindow++;
+					}
+					else
+					{
+						whichInjectVertics = 3;
+						indexInPolygon = findIndexInVertics(windowAddInject[indexInWindow].point, polygonAddInject);
+					}
+				}
+				else if (whichInjectVertics == 3)
+				{
+					if (onePolygon.front()== windowAddInject[indexInWindow].point)
+					{
+						resultPolygon.push_back(onePolygon);
+						break;
+					}
+					else
+					{
+						whichInjectVertics = 1;
+					}
+				}
+			}
+		}
 	}
-	
+	return resultPolygon;	
 }
 
 #endif // !WEILERATHERTON_H

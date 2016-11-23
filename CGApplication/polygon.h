@@ -3,13 +3,13 @@
 
 #include "windowSetting.h"
 #include "line.h"
+#include "Weiler_Atherton.h"
 #define GLEW_STATIC
 #include <gl\glew.h>
 #include <cmath>
 #include <vector>
 #include <list>
 using namespace std;
-
 
 struct Edge
 {
@@ -199,20 +199,15 @@ private:
 		// turn the points to clockwise
 		if (points.size() < 3)
 			return;
-		GLint j, k, count = 0, n=points.size();
-		GLfloat z;
+		GLint j, k, n=points.size();
+		GLfloat s=0;
 		for (GLint i = 0; i < n; i++)
 		{
-			j = (i + 1) % n;
-			k = (i + 2) % n;
-			z = (points[j].x - points[i].x) * (points[k].y - points[j].y);
-			z -= (points[j].x - points[i].y) * (points[k].x - points[j].x);
-			if (z < 0)
-				count--;
-			else if (z > 0)
-				count++;
+			j = (i + n - 1) % n;
+			k = (i + 1) % n;
+			s += points[i].y*(points[j].x - points[k].x);
 		}
-		if (count>0)
+		if (s<0.0f)
 			return;
 		else
 		{
@@ -238,6 +233,14 @@ public:
 		this->lineColor = glm::vec3(0.0f, 0.0f, 0.0f);
 		this->fillColor = glm::vec3(0.0f, 0.0f, 0.0f);
 	}
+	polygon(vector<glm::ivec3> verticsPoint)
+	{
+		this->pointsNum = 0;
+		this->pointSize = 6 * sizeof(GLfloat);
+		this->vertics.insert(vertics.end(), verticsPoint.begin(), verticsPoint.end());
+		this->lineColor = glm::vec3(0.0f, 0.0f, 0.0f);
+		this->fillColor = glm::vec3(0.0f, 0.0f, 0.0f);
+	}
 	polygon(vector<glm::ivec3> verticsPoint, glm::ivec3 lineColor)
 	{
 		this->pointsNum = 0;
@@ -257,6 +260,10 @@ public:
 	GLint getPointSize()
 	{
 		return this->pointSize;
+	}
+	vector<glm::ivec3> getVertics()
+	{
+		return this->vertics;
 	}
 	void polygonUseLine()
 	{
@@ -292,10 +299,18 @@ public:
 		initActiveEdgeTable(SET, AET, yMin, yMax);
 		fillScanLine(AET, yMin);
 	}
-	vector<polygon> clipWithPolygon(vector<glm::ivec3> windowVertics)
+	void clipWithPolygon(vector<glm::ivec3> windowVertics)
 	{
 		points2Clockwise(windowVertics);
-		points2Clockwise(vertics);
+		points2Clockwise(this->vertics);
+		vector<vector<glm::ivec3>> clipResult = clipPolygonUseWA(this->vertics, windowVertics);
+		vector<polygon>::iterator iVector;
+		for (GLint i=0; i<clipResult.size(); i++)
+		{
+			cout << "polygon:"<<endl;
+			for (GLint j = 0; j < clipResult[i].size(); j++)
+				cout << "    (" << clipResult[i][j].x << "," << clipResult[i][j].y << ")" << endl;
+		}
 	}
 };
 
