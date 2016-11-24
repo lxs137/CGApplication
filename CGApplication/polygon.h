@@ -299,18 +299,22 @@ public:
 		initActiveEdgeTable(SET, AET, yMin, yMax);
 		fillScanLine(AET, yMin);
 	}
-	void clipWithPolygon(vector<glm::ivec3> windowVertics)
+	vector<polygon> clipWithPolygon(vector<glm::ivec3> windowVertics)
 	{
 		points2Clockwise(windowVertics);
 		points2Clockwise(this->vertics);
-		vector<vector<glm::ivec3>> clipResult = clipPolygonUseWA(this->vertics, windowVertics);
-		vector<polygon>::iterator iVector;
-		for (GLint i=0; i<clipResult.size(); i++)
+		vector<vector<glm::ivec3>> clipVertics = clipPolygonUseWA(this->vertics, windowVertics);
+		vector<polygon> clipPolygon;
+		polygon onePolygon;
+		for (GLint i=0; i<clipVertics.size(); i++)
 		{
-			cout << "polygon:"<<endl;
-			for (GLint j = 0; j < clipResult[i].size(); j++)
-				cout << "    (" << clipResult[i][j].x << "," << clipResult[i][j].y << ")" << endl;
+			onePolygon = polygon(clipVertics[i]);
+			clipPolygon.push_back(onePolygon);
+			/*cout << "polygon:"<<endl;
+			for (GLint j = 0; j < clipVertics[i].size(); j++)
+				cout << "    (" << clipVertics[i][j].x << "," << clipVertics[i][j].y << ")" << endl;*/
 		}
+		return clipPolygon;
 	}
 };
 

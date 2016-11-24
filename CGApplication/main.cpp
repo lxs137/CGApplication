@@ -171,19 +171,22 @@ GLuint initVAO()
 
 	vector<glm::ivec3> verticsPoint;
 	vector<glm::ivec3> windowPoint;
-	verticsPoint.push_back(glm::ivec3(-200, -100, 0));
-	verticsPoint.push_back(glm::ivec3(-200, 100, 0));
+	verticsPoint.push_back(glm::ivec3(-200, 150, 0));
+	verticsPoint.push_back(glm::ivec3(250, 150, 0));
+	verticsPoint.push_back(glm::ivec3(250, -100, 0));
+	verticsPoint.push_back(glm::ivec3(-250, -100, 0));
+	verticsPoint.push_back(glm::ivec3(-250, -50, 0));
+	verticsPoint.push_back(glm::ivec3(200, -50, 0));
 	verticsPoint.push_back(glm::ivec3(200, 100, 0));
-	verticsPoint.push_back(glm::ivec3(200, -100, 0));
+	verticsPoint.push_back(glm::ivec3(-200, 100, 0));
 
-	windowPoint.push_back(glm::ivec3(250, -200, 0));
-	windowPoint.push_back(glm::ivec3(250, 150, 0));
-	windowPoint.push_back(glm::ivec3(100, 150, 0));
+	windowPoint.push_back(glm::ivec3(300, -200, 0));
+	windowPoint.push_back(glm::ivec3(100, 250, 0));
 	windowPoint.push_back(glm::ivec3(100, -150, 0));
-	windowPoint.push_back(glm::ivec3(-50, -150, 0));
-	windowPoint.push_back(glm::ivec3(-50, 150, 0));
-	windowPoint.push_back(glm::ivec3(-100, 150, 0));
-	windowPoint.push_back(glm::ivec3(-100, -200, 0));
+	windowPoint.push_back(glm::ivec3(-100, -150, 0));
+	windowPoint.push_back(glm::ivec3(-100, 200, 0));
+	windowPoint.push_back(glm::ivec3(-150, 200, 0));
+	windowPoint.push_back(glm::ivec3(-150, -200, 0));
 	myPolygon = polygon(verticsPoint, glm::vec3(0.0f, 0.0f, 0.0f));
 	myPolygon.polygonUseLine();
 	myPolygon.clipWithPolygon(windowPoint);

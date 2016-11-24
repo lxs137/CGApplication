@@ -134,8 +134,10 @@ class line
 		{
 			if (index == 0)
 				return glm::ivec3(x1, y1, 0);
-			if (index == 1)
+			else if (index == 1)
 				return glm::ivec3(x2, y2, 0);
+			else
+				return glm::ivec3(x1, y1, 0);
 		}
 		vector<GLfloat> getLinePixels()
 		{
@@ -151,6 +153,10 @@ class line
 		}		
 		glm::ivec3 findNextPoint(glm::ivec3 nowPoint,GLint next_dert)
 		{
+			if (x1 == x2&&y2 > y1)
+				return glm::ivec3(nowPoint.x, nowPoint.y + next_dert, 0);
+			else if (x1 == x2&&y2 <= y1)
+				return glm::ivec3(nowPoint.x, nowPoint.y - next_dert, 0);
 			GLfloat k=((GLfloat)(y2-y1))/(x2-x1);
 			GLint dertX=(GLint)sqrt((next_dert*next_dert)/(1+k*k));
 			if (x2 - x1 >= 0)

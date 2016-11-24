@@ -147,7 +147,7 @@ vector<vector<glm::ivec3>> clipPolygonUseWA(vector<glm::ivec3> polygonVertics,ve
 			onePolygon.clear();
 			onePolygon.push_back(polygonAddInject[i].point);
 			polygonAddInject[i].status = -1;
-			indexInPolygon = i+1, indexInWindow = 0;
+			indexInPolygon = (i+1)%numPolygonAdd, indexInWindow = 0;
 			whichInjectVertics = 1;
 			while (indexInPolygon < numPolygonAdd && indexInPolygon >=0 
 				&& indexInWindow < numWindowAdd && indexInWindow >= 0)
