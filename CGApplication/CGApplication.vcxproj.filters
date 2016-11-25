@@ -18,15 +18,24 @@
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="3D.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="first.vert">
-      <Filter>源文件</Filter>
-    </None>
-    <None Include="first.frag">
-      <Filter>源文件</Filter>
-    </None>
     <None Include="ClassDiagram1.cd" />
+    <None Include="2dModel.vert">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="2dModel.frag">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="3dModel.vert">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="3dModel.frag">
+      <Filter>源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.h">
