@@ -8,7 +8,7 @@ using namespace std;
 
 #define GLEW_STATIC
 #include <gl\glew.h>
-#include <GLFW\glfw3.h>
+#include <freeglut\glut.h>
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\type_ptr.hpp>
@@ -59,86 +59,83 @@ GLfloat vertices[] = {
 };
 
 TextureManager *myTextureManager;
-
-GLFWwindow *window;
-
-void initWindow();  //initGLFWwindow
-GLuint initVAO();
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
-glm::mat4 getTransformMatrix();
-
-int main()
+GLuint myShaderProgram;
+GLuint myVAO;
+unsigned int testTextureID = 1;
+struct uniformLocation
 {
-	initWindow();
+	GLuint transformLocation;
+	GLuint modelLocation;
+	GLuint viewLocation;
+	GLuint projectionLocation;
+}uniformLoc;
+glm::mat4 transformMat;
+
+void initGlutWindow();
+GLuint initVAO();
+glm::mat4 getTransformMatrix();
+void render3DSence();
+
+int main(int argc,char *argv[])
+{
+	glutInit(&argc, argv);
+	initGlutWindow();
 
 	//set shader program
-	GLuint myShaderProgram;
 	shader *myShader = new shader("3dModel.vert", "3dModel.frag");
 	myShaderProgram = myShader->shaderProgram;
 
 	//set VAO
-	GLuint myVAO;
 	myVAO = initVAO();
 
-	unsigned int testTextureID=1;
+	//set texture
 	myTextureManager = new TextureManager();
 	myTextureManager->loadTexture("E:\\CGApplication\\boardTexture.jpg", testTextureID);
 
 	//set transform
-	GLuint transformLocation = glGetUniformLocation(myShaderProgram, "transform"),
-		modelLocation = glGetUniformLocation(myShaderProgram, "model"),
-		viewLocation = glGetUniformLocation(myShaderProgram, "view"),
-		projectionLocation = glGetUniformLocation(myShaderProgram, "projection");
-	glm::mat4 transformMat = getTransformMatrix();
+	uniformLoc.transformLocation = glGetUniformLocation(myShaderProgram, "transform");
+	uniformLoc.modelLocation = glGetUniformLocation(myShaderProgram, "model");
+	uniformLoc.viewLocation = glGetUniformLocation(myShaderProgram, "view");
+	uniformLoc.projectionLocation = glGetUniformLocation(myShaderProgram, "projection");
+	transformMat = getTransformMatrix();
 
 	glEnable(GL_DEPTH_TEST);
-	while (!glfwWindowShouldClose(window))
-	{
-		glfwPollEvents();
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	glutDisplayFunc(render3DSence);
+	glutMainLoop();
 
-		myTextureManager->bindTexture(testTextureID);
-		glUseProgram(myShaderProgram);
-		
-		glm::mat4 model, view, projection;
-		model = glm::rotate(model, glm::radians((GLfloat)glfwGetTime()*50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-		projection = glm::perspective(glm::radians(45.0f), (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
-		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
-		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
-		glBindVertexArray(myVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-
-		glfwSwapBuffers(window);
-	}
 	//clean all resources
 	glDeleteVertexArrays(1, &myVAO);
-	glfwTerminate();
 	return 0;
 }
 
-void initWindow()
+void render3DSence()
 {
-	// Init GLFW
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
-	if (window == nullptr)
-	{
-		cout << "Failed to create GLFW window" << endl;
-		glfwTerminate();
-		return;
-	}
-	glfwSetKeyCallback(window, key_callback);
-	glfwMakeContextCurrent(window);
+	myTextureManager->bindTexture(testTextureID);
+	glUseProgram(myShaderProgram);
+
+	glm::mat4 model, view, projection;
+	model = glm::rotate(model, glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+	projection = glm::perspective(glm::radians(45.0f), (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
+	glUniformMatrix4fv(uniformLoc.transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
+	glUniformMatrix4fv(uniformLoc.modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+	glUniformMatrix4fv(uniformLoc.viewLocation, 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(uniformLoc.projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
+	glBindVertexArray(myVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+
+	glutSwapBuffers();
+}
+void initGlutWindow()
+{
+	glutInitWindowPosition(-1, -1);
+	glutInitWindowSize(WIDTH, HEIGHT);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+	glutCreateWindow("OpenGL Application");
 
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
@@ -146,11 +143,7 @@ void initWindow()
 		cout << "Failed to initialize GLEW" << endl;
 		return;
 	}
-
-	int width, height;
-	glfwGetFramebufferSize(window, &width, &height);
-	glViewport(0, 0, width, height);
-
+	glViewport(0, 0, WIDTH, HEIGHT);
 }
 GLuint initVAO()
 {
@@ -171,11 +164,6 @@ GLuint initVAO()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	return VAO;
-}
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
-{
-	if (key == GLFW_KEY_ESCAPE&&action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, GL_TRUE);
 }
 glm::mat4 getTransformMatrix()
 {
