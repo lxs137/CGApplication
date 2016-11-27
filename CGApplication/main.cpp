@@ -26,7 +26,8 @@
 //GLuint myShaderProgram;
 //GLuint myVAO;
 //
-//GLfloat lastMouseX = 400, lastMouseY = 300;
+//GLfloat lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
+//
 //
 //void initGlutWindow();
 //void loadImageAsTexture(unsigned int testTextureID, const char *filename);
@@ -35,6 +36,8 @@
 ////glut function
 //void renderSence();
 //void onMouseClick(int button, int state, int x, int y);
+//void onMousePassiveMotion(int x, int y);
+//void onReshape(int width, int height);
 //
 //int main(int argc, char *argv[])
 //{
@@ -57,6 +60,7 @@
 //	glm::mat4 transformMat = getTransformMatrix();
 //
 //	glutDisplayFunc(renderSence);
+//	glutReshapeFunc(onReshape);
 //	glutMainLoop();
 //}
 //
@@ -75,6 +79,14 @@
 //	glutSwapBuffers();
 //}
 //void onMouseClick(int button, int state, int x, int y)
+//{
+//
+//}
+//void onMousePassiveMotion(int x, int y)
+//{
+//
+//}
+//void onReshape(int width, int height)
 //{
 //
 //}

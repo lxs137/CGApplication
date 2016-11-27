@@ -1,14 +1,16 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <time.h>
 #include "shader.h"
 #include "textureManager.h"
+#include "camera.h"
 #include "windowSetting.h"
 using namespace std;
 
 #define GLEW_STATIC
 #include <gl\glew.h>
-#include <freeglut\glut.h>
+#include <freeglut\freeglut.h>
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\type_ptr.hpp>
@@ -61,22 +63,29 @@ GLfloat vertices[] = {
 TextureManager *myTextureManager;
 GLuint myShaderProgram;
 GLuint myVAO;
+Camera myCamera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 unsigned int testTextureID = 1;
 struct uniformLocation
 {
-	GLuint transformLocation;
 	GLuint modelLocation;
 	GLuint viewLocation;
 	GLuint projectionLocation;
 }uniformLoc;
-glm::mat4 transformMat;
+GLfloat lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
+GLboolean normalKeys[128];
+GLboolean firstMouse=GL_FALSE;//标识视角旋转时鼠标是否刚被按下
 
 void initGlutWindow();
 GLuint initVAO();
-glm::mat4 getTransformMatrix();
 void render3DSence();
+void onNormalKeyPress(unsigned char key, int x, int y);
+void onNormalKeyRelease(unsigned char key, int x, int y);
+void onMouseClick(int button, int state, int x, int y);
+void onMouseActiveMotion(int x, int y);
+void onMouseWheelScroll(int wheel, int direction, int x, int y);
+void doMovement();
 
-int main(int argc,char *argv[])
+int main(int argc, char *argv[])
 {
 	glutInit(&argc, argv);
 	initGlutWindow();
@@ -93,16 +102,19 @@ int main(int argc,char *argv[])
 	myTextureManager->loadTexture("E:\\CGApplication\\boardTexture.jpg", testTextureID);
 
 	//set transform
-	uniformLoc.transformLocation = glGetUniformLocation(myShaderProgram, "transform");
 	uniformLoc.modelLocation = glGetUniformLocation(myShaderProgram, "model");
 	uniformLoc.viewLocation = glGetUniformLocation(myShaderProgram, "view");
 	uniformLoc.projectionLocation = glGetUniformLocation(myShaderProgram, "projection");
-	transformMat = getTransformMatrix();
 
 	glEnable(GL_DEPTH_TEST);
 	glutDisplayFunc(render3DSence);
+	glutIdleFunc(render3DSence);
+	glutKeyboardFunc(onNormalKeyPress);
+	glutKeyboardUpFunc(onNormalKeyRelease);
+	glutMouseFunc(onMouseClick);
+	glutMotionFunc(onMouseActiveMotion);
+	glutMouseWheelFunc(onMouseWheelScroll);
 	glutMainLoop();
-
 	//clean all resources
 	glDeleteVertexArrays(1, &myVAO);
 	return 0;
@@ -110,7 +122,8 @@ int main(int argc,char *argv[])
 
 void render3DSence()
 {
-	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	doMovement();
+	glClearColor(0.f, 0.f, 0.f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	myTextureManager->bindTexture(testTextureID);
@@ -118,9 +131,8 @@ void render3DSence()
 
 	glm::mat4 model, view, projection;
 	model = glm::rotate(model, glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-	projection = glm::perspective(glm::radians(45.0f), (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
-	glUniformMatrix4fv(uniformLoc.transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
+	view = myCamera.getViewMartix();
+	projection = glm::perspective(myCamera.getZoom(), (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
 	glUniformMatrix4fv(uniformLoc.modelLocation, 1, GL_FALSE, glm::value_ptr(model));
 	glUniformMatrix4fv(uniformLoc.viewLocation, 1, GL_FALSE, glm::value_ptr(view));
 	glUniformMatrix4fv(uniformLoc.projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
@@ -129,6 +141,66 @@ void render3DSence()
 	glBindVertexArray(0);
 
 	glutSwapBuffers();
+}
+void onNormalKeyPress(unsigned char key, int x, int y)
+{
+	if (key >= 0 && key <= 127)
+	{
+		normalKeys[key] = GL_TRUE;
+	}
+}
+void onNormalKeyRelease(unsigned char key, int x, int y)
+{
+	if (key >= 0 && key <= 127)
+	{
+		normalKeys[key] = GL_FALSE;
+	}
+}
+void onMouseClick(int button, int state, int x, int y)
+{
+	if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
+	{
+		//修改上一帧时的鼠标位置，防止视角跳变
+		lastMouseX = x;
+		lastMouseY = y;
+		firstMouse = GL_TRUE;
+	}
+	if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
+		firstMouse = GL_FALSE;
+}
+void onMouseActiveMotion(int x, int y)
+{
+	if (firstMouse)//只有当修改了lastMouseX，lastMouseY后，才使视角变换
+	{
+		GLfloat xMove = x - lastMouseX;
+		GLfloat yMove = y - lastMouseY;
+		lastMouseX = x;
+		lastMouseY = y;
+		myCamera.processMouseMovement(xMove, -yMove);
+	}	
+}
+void onMouseWheelScroll(int wheel, int direction, int x, int y)
+{
+	myCamera.processMouseScroll(direction);
+}
+void doMovement()
+{
+	if (normalKeys[119]||normalKeys[87])
+	{
+		myCamera.processKeyBoard(FORWARD);
+	}
+	if (normalKeys[115]||normalKeys[83])
+	{
+		myCamera.processKeyBoard(BACKWARD);
+	}
+	if (normalKeys[100]||normalKeys[68])
+	{
+		myCamera.processKeyBoard(RIGHT);
+	}
+	if (normalKeys[97]||normalKeys[65])
+	{
+		myCamera.processKeyBoard(LEFT);
+	}
 }
 void initGlutWindow()
 {
@@ -164,11 +236,4 @@ GLuint initVAO()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	return VAO;
-}
-glm::mat4 getTransformMatrix()
-{
-	glm::mat4 transformMat;
-	//transformMat = glm::rotate(transformMat,(GLfloat)glfwGetTime()*PI/2, glm::vec3(0, 0, 1));
-	transformMat = glm::scale(transformMat, glm::vec3(1.0, 1.0, 1.0));
-	return transformMat;
 }
