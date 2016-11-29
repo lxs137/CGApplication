@@ -8,6 +8,7 @@ const GLint WIDTH_HALF = 400, HEIGHT_HALF = 300;
 const GLfloat BEZIER_DERT_T = 0.01f;
 const GLfloat SPLINE_DERT_T = 0.01f;
 const GLint NEXT_POINT_DERT = 5;
+const GLint CHANGE_POINT_DIS = 6;
 enum DRAWINGMODEL
 {
 	DRAWLINE,

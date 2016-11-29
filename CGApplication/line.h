@@ -16,6 +16,7 @@ class line
 		vector<GLfloat> pixels;
 		GLint x1, y1, x2, y2;
 		glm::vec3 color;
+		GLint drawingPointIndex;
 		void pushPoint(glm::ivec3 pointPosition)
 		{
 			pixels.push_back(pointPosition.x  / (GLfloat)WIDTH_HALF);
@@ -28,29 +29,31 @@ class line
 		}
 		void lineSlope1()
 		{
-			if ((x2 - x1)*(y2 - y1) > 0)
+			GLint x_1 = x1, x_2 = x2, y_1 = y1, y_2 = y2;
+			if ((x_2 - x_1)*(y_2 - y_1) > 0)
 			{
-				int dx = abs(x2 - x1);
-				x1 = (x1 < x2) ? x1 : x2;
-				y1 = (y1 < y2) ? y1 : y2;
+				int dx = abs(x_2 - x_1);
+				x_1 = (x_1 < x_2) ? x_1 : x_2;
+				y_1 = (y_1 < y_2) ? y_1 : y_2;
 				for (int i = 0; i <= dx; i++)
-					pushPoint(glm::ivec3(x1 + i, y1 + i, 0));
+					pushPoint(glm::ivec3(x_1 + i, y_1 + i, 0));
 			}
 			else
 			{
-				int dx = abs(y2 - y1);
-				x1 = (x1 < x2) ? x1 : x2;
-				y1 = (y1 < y2) ? y2 : y1;
+				int dx = abs(y_2 - y_1);
+				x_1 = (x_1 < x_2) ? x_1 : x_2;
+				y_1 = (y_1 < y_2) ? y_2 : y_1;
 				for (int i = 0; i <= dx; i++)
-					pushPoint(glm::ivec3(x1 + i, y1 - i, 0));
+					pushPoint(glm::ivec3(x_1 + i, y_1 - i, 0));
 			}
 			return;
 		}
 		void lineVertical()
 		{
-			if (y1>y2)
-				swap(y1, y2);
-			for (GLint y = y1; y <= y2; y++)
+			GLint y_1 = y1, y_2 = y2;
+			if (y_1>y_2)
+				swap(y_1, y_2);
+			for (GLint y = y_1; y <= y_2; y++)
 			{
 				pushPoint(glm::ivec3(x1,y,0));
 			}
@@ -100,6 +103,7 @@ class line
 			this->pointsNum = 0;
 			this->color = glm::vec3(0.0f,0.0f,0.0f);
 			this->pointSize = 6 * sizeof(GLfloat);
+			this->drawingPointIndex = 1;
 		}
 		line(glm::ivec3 p1, glm::ivec3 p2,glm::vec3 lineColor)
 		{
@@ -120,6 +124,20 @@ class line
 			this->pointsNum = 0;
 			this->color = lineColor;
 			this->pointSize = 6 * sizeof(GLfloat);
+			this->drawingPointIndex = 1;
+		}
+		void setDrawingPoint(glm::ivec3 point)
+		{
+			if (drawingPointIndex == 0)
+			{
+				this->x1 = point.x;
+				this->y1 = point.y;
+			}
+			else if (drawingPointIndex == 1)
+			{
+				this->x2 = point.x;
+				this->y2 = point.y;
+			}
 		}
 		void setPoint(glm::ivec3 p1, glm::ivec3 p2)
 		{
@@ -127,6 +145,25 @@ class line
 			this->x2 = p2.x;
 			this->y1 = p1.y;
 			this->y2 = p2.y;
+		}
+		GLboolean checkChangePoint(glm::ivec3 changePoint)
+		{
+			if (abs(changePoint.x - x1) <= CHANGE_POINT_DIS&&abs(changePoint.y - y1) <= CHANGE_POINT_DIS)
+			{
+				x1 = changePoint.x;
+				y1 = changePoint.y;
+				drawingPointIndex = 0;
+				return GL_TRUE;
+			}
+			else if (abs(changePoint.x - x2) <= CHANGE_POINT_DIS&&abs(changePoint.y - y2) <= CHANGE_POINT_DIS)
+			{
+				x2 = changePoint.x;
+				y2 = changePoint.y;
+				drawingPointIndex = 1;
+				return GL_TRUE;
+			}
+			else
+				return GL_FALSE;
 		}
 		glm::ivec3 getPoint(GLint index)
 		{
@@ -179,7 +216,11 @@ class line
 				swap(y_1, y_2);
 			}
 			else if (x_1 == x_2)
+			{
 				lineVertical();
+				return;
+			}
+				
 			GLfloat m = ((GLfloat)(y_2 - y_1)) / (x_2 - x_1);
 			if (m > 0 && m < 1)
 			{

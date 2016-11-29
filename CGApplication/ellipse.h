@@ -131,6 +131,16 @@ public:
 		this->lineColor = ellipseColor;
 		this->fillColor = glm::vec3(0.0f, 0.0f, 0.0f);
 	}
+	void setCenter(glm::ivec3 center)
+	{
+		this->centerX = center.x;
+		this->centerY = center.y;
+	}
+	void setRadius(GLint rX, GLint rY)
+	{
+		this->radiusX = rX;
+		this->radiusY = rY;
+	}
 	vector<GLfloat> getEllipsePixels()
 	{
 		return this->pixels;
@@ -143,13 +153,21 @@ public:
 	{
 		return this->pointSize;
 	}
+	glm::ivec3 getCenter()
+	{
+		return glm::ivec3(centerX, centerY, 0);
+	}
+	glm::ivec3 getRadius()
+	{
+		return glm::ivec3(radiusX,radiusY,0);
+	}
 	void ellipseUseMidpoint()
 	{
 		clearPixels();
 		GLint x = 0, y = radiusY;
 		GLfloat p1 = radiusY*radiusY - radiusX*radiusX*radiusY + radiusX*radiusX*0.25f;
-		pushPoint(glm::ivec3(centerX, centerY + radiusY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
-		pushPoint(glm::ivec3(centerX, centerY - radiusY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+		pushPoint(glm::ivec3(centerX, centerY + radiusY, 0), -WIDTH, WIDTH, -HEIGHT, HEIGHT);
+		pushPoint(glm::ivec3(centerX, centerY - radiusY, 0), -WIDTH, WIDTH, -HEIGHT, HEIGHT);
 		do
 		{
 			x++;
@@ -162,10 +180,10 @@ public:
 				y = y - 1;
 				p1 = p1 + 2 * radiusY*radiusY*x - 2 * radiusX*radiusX*y + radiusY*radiusY;
 			}
-			pushPoint(glm::ivec3(centerX + x, centerY + y, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
-			pushPoint(glm::ivec3(centerX - x, centerY + y, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
-			pushPoint(glm::ivec3(centerX + x, centerY - y, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
-			pushPoint(glm::ivec3(centerX - x, centerY - y, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+			pushPoint(glm::ivec3(centerX + x, centerY + y, 0), -WIDTH, WIDTH, -HEIGHT, HEIGHT);
+			pushPoint(glm::ivec3(centerX - x, centerY + y, 0), -WIDTH, WIDTH, -HEIGHT, HEIGHT);
+			pushPoint(glm::ivec3(centerX + x, centerY - y, 0), -WIDTH, WIDTH, -HEIGHT, HEIGHT);
+			pushPoint(glm::ivec3(centerX - x, centerY - y, 0), -WIDTH, WIDTH, -HEIGHT, HEIGHT);
 		} while (radiusY*radiusY*x <= radiusX*radiusX*y);
 		p1 = radiusY*radiusY*(x*x + x + 0.25f) + radiusX*radiusX*(y - 1)*(y - 1) - radiusX*radiusX*radiusY*radiusY;
 		for (y--; y > 0; y--)
@@ -179,13 +197,13 @@ public:
 			{
 				p1 = p1 - 2 * radiusX*radiusX*y + radiusX*radiusX;
 			}
-			pushPoint(glm::ivec3(centerX + x, centerY + y, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
-			pushPoint(glm::ivec3(centerX - x, centerY + y, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
-			pushPoint(glm::ivec3(centerX + x, centerY - y, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
-			pushPoint(glm::ivec3(centerX - x, centerY - y, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+			pushPoint(glm::ivec3(centerX + x, centerY + y, 0), -WIDTH, WIDTH, -HEIGHT, HEIGHT);
+			pushPoint(glm::ivec3(centerX - x, centerY + y, 0), -WIDTH, WIDTH, -HEIGHT, HEIGHT);
+			pushPoint(glm::ivec3(centerX + x, centerY - y, 0), -WIDTH, WIDTH, -HEIGHT, HEIGHT);
+			pushPoint(glm::ivec3(centerX - x, centerY - y, 0), -WIDTH, WIDTH, -HEIGHT, HEIGHT);
 		}
-		pushPoint(glm::ivec3(centerX + radiusX, centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
-		pushPoint(glm::ivec3(centerX - radiusX, centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
+		pushPoint(glm::ivec3(centerX + radiusX, centerY, 0), -WIDTH, WIDTH, -HEIGHT, HEIGHT);
+		pushPoint(glm::ivec3(centerX - radiusX, centerY, 0), -WIDTH, WIDTH, -HEIGHT, HEIGHT);
 	}
 	void fillEllipseScanLine(glm::vec3 fillColor)
 	{

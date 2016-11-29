@@ -25,14 +25,17 @@ void drawLineApplication(int argc, char **argv)
 	myShaderProgram = myShader->shaderProgram;
 
 	//set VAO
-	myVAO = lineInitVAO();
+	lineInitVAO(myVAO,myVBO);
 
 	//set transform
 	GLuint transformLocation = glGetUniformLocation(myShaderProgram, "transform");
 	glm::mat4 transformMat = lineGetTransformMatrix();
 
 	glutDisplayFunc(lineRender2DSence);
+	glutIdleFunc(lineRender2DSence);
 	glutReshapeFunc(lineOnReshape);
+	glutMouseFunc(lineOnMouseClick);
+	glutMotionFunc(lineOnActiveMotion);
 	glutMainLoop();
 }
 
@@ -42,17 +45,73 @@ void lineRender2DSence()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glUseProgram(myShaderProgram);
-	//myTextureManager->bindTexture(testTextureID);
 	glBindVertexArray(myVAO);
 	//glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
 	glDrawArrays(GL_POINTS, 0, myLine.getPointsNum());
 	glBindVertexArray(0);
-
+	if ((!drawing)&&myLine.getPointsNum() >= 1)
+	{
+		GLfloat x1, y1, x2, y2, dertX, dertY;
+		x1 = ((GLfloat)myLine.getPoint(0).x)/WIDTH_HALF, y1 = ((GLfloat)myLine.getPoint(0).y)/HEIGHT_HALF;
+		x2 = ((GLfloat)myLine.getPoint(1).x)/WIDTH_HALF, y2 = ((GLfloat)myLine.getPoint(1).y)/HEIGHT_HALF;
+		dertX = ((GLfloat)CHANGE_POINT_DIS) / WIDTH_HALF, dertY = ((GLfloat)CHANGE_POINT_DIS) / HEIGHT_HALF;
+		glBegin(GL_QUADS);
+		glVertex2f(x1 - dertX, y1 + dertY);
+		glVertex2f(x1 + dertX, y1 + dertY);
+		glVertex2f(x1 + dertX, y1 - dertY);
+		glVertex2f(x1 - dertX, y1 - dertY);
+		glVertex2f(x2 - dertX, y2 + dertY);
+		glVertex2f(x2 + dertX, y2 + dertY);
+		glVertex2f(x2 + dertX, y2 - dertY);
+		glVertex2f(x2 - dertX, y2 - dertY);
+		glEnd();
+		glFlush();
+	}
 	glutSwapBuffers();
 }
 void lineOnMouseClick(int button, int state, int x, int y)
 {
-
+	x -= WIDTH_HALF;
+	y = HEIGHT_HALF - y;
+	if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
+	{
+		if (myLine.getPointsNum() <= 1)
+		{
+			drawing = GL_TRUE;
+			myLine.setPoint(glm::ivec3(x, y, 0), glm::ivec3(x, y, 0));
+		}		
+		else
+			drawing = myLine.checkChangePoint(glm::ivec3(x, y, 0));		
+	}
+	else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
+	{
+		if (drawing)
+		{
+			drawing = GL_FALSE;
+			if (myLine.getPoint(0) == glm::ivec3(x, y, 0))
+				return;
+			myLine.setDrawingPoint(glm::ivec3(x, y, 0));
+			myLine.lineUseBresenham();
+			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+			glBufferData(GL_ARRAY_BUFFER, myLine.getPointsNum()*myLine.getPointSize(),
+				myLine.getLinePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}	
+	}
+}
+void lineOnActiveMotion(int x, int y)
+{
+	x -= WIDTH_HALF;
+	y = HEIGHT_HALF - y;
+	if (drawing)
+	{
+		myLine.setDrawingPoint(glm::ivec3(x, y, 0));
+		myLine.lineUseBresenham();
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myLine.getPointsNum()*myLine.getPointSize(),
+			myLine.getLinePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
 }
 void lineOnReshape(int width, int height)
 {
@@ -73,21 +132,17 @@ void lineInitGlutWindow()
 	}
 	glViewport(0, 0, WIDTH, HEIGHT);
 }
-GLuint lineInitVAO()
+void lineInitVAO(GLuint &VAO,GLuint &VBO)
 {
-	GLuint VBO, VAO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	//set vertex buffer and attribute point
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-	myLine = line(glm::ivec3(-100, 300, 0), glm::ivec3(200, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
-	myLine.lineUseBresenham();
-	//myLine.lineUseDDA();
-	myLine.clipUseRect(glm::ivec3(100, -200, 0), glm::ivec3(0, 300, 0));
+	myLine = line();
 	glBufferData(GL_ARRAY_BUFFER, myLine.getPointsNum()*myLine.getPointSize(),
-		myLine.getLinePixels().begin()._Ptr, GL_STATIC_DRAW);
+		myLine.getLinePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
@@ -97,7 +152,6 @@ GLuint lineInitVAO()
 	//unbind VBO&VAO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-	return VAO;
 }
 glm::mat4 lineGetTransformMatrix()
 {
