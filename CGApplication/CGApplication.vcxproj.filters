@@ -21,6 +21,18 @@
     <ClCompile Include="3D.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="enterMenu.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="drawLine.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="drawCircle.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="drawEllipse.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />
@@ -72,6 +84,15 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="drawLine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="drawCircle.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="drawEllipse.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

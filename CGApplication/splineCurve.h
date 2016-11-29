@@ -4,8 +4,6 @@
 #include "windowSetting.h"
 #include "line.h"
 #include "cubicEquation.h"
-#define GLEW_STATIC
-#include <gl\glew.h>
 #include <glm\glm.hpp>
 #include <cmath>
 #include <vector>

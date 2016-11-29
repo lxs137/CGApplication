@@ -78,6 +78,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="3D.cpp" />
+    <ClCompile Include="drawCircle.cpp" />
+    <ClCompile Include="drawEllipse.cpp" />
+    <ClCompile Include="drawLine.cpp" />
+    <ClCompile Include="enterMenu.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -92,6 +96,9 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="circle.h" />
     <ClInclude Include="cubicEquation.h" />
+    <ClInclude Include="drawCircle.h" />
+    <ClInclude Include="drawEllipse.h" />
+    <ClInclude Include="drawLine.h" />
     <ClInclude Include="line.h" />
     <ClInclude Include="ellipse.h" />
     <ClInclude Include="polygon.h" />

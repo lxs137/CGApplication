@@ -2,8 +2,6 @@
 #define CIECLE_H
 
 #include "windowSetting.h"
-#define GLEW_STATIC
-#include <gl\glew.h>
 #include <glm\glm.hpp>
 #include <vector>
 #include <cmath>

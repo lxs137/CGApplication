@@ -1,8 +1,6 @@
 #ifndef CUBICEQUATION_H
 #define CUBICEQUATION_H
 
-#define GLEW_STATIC
-#include <gl\glew.h>
 #include <vector>
 #include <cmath>
 

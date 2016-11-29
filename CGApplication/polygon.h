@@ -4,8 +4,6 @@
 #include "windowSetting.h"
 #include "line.h"
 #include "Weiler_Atherton.h"
-#define GLEW_STATIC
-#include <gl\glew.h>
 #include <cmath>
 #include <vector>
 #include <list>

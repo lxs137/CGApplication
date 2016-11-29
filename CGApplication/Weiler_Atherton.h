@@ -2,8 +2,6 @@
 #define WEILERATHERTON_H
 #include "windowSetting.h"
 #include "line.h"
-#define GLEW_STATIC
-#include <gl\glew.h>
 #include <cmath>
 #include <vector>
 #include <algorithm>

@@ -2,24 +2,26 @@
 //#include <fstream>
 //#include <vector>
 //#include "line.h"
+//#include "circle.h"
+//#include "ellipse.h"
+//#include "bezier.h"
+//#include "splineCurve.h"
 //#include "polygon.h"
 //#include "shader.h"
 //#include "textureManager.h"
 //#include "windowSetting.h"
 //using namespace std;
 //
-//#define GLEW_STATIC
-//#include <gl\glew.h>
 //#include <freeglut\glut.h>
 //#include <glm\glm.hpp>
 //#include <glm\gtc\matrix_transform.hpp>
 //#include <glm\gtc\type_ptr.hpp>
 //
 //line myLine;
-////circle myCircle;
-////ellipse myEllipse;
-////bezier myBezier;
-////spline mySpline;
+//circle myCircle;
+//ellipse myEllipse;
+//bezier myBezier;
+//spline mySpline;
 //polygon myPolygon;
 //
 //TextureManager *myTextureManager;
@@ -34,9 +36,8 @@
 //GLuint initVAO();
 //glm::mat4 getTransformMatrix();
 ////glut function
-//void renderSence();
+//void render2DSence();
 //void onMouseClick(int button, int state, int x, int y);
-//void onMousePassiveMotion(int x, int y);
 //void onReshape(int width, int height);
 //
 //int main(int argc, char *argv[])
@@ -59,12 +60,12 @@
 //	GLuint transformLocation = glGetUniformLocation(myShaderProgram, "transform");
 //	glm::mat4 transformMat = getTransformMatrix();
 //
-//	glutDisplayFunc(renderSence);
+//	glutDisplayFunc(render2DSence);
 //	glutReshapeFunc(onReshape);
 //	glutMainLoop();
 //}
 //
-//void renderSence()
+//void render2DSence()
 //{
 //	glClearColor(1.0f, 0.8f, 1.0f, 1.0f);
 //	glClear(GL_COLOR_BUFFER_BIT);
@@ -79,10 +80,6 @@
 //	glutSwapBuffers();
 //}
 //void onMouseClick(int button, int state, int x, int y)
-//{
-//
-//}
-//void onMousePassiveMotion(int x, int y)
 //{
 //
 //}
@@ -128,12 +125,12 @@
 //	//glBufferData(GL_ARRAY_BUFFER,myLine.getPointsNum()*myLine.getPointSize(), 
 //	//	myLine.getLinePixels().begin()._Ptr, GL_STATIC_DRAW);
 //
-//	//myCircle = circle(glm::ivec3(-50, -50, 0), 100, glm::vec3(1.0f, 0.0f, 0.0f));
-//	//myCircle.circleUseMidpoint();
-//	//myCircle.fillCircleScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
-//	//myCircle.clipUseRect(glm::vec3(-100, -100, 0), glm::vec3(100, 150, 0));
-//	//glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
-//	//	myCircle.getCirclePixels().begin()._Ptr, GL_STATIC_DRAW);
+//	myCircle = circle(glm::ivec3(-50, -50, 0), 100, glm::vec3(1.0f, 0.0f, 0.0f));
+//	myCircle.circleUseMidpoint();
+//	myCircle.fillCircleScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
+//	myCircle.clipUseRect(glm::vec3(-100, -100, 0), glm::vec3(100, 150, 0));
+//	glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
+//		myCircle.getCirclePixels().begin()._Ptr, GL_STATIC_DRAW);
 //
 //	//myEllipse = ellipse(glm::ivec3(-50, 0, 0), 150, 100, glm::vec3(1.0f, 0.0f, 0.0f));
 //	//myEllipse.ellipseUseMidpoint();
@@ -157,30 +154,30 @@
 //	//glBufferData(GL_ARRAY_BUFFER, mySpline.getPointsNum()*mySpline.getPointSize(),
 //	//	mySpline.getSplinePixels().begin()._Ptr, GL_STATIC_DRAW);
 //
-//	vector<glm::ivec3> verticsPoint;
-//	vector<glm::ivec3> windowPoint;
-//	verticsPoint.push_back(glm::ivec3(-200, 150, 0));
-//	verticsPoint.push_back(glm::ivec3(250, 150, 0));
-//	verticsPoint.push_back(glm::ivec3(250, -100, 0));
-//	verticsPoint.push_back(glm::ivec3(-250, -100, 0));
-//	verticsPoint.push_back(glm::ivec3(-250, -50, 0));
-//	verticsPoint.push_back(glm::ivec3(200, -50, 0));
-//	verticsPoint.push_back(glm::ivec3(200, 100, 0));
-//	verticsPoint.push_back(glm::ivec3(-200, 100, 0));
+//	//vector<glm::ivec3> verticsPoint;
+//	//vector<glm::ivec3> windowPoint;
+//	//verticsPoint.push_back(glm::ivec3(-200, 150, 0));
+//	//verticsPoint.push_back(glm::ivec3(250, 150, 0));
+//	//verticsPoint.push_back(glm::ivec3(250, -100, 0));
+//	//verticsPoint.push_back(glm::ivec3(-250, -100, 0));
+//	//verticsPoint.push_back(glm::ivec3(-250, -50, 0));
+//	//verticsPoint.push_back(glm::ivec3(200, -50, 0));
+//	//verticsPoint.push_back(glm::ivec3(200, 100, 0));
+//	//verticsPoint.push_back(glm::ivec3(-200, 100, 0));
 //
-//	windowPoint.push_back(glm::ivec3(300, -200, 0));
-//	windowPoint.push_back(glm::ivec3(100, 250, 0));
-//	windowPoint.push_back(glm::ivec3(100, -150, 0));
-//	windowPoint.push_back(glm::ivec3(-100, -150, 0));
-//	windowPoint.push_back(glm::ivec3(-100, 200, 0));
-//	windowPoint.push_back(glm::ivec3(-150, 200, 0));
-//	windowPoint.push_back(glm::ivec3(-150, -200, 0));
-//	myPolygon = polygon(verticsPoint, glm::vec3(0.0f, 0.0f, 0.0f));
-//	myPolygon.polygonUseLine();
-//	myPolygon.clipWithPolygon(windowPoint);
-//	//myPolygon.fillPolygonScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
-//	glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
-//		myPolygon.getPolygonPixels().begin()._Ptr, GL_STATIC_DRAW);
+//	//windowPoint.push_back(glm::ivec3(300, -200, 0));
+//	//windowPoint.push_back(glm::ivec3(100, 250, 0));
+//	//windowPoint.push_back(glm::ivec3(100, -150, 0));
+//	//windowPoint.push_back(glm::ivec3(-100, -150, 0));
+//	//windowPoint.push_back(glm::ivec3(-100, 200, 0));
+//	//windowPoint.push_back(glm::ivec3(-150, 200, 0));
+//	//windowPoint.push_back(glm::ivec3(-150, -200, 0));
+//	//myPolygon = polygon(verticsPoint, glm::vec3(0.0f, 0.0f, 0.0f));
+//	//myPolygon.polygonUseLine();
+//	//myPolygon.clipWithPolygon(windowPoint);
+//	////myPolygon.fillPolygonScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
+//	//glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+//	//	myPolygon.getPolygonPixels().begin()._Ptr, GL_STATIC_DRAW);
 //
 //	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 //

@@ -4,10 +4,10 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "windowSetting.h"
 using namespace std;
 
-#define GLEW_STATIC
-#include <gl/glew.h>
+
 
 class shader
 {
