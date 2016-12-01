@@ -83,6 +83,7 @@
     <ClCompile Include="drawCircle.cpp" />
     <ClCompile Include="drawEllipse.cpp" />
     <ClCompile Include="drawLine.cpp" />
+    <ClCompile Include="drawPolygon.cpp" />
     <ClCompile Include="drawSpline.cpp" />
     <ClCompile Include="enterMenu.cpp" />
     <ClCompile Include="main.cpp" />
@@ -103,6 +104,7 @@
     <ClInclude Include="drawCircle.h" />
     <ClInclude Include="drawEllipse.h" />
     <ClInclude Include="drawLine.h" />
+    <ClInclude Include="drawPolygon.h" />
     <ClInclude Include="drawSpline.h" />
     <ClInclude Include="line.h" />
     <ClInclude Include="ellipse.h" />

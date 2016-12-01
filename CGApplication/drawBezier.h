@@ -1,5 +1,5 @@
-#ifndef DRAWSPLINE_H
-#define DRAWSPLINE_H
+#ifndef DRAWBEZIER_H
+#define DRAWBEZIER_H
 
 #include <iostream>
 #include <vector>
@@ -8,7 +8,7 @@
 
 #include <glm\glm.hpp>
 
-namespace drawSpline{
+namespace drawBezier{
 	TextureManager *myTextureManager;
 	GLuint myShaderProgram;
 	GLuint myVAO;
@@ -18,12 +18,13 @@ namespace drawSpline{
 	std::vector<glm::ivec3> controlPoints;//Bezier曲线的四个控制点
 	GLint drawingPointIndex = 1;//有1，2，3，4四种值，代表四个控制点,表示正在初始化或者修改的控制点
 }
-void splineRender2DSence();
-void splineOnMouseClick(int button, int state, int x, int y);
-void splineOnActiveMotion(int x, int y);
-void splineOnReshape(int width, int height);
-void splineInitGlutWindow();
-void splineInitVAO(GLuint &VAO, GLuint &VBO);
-glm::mat4 splineGetTransformMatrix();
+void bezierRender2DSence();
+void bezierOnMouseClick(int button, int state, int x, int y);
+void bezierOnActiveMotion(int x, int y);
+void bezierOnReshape(int width, int height);
+void bezierInitGlutWindow();
+void bezierLoadImageAsTexture(unsigned int testTextureID, const char *filename);
+void bezierInitVAO(GLuint &VAO, GLuint &VBO);
+glm::mat4 bezierGetTransformMatrix();
 
-#endif // !DRAWSPLINE_H
+#endif // !DRAWBEZIER_H
