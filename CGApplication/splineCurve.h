@@ -94,6 +94,29 @@ public:
 	{
 		return this->pointSize;
 	}
+	vector<glm::ivec3> getControlPoints()
+	{
+		return{ glm::ivec3(x1, y1, 0), glm::ivec3(x2, y2, 0),
+			glm::ivec3(x3, y3, 0), glm::ivec3(x4, y4, 0) };
+	}
+	void setControlPoints(glm::ivec3 point, GLint index)
+	{
+		switch (index)
+		{
+		case 1:
+			x1 = point.x, y1 = point.y;
+			break;
+		case 2:
+			x2 = point.x, y2 = point.y;
+			break;
+		case 3:
+			x3 = point.x, y3 = point.y;
+			break;
+		case 4:
+			x4 = point.x, y4 = point.y;
+			break;
+		}
+	}
 	void splineUseLine()
 	{
 		clearPixels();

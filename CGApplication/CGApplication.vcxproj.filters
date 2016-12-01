@@ -36,6 +36,12 @@
     <ClCompile Include="drawBezier.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="drawSpline.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="cubicEquation.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />
@@ -99,6 +105,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="drawBezier.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="drawSpline.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
