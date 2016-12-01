@@ -26,6 +26,7 @@ private:
 	vector<glm::ivec3> vertics;
 	glm::vec3 lineColor;
 	glm::vec3 fillColor;
+	GLboolean isPolygonClose;//表示多边形是否闭合
 	void findYminYmax(GLint *yMax, GLint *yMin)
 	{
 		GLint maxValue, minValue;
@@ -230,6 +231,7 @@ public:
 		this->pointSize = 6 * sizeof(GLfloat);
 		this->lineColor = glm::vec3(0.0f, 0.0f, 0.0f);
 		this->fillColor = glm::vec3(0.0f, 0.0f, 0.0f);
+		this->isPolygonClose = GL_FALSE;
 	}
 	polygon(vector<glm::ivec3> verticsPoint)
 	{
@@ -238,6 +240,7 @@ public:
 		this->vertics.insert(vertics.end(), verticsPoint.begin(), verticsPoint.end());
 		this->lineColor = glm::vec3(0.0f, 0.0f, 0.0f);
 		this->fillColor = glm::vec3(0.0f, 0.0f, 0.0f);
+		this->isPolygonClose = GL_FALSE;
 	}
 	polygon(vector<glm::ivec3> verticsPoint, glm::ivec3 lineColor)
 	{
@@ -259,10 +262,32 @@ public:
 	{
 		return this->pointSize;
 	}
+	GLboolean getIsClose()
+	{
+		return this->isPolygonClose;
+	}
+	void setIsclose(GLboolean isClose)
+	{
+		if ((!this->isPolygonClose) && isClose)
+			vertics.pop_back();
+		this->isPolygonClose = isClose;
+	}
 	vector<glm::ivec3> getVertics()
 	{
 		return this->vertics;
 	}
+	void setVertics(glm::ivec3 point,int index)
+	{
+		//index从1开始
+		if (vertics.size() >= index)
+		{
+			vertics[index - 1].x = point.x;
+			vertics[index - 1].y = point.y;
+		}
+		else
+			vertics.push_back(glm::ivec3(point.x, point.y, 0));	
+	}
+	//isClose 代表多边形是否闭合，即是否连接最后一个顶点与第一个顶点
 	void polygonUseLine()
 	{
 		clearPixels();
@@ -279,12 +304,16 @@ public:
 			pointsNum += tempLine.getPointsNum();
 			startPoint = endPoint;
 		}
-		endPoint = glm::ivec3(vertics[0].x, vertics[0].y, 0);
-		tempLine = line(startPoint, endPoint, lineColor);
-		tempLine.lineUseBresenham();
-		pixelsLine = tempLine.getLinePixels();
-		pixels.insert(pixels.end(), pixelsLine.begin(), pixelsLine.end());
-		pointsNum += tempLine.getPointsNum();
+		if (this->isPolygonClose)
+		{
+			endPoint = glm::ivec3(vertics[0].x, vertics[0].y, 0);
+			tempLine = line(startPoint, endPoint, lineColor);
+			tempLine.lineUseBresenham();
+			pixelsLine = tempLine.getLinePixels();
+			pixels.insert(pixels.end(), pixelsLine.begin(), pixelsLine.end());
+			pointsNum += tempLine.getPointsNum();
+			fillPolygonScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
+		}	
 	}
 	void fillPolygonScanLine(glm::vec3 fillColor)
 	{

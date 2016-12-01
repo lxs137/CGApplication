@@ -90,6 +90,7 @@ public:
 	}
 	void setControlPoints(glm::ivec3 point,GLint index)
 	{
+		//index´Ó1¿ªÊ¼
 		switch (index)
 		{
 		case 1:
