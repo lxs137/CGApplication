@@ -1,10 +1,11 @@
 #include "windowSetting.h"
 
-DRAWINGMODEL drawingModel=DRAWELLIPSE;
+DRAWINGMODEL drawingModel=DRAWBEZIER;
 
 void drawLineApplication(int argc, char **argv);
 //void drawCircleApplication(int argc, char **argv);
 void drawEllipseApplication(int argc, char **argv);
+void drawBezierApplication(int argc, char **argv);
 
 int main(int argc,char *argv[])
 {
@@ -20,6 +21,9 @@ int main(int argc,char *argv[])
 			break;
 		case DRAWELLIPSE:
 			drawEllipseApplication(argc, argv);
+			break;
+		case DRAWBEZIER:
+			drawBezierApplication(argc, argv);
 			break;
 		}
 	}

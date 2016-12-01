@@ -18,6 +18,7 @@ private:
 	GLint radiusX, radiusY;
 	glm::vec3 lineColor;
 	glm::vec3 fillColor;
+	vector<glm::ivec3> controlPoints;
 	void pushPoint(glm::ivec3 pointPosition,GLint xMin,GLint xMax,GLint yMin,GLint yMax)
 	{
 		//clip point with window(xMin-xMax,yMin-yMax)
@@ -119,6 +120,11 @@ public:
 		this->radiusY = 0;
 		this->lineColor = glm::vec3(0.0f, 0.0f, 0.0f);
 		this->fillColor = glm::vec3(0.0f, 0.0f, 0.0f);
+		controlPoints.clear();
+		controlPoints.push_back(glm::ivec3(centerX - radiusX, centerY + radiusY, 0));
+		controlPoints.push_back(glm::ivec3(centerX + radiusX, centerY + radiusY, 0));
+		controlPoints.push_back(glm::ivec3(centerX + radiusX, centerY - radiusY, 0));
+		controlPoints.push_back(glm::ivec3(centerX - radiusX, centerY - radiusY, 0));
 	}
 	ellipse(glm::ivec3 center,GLint rx,GLint ry,glm::vec3 ellipseColor)
 	{
@@ -130,6 +136,11 @@ public:
 		this->radiusY = ry;
 		this->lineColor = ellipseColor;
 		this->fillColor = glm::vec3(0.0f, 0.0f, 0.0f);
+		controlPoints.clear();
+		controlPoints.push_back(glm::ivec3(centerX - radiusX, centerY + radiusY, 0));
+		controlPoints.push_back(glm::ivec3(centerX + radiusX, centerY + radiusY, 0));
+		controlPoints.push_back(glm::ivec3(centerX + radiusX, centerY - radiusY, 0));
+		controlPoints.push_back(glm::ivec3(centerX - radiusX, centerY - radiusY, 0));
 	}
 	void setCenter(glm::ivec3 center)
 	{
@@ -160,6 +171,14 @@ public:
 	glm::ivec3 getRadius()
 	{
 		return glm::ivec3(radiusX,radiusY,0);
+	}
+	vector<glm::ivec3> getControlPoints()
+	{
+		controlPoints[0].x = centerX - radiusX, controlPoints[0].y = centerY + radiusY;
+		controlPoints[1].x = centerX + radiusX, controlPoints[1].y = centerY + radiusY;
+		controlPoints[2].x = centerX + radiusX, controlPoints[2].y = centerY - radiusY;
+		controlPoints[3].x = centerX - radiusX, controlPoints[3].y = centerY - radiusY;
+		return this->controlPoints;
 	}
 	void ellipseUseMidpoint()
 	{
@@ -261,7 +280,8 @@ public:
 			clearPixels();
 			return;
 		}
-		else if (centerX - radiusX >= xMin&&centerX + radiusX <= xMax&&centerY - radiusY >= yMin&&centerY + radiusY <= yMax)
+		else if (centerX - radiusX >= xMin&&centerX + radiusX <= xMax
+			&&centerY - radiusY >= yMin&&centerY + radiusY <= yMax)
 		{
 			return;
 		}

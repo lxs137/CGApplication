@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include "ellipse.h"
 #include "textureManager.h"
 #include "windowSetting.h"
 
@@ -17,8 +16,8 @@ namespace drawEllipse{
 	GLuint myShaderProgram;
 	GLuint myVAO;
 	GLuint myVBO;
-	GLfloat lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
 	GLboolean drawing = GL_FALSE;
+	std::vector<glm::ivec3> controlPoints;
 };
 void ellipseRender2DSence();
 void ellipseOnMouseClick(int button, int state, int x, int y);

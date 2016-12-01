@@ -96,7 +96,7 @@ public:
 	}
 	void splineUseLine()
 	{
-		pixels.clear();
+		clearPixels();
 		glm::ivec3 startPoint , endPoint;
 		GLfloat b1, b2, b3, b4, x, y;
 		x = x1*1.0f / 6 + x2*2.0f / 3 + x3*1.0f / 6;

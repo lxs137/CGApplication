@@ -53,12 +53,11 @@ void ellipseRender2DSence()
 	if ((!drawing) && myEllipse.getPointsNum() >= 1)
 	{
 		GLfloat x1, y1, x2, y2, x3, y3, x4, y4, dertX, dertY;
-		GLfloat centerX = myEllipse.getCenter().x, centerY = myEllipse.getCenter().y;
-		GLfloat radiusX = myEllipse.getRadius().x, radiusY = myEllipse.getRadius().y;
-		x1 = (centerX - radiusX)/WIDTH_HALF, y1 = (centerY + radiusY)/HEIGHT_HALF;
-		x2 = (centerX + radiusX)/WIDTH_HALF, y2 = (centerY + radiusY)/HEIGHT_HALF;
-		x3 = (centerX + radiusX)/WIDTH_HALF, y3 = (centerY - radiusY)/HEIGHT_HALF;
-		x4 = (centerX - radiusX)/WIDTH_HALF, y4 = (centerY - radiusY)/HEIGHT_HALF;
+		controlPoints = myEllipse.getControlPoints();
+		x1 = ((GLfloat)controlPoints[0].x) / WIDTH_HALF, y1 = ((GLfloat)controlPoints[0].y) / HEIGHT_HALF;
+		x2 = ((GLfloat)controlPoints[1].x) / WIDTH_HALF, y2 = ((GLfloat)controlPoints[1].y) / HEIGHT_HALF;
+		x3 = ((GLfloat)controlPoints[2].x) / WIDTH_HALF, y3 = ((GLfloat)controlPoints[2].y) / HEIGHT_HALF;
+		x4 = ((GLfloat)controlPoints[3].x) / WIDTH_HALF, y4 = ((GLfloat)controlPoints[3].y) / HEIGHT_HALF;
 		dertX = ((GLfloat)CHANGE_POINT_DIS) / WIDTH_HALF, dertY = ((GLfloat)CHANGE_POINT_DIS) / HEIGHT_HALF;
 		glBegin(GL_QUADS);
 		glVertex2f(x1 - dertX, y1 + dertY);
@@ -111,7 +110,19 @@ void ellipseOnMouseClick(int button, int state, int x, int y)
 		}
 		else
 		{
-
+			GLint x1, y1, x2, y2, x3, y3, x4, y4;
+			controlPoints = myEllipse.getControlPoints();
+			x1 = controlPoints[0].x, y1 = controlPoints[0].y;
+			x2 = controlPoints[1].x, y2 = controlPoints[1].y;
+			x3 = controlPoints[2].x, y3 = controlPoints[2].y;
+			x4 = controlPoints[3].x, y4 = controlPoints[3].y;
+			if ((x <= x1 + CHANGE_POINT_DIS&&x >= x1 - CHANGE_POINT_DIS&&y <= y1 + CHANGE_POINT_DIS&&y >= y1 - CHANGE_POINT_DIS)
+				|| (x <= x2 + CHANGE_POINT_DIS&&x >= x2 - CHANGE_POINT_DIS&&y <= y2 + CHANGE_POINT_DIS&&y >= y2 - CHANGE_POINT_DIS)
+				|| (x <= x3 + CHANGE_POINT_DIS&&x >= x3 - CHANGE_POINT_DIS&&y <= y3 + CHANGE_POINT_DIS&&y >= y3 - CHANGE_POINT_DIS)
+				|| (x <= x4 + CHANGE_POINT_DIS&&x >= x4 - CHANGE_POINT_DIS&&y <= y4 + CHANGE_POINT_DIS&&y >= y4 - CHANGE_POINT_DIS))
+			{
+				drawing = GL_TRUE;
+			}
 		}
 	}
 	else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)

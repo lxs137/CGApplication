@@ -40,6 +40,8 @@
 //void onMouseClick(int button, int state, int x, int y);
 //void onReshape(int width, int height);
 //
+//GLint64 pixelSize=0;
+//
 //int main(int argc, char *argv[])
 //{
 //	glutInit(&argc, argv);
@@ -61,6 +63,7 @@
 //	glm::mat4 transformMat = getTransformMatrix();
 //
 //	glutDisplayFunc(render2DSence);
+//	glutIdleFunc(render2DSence);
 //	glutReshapeFunc(onReshape);
 //	glutMainLoop();
 //}
@@ -74,8 +77,26 @@
 //	//myTextureManager->bindTexture(testTextureID);
 //	glBindVertexArray(myVAO);
 //	//glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
-//	glDrawArrays(GL_POINTS, 0, myPolygon.getPointsNum());
+//	glDrawArrays(GL_POINTS, 0, pixelSize);
 //	glBindVertexArray(0);
+//
+//	GLfloat x1 = 300, y1 = -200, x2 = 100, y2 = 250, x3 = 100, y3 = -150, x4 = -100, y4 = -150,
+//		x5 = -100, y5 = 200, x6 = -150, y6 = 200, x7 = -150, y7 = -200;
+//	x1 /= WIDTH_HALF, x2 /= WIDTH_HALF, x3 /= WIDTH_HALF, x4 /= WIDTH_HALF, x5 /= WIDTH_HALF, x6 /= WIDTH_HALF, x7 /= WIDTH_HALF;
+//	y1 /= HEIGHT_HALF, y2 /= HEIGHT_HALF, y3 /= HEIGHT_HALF, y4 /= HEIGHT_HALF, y5 /= WIDTH_HALF, y6 /= WIDTH_HALF, y7 /= WIDTH_HALF;
+//	glLineStipple(2, 0x5555);
+//	glEnable(GL_LINE_STIPPLE);
+//	glBegin(GL_LINE_LOOP);
+//	glVertex2f(x1, y1);
+//	glVertex2f(x2, y2);
+//	glVertex2f(x3, y3);
+//	glVertex2f(x4, y4);
+//	glVertex2f(x5, y5);
+//	glVertex2f(x6, y6);
+//	glVertex2f(x7, y7);
+//	glEnd();
+//	glDisable(GL_LINE_STIPPLE);
+//	glFlush();
 //
 //	glutSwapBuffers();
 //}
@@ -118,31 +139,31 @@
 //	glBindVertexArray(VAO);
 //	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 //
-//	//   myLine=line(glm::ivec3(-100, 300, 0), glm::ivec3(200, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
+//	//myLine=line(glm::ivec3(-150, 250, 0), glm::ivec3(200, -200, 0), glm::vec3(1.0f, 0.0f, 0.0f));
 //	//myLine.lineUseBresenham();
 //	////myLine.lineUseDDA();
-//	//myLine.clipUseRect(glm::ivec3(100,-200,0), glm::ivec3(0,300,0));
+//	////myLine.clipUseRect(glm::ivec3(100,-200,0), glm::ivec3(0,200,0));
 //	//glBufferData(GL_ARRAY_BUFFER,myLine.getPointsNum()*myLine.getPointSize(), 
 //	//	myLine.getLinePixels().begin()._Ptr, GL_STATIC_DRAW);
 //
-//	myCircle = circle(glm::ivec3(-50, -50, 0), 100, glm::vec3(1.0f, 0.0f, 0.0f));
-//	myCircle.circleUseMidpoint();
-//	myCircle.fillCircleScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
-//	myCircle.clipUseRect(glm::vec3(-100, -100, 0), glm::vec3(100, 150, 0));
-//	glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
-//		myCircle.getCirclePixels().begin()._Ptr, GL_STATIC_DRAW);
+//	//myCircle = circle(glm::ivec3(-50, -50, 0), 100, glm::vec3(1.0f, 0.0f, 0.0f));
+//	//myCircle.circleUseMidpoint();
+//	//myCircle.fillCircleScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
+//	//myCircle.clipUseRect(glm::vec3(-100, -100, 0), glm::vec3(100, 150, 0));
+//	//glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
+//	//	myCircle.getCirclePixels().begin()._Ptr, GL_STATIC_DRAW);
 //
-//	//myEllipse = ellipse(glm::ivec3(-50, 0, 0), 150, 100, glm::vec3(1.0f, 0.0f, 0.0f));
+//	//myEllipse = ellipse(glm::ivec3(-50, 0, 0), 250, 150, glm::vec3(1.0f, 0.0f, 0.0f));
 //	//myEllipse.ellipseUseMidpoint();
 //	//myEllipse.fillEllipseScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
-//	//myEllipse.clipUseRect(glm::ivec3(-200, -150, 0), glm::ivec3(150, 200, 0));
+//	//myEllipse.clipUseRect(glm::ivec3(-200, 0, 0), glm::ivec3(170, 200, 0));
 //	//glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
 //	//	myEllipse.getEllipsePixels().begin()._Ptr, GL_STATIC_DRAW);
 //
 //	//myBezier = bezier(glm::ivec3(-250, -200, 0), glm::ivec3(-100, 50, 0), 
 //	//	glm::ivec3(150, 250, 0),glm::ivec3(300, -100, 0), glm::vec3(1.0f, 0.0f, 0.0f));
 //	//myBezier.bezierUseLine();
-//	////myBezier.clipUseRect(glm::ivec3(-200, -150, 0), glm::ivec3(150, -50, 0));
+//	//myBezier.clipUseRect(glm::ivec3(-200, 0, 0), glm::ivec3(170, 200, 0));
 //	//glBufferData(GL_ARRAY_BUFFER, myBezier.getPointsNum()*myBezier.getPointSize(),
 //	//	myBezier.getBezierPixels().begin()._Ptr, GL_STATIC_DRAW);
 //
@@ -154,28 +175,44 @@
 //	//glBufferData(GL_ARRAY_BUFFER, mySpline.getPointsNum()*mySpline.getPointSize(),
 //	//	mySpline.getSplinePixels().begin()._Ptr, GL_STATIC_DRAW);
 //
-//	//vector<glm::ivec3> verticsPoint;
-//	//vector<glm::ivec3> windowPoint;
-//	//verticsPoint.push_back(glm::ivec3(-200, 150, 0));
-//	//verticsPoint.push_back(glm::ivec3(250, 150, 0));
-//	//verticsPoint.push_back(glm::ivec3(250, -100, 0));
-//	//verticsPoint.push_back(glm::ivec3(-250, -100, 0));
-//	//verticsPoint.push_back(glm::ivec3(-250, -50, 0));
-//	//verticsPoint.push_back(glm::ivec3(200, -50, 0));
-//	//verticsPoint.push_back(glm::ivec3(200, 100, 0));
-//	//verticsPoint.push_back(glm::ivec3(-200, 100, 0));
+//	vector<glm::ivec3> verticsPoint;
+//	vector<glm::ivec3> windowPoint;
+//	vector<polygon> resultPolygon;
+//	verticsPoint.push_back(glm::ivec3(-200, 100, 0));
+//	verticsPoint.push_back(glm::ivec3(250, 150, 0));
+//	verticsPoint.push_back(glm::ivec3(300, -100, 0));
+//	verticsPoint.push_back(glm::ivec3(-250, -130, 0));
+//	verticsPoint.push_back(glm::ivec3(-250, -80, 0));
+//	verticsPoint.push_back(glm::ivec3(200, -50, 0));
+//	verticsPoint.push_back(glm::ivec3(100, 100, 0));
+//	verticsPoint.push_back(glm::ivec3(-200, 70, 0));
 //
-//	//windowPoint.push_back(glm::ivec3(300, -200, 0));
-//	//windowPoint.push_back(glm::ivec3(100, 250, 0));
-//	//windowPoint.push_back(glm::ivec3(100, -150, 0));
-//	//windowPoint.push_back(glm::ivec3(-100, -150, 0));
-//	//windowPoint.push_back(glm::ivec3(-100, 200, 0));
-//	//windowPoint.push_back(glm::ivec3(-150, 200, 0));
-//	//windowPoint.push_back(glm::ivec3(-150, -200, 0));
-//	//myPolygon = polygon(verticsPoint, glm::vec3(0.0f, 0.0f, 0.0f));
-//	//myPolygon.polygonUseLine();
-//	//myPolygon.clipWithPolygon(windowPoint);
-//	////myPolygon.fillPolygonScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
+//	windowPoint.push_back(glm::ivec3(300, -200, 0));
+//	windowPoint.push_back(glm::ivec3(100, 250, 0));
+//	windowPoint.push_back(glm::ivec3(100, -150, 0));
+//	windowPoint.push_back(glm::ivec3(-100, -150, 0));
+//	windowPoint.push_back(glm::ivec3(-100, 200, 0));
+//	windowPoint.push_back(glm::ivec3(-150, 200, 0));
+//	windowPoint.push_back(glm::ivec3(-150, -200, 0));
+//	myPolygon = polygon(verticsPoint, glm::vec3(0.0f, 0.0f, 0.0f));
+//	myPolygon.polygonUseLine();
+//	myPolygon.fillPolygonScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
+//	resultPolygon = myPolygon.clipWithPolygon(windowPoint);
+//	vector<GLfloat> resultPixels = myPolygon.getPolygonPixels();
+//	vector<GLfloat>::iterator iVector = resultPixels.end();
+//	pixelSize += myPolygon.getPointsNum();
+//	for (int i = 0; i < resultPolygon.size(); i++)
+//	{
+//		polygon onePolygon = resultPolygon[i];
+//		onePolygon.fillPolygonScanLine(glm::ivec3(0.0f, 1.0f, 0.0f));
+//		vector<GLfloat> onePolygonPixels = onePolygon.getPolygonPixels();	
+//		resultPixels.insert(iVector, onePolygonPixels.begin(), 
+//			onePolygonPixels.end());
+//		iVector = resultPixels.end();
+//		pixelSize += onePolygon.getPointsNum();
+//	}
+//	glBufferData(GL_ARRAY_BUFFER, resultPixels.size()*4,
+//		resultPixels.begin()._Ptr, GL_STATIC_DRAW);
 //	//glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
 //	//	myPolygon.getPolygonPixels().begin()._Ptr, GL_STATIC_DRAW);
 //

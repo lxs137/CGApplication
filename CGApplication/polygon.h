@@ -299,6 +299,7 @@ public:
 	}
 	vector<polygon> clipWithPolygon(vector<glm::ivec3> windowVertics)
 	{
+		clearPixels();
 		points2Clockwise(windowVertics);
 		points2Clockwise(this->vertics);
 		vector<vector<glm::ivec3>> clipVertics = clipPolygonUseWA(this->vertics, windowVertics);
@@ -308,9 +309,9 @@ public:
 		{
 			onePolygon = polygon(clipVertics[i]);
 			clipPolygon.push_back(onePolygon);
-			/*cout << "polygon:"<<endl;
-			for (GLint j = 0; j < clipVertics[i].size(); j++)
-				cout << "    (" << clipVertics[i][j].x << "," << clipVertics[i][j].y << ")" << endl;*/
+			//cout << "polygon:" << endl;
+			//for (GLint j = 0; j < clipVertics[i].size(); j++)
+			//	cout << "    (" << clipVertics[i][j].x << "," << clipVertics[i][j].y << ")" << endl;
 		}
 		return clipPolygon;
 	}

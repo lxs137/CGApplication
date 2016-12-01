@@ -4,7 +4,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include "line.h"
 #include "textureManager.h"
 #include "windowSetting.h"
 

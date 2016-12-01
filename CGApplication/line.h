@@ -16,7 +16,7 @@ class line
 		vector<GLfloat> pixels;
 		GLint x1, y1, x2, y2;
 		glm::vec3 color;
-		GLint drawingPointIndex;
+		GLint drawingPointIndex;//有0，1两个值，代表两个端点
 		void pushPoint(glm::ivec3 pointPosition)
 		{
 			pixels.push_back(pointPosition.x  / (GLfloat)WIDTH_HALF);
@@ -62,28 +62,23 @@ class line
 		{
 			//Be used in Liang-Barsky Clip function
 			GLfloat r;
-			if (p < 0.0)
-			{
+			if (p < 0.0){
 				r=q / p;
-				if (r > u1)
-				{
+				if (r > u1){
 					u1 = r;
 					if (u1 > u2)
 						return false;
 				}				
 			}
-			else if (p > 0.0)
-			{
+			else if (p > 0.0){
 				r = q / p;
-				if (r < u2)
-				{
+				if (r < u2){
 					u2 = r;
 					if (u1 > u2)
 						return false;
 				}
 			}
-			else
-			{
+			else{
 				if (q < 0.0)
 					return false;
 			}
