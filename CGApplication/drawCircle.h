@@ -11,13 +11,17 @@ namespace drawCircle{
 	TextureManager *myTextureManager;
 	GLuint myShaderProgram;
 	GLuint myVAO;
+	GLuint myVBO;
 	GLfloat lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
+	GLboolean drawing = GL_FALSE;
+	std::vector<glm::ivec3> controlPoints;
 };
 void circleRender2DSence();
 void circleOnMouseClick(int button, int state, int x, int y);
+void circleOnActiveMotion(int x, int y);
 void circleOnReshape(int width, int height);
 void circleInitGlutWindow();
 void circleLoadImageAsTexture(unsigned int testTextureID, const char *filename);
-GLuint circleInitVAO();
+void circleInitVAO(GLuint &VAO,GLuint &VBO);
 glm::mat4 circleGetTransformMatrix();
 #endif // !DRAWCIRCLE_H

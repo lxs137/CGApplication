@@ -132,6 +132,7 @@ void ellipseOnMouseClick(int button, int state, int x, int y)
 			drawing = GL_FALSE;
 			GLint rX, rY;
 			rX = abs(x - myEllipse.getCenter().x), rY = abs(y - myEllipse.getCenter().y);
+			myEllipse.setRadius(rX, rY);
 			myEllipse.ellipseUseMidpoint();
 			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 			glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),

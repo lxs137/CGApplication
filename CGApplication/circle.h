@@ -17,6 +17,7 @@ private:
 	GLint centerX, centerY, radius;
 	glm::vec3 lineColor;
 	glm::vec3 fillColor;
+	vector<glm::ivec3> controlPoints;
 	void pushPoint(glm::ivec3 pointPosition,GLint xMin,GLint xMax,GLint yMin,GLint yMax)
 	{
 		//clip point with window(xMin-xMax,yMin-yMax)
@@ -104,6 +105,11 @@ public:
 		this->fillColor = glm::vec3(0.0f, 0.0f, 0.0f);
 		this->pointsNum = 0;
 		this->pointSize = 6 * sizeof(GLfloat);
+		this->controlPoints.clear();
+		this->controlPoints.push_back(glm::ivec3(centerX - radius, centerY + radius, 0));
+		this->controlPoints.push_back(glm::ivec3(centerX + radius, centerY + radius, 0));
+		this->controlPoints.push_back(glm::ivec3(centerX + radius, centerY - radius, 0));
+		this->controlPoints.push_back(glm::ivec3(centerX - radius, centerY - radius, 0));
 	}
 	circle(glm::ivec3 center,GLint r,glm::vec3 circleColor)
 	{
@@ -114,6 +120,20 @@ public:
 		this->fillColor = glm::vec3(0.0f, 0.0f, 0.0f);
 		this->pointsNum = 0;
 		this->pointSize = 6 * sizeof(GLfloat);
+		this->controlPoints.clear();
+		this->controlPoints.push_back(glm::ivec3(centerX - radius, centerY + radius, 0));
+		this->controlPoints.push_back(glm::ivec3(centerX + radius, centerY + radius, 0));
+		this->controlPoints.push_back(glm::ivec3(centerX + radius, centerY - radius, 0));
+		this->controlPoints.push_back(glm::ivec3(centerX - radius, centerY - radius, 0));
+	}
+	void setCenter(glm::ivec3 centerPoint)
+	{
+		this->centerX = centerPoint.x;
+		this->centerY = centerPoint.y;
+	}
+	void setRadius(GLint r)
+	{
+		this->radius = r;
 	}
 	vector<GLfloat> getCirclePixels()
 	{
@@ -126,6 +146,22 @@ public:
 	GLint getPointSize()
 	{
 		return this->pointSize;
+	}
+	glm::ivec3 getCenter()
+	{
+		return glm::ivec3(centerX, centerY, 0);
+	}
+	GLint getRadius()
+	{
+		return this->radius;
+	}
+	vector<glm::ivec3> getControlPoints()
+	{
+		controlPoints[0].x = centerX - radius, controlPoints[0].y = centerY + radius;
+		controlPoints[1].x = centerX + radius, controlPoints[1].y = centerY + radius;
+		controlPoints[2].x = centerX + radius, controlPoints[2].y = centerY - radius;
+		controlPoints[3].x = centerX - radius, controlPoints[3].y = centerY - radius;
+		return this->controlPoints;
 	}
 	void circleUseMidpoint()
 	{
