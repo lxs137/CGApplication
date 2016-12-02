@@ -1,6 +1,6 @@
 #include "windowSetting.h"
 
-DRAWINGMODEL drawingModel=DRAWCIRCLE;
+DRAWINGMODEL drawingModel=DRAW3D;
 
 void drawLineApplication(int argc, char **argv);
 void drawCircleApplication(int argc, char **argv);
@@ -8,6 +8,7 @@ void drawEllipseApplication(int argc, char **argv);
 void drawBezierApplication(int argc, char **argv);
 void drawSplineApplication(int argc, char **argv);
 void drawPolygonApplication(int argc, char **argv);
+void draw3DApplication(int argc, char **argv);
 
 int main(int argc,char *argv[])
 {
@@ -32,6 +33,10 @@ int main(int argc,char *argv[])
 			break;
 		case DRAWPOLYGON:
 			drawPolygonApplication(argc, argv);
+			break;
+		case DRAW3D:
+			draw3DApplication(argc, argv);
+			break;
 		}
 	}
 }

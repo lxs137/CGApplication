@@ -77,8 +77,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="3D.cpp" />
     <ClCompile Include="cubicEquation.cpp" />
+    <ClCompile Include="draw3D.cpp" />
     <ClCompile Include="drawBezier.cpp" />
     <ClCompile Include="drawCircle.cpp" />
     <ClCompile Include="drawEllipse.cpp" />
@@ -100,6 +100,7 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="circle.h" />
     <ClInclude Include="cubicEquation.h" />
+    <ClInclude Include="draw3D.h" />
     <ClInclude Include="drawBezier.h" />
     <ClInclude Include="drawCircle.h" />
     <ClInclude Include="drawEllipse.h" />

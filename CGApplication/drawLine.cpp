@@ -7,7 +7,7 @@
 #include "textureManager.h"
 #include "windowSetting.h"
 
-#include <freeglut\glut.h>
+#include <freeglut\freeglut.h>
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\type_ptr.hpp>
@@ -19,6 +19,7 @@ void drawLineApplication(int argc, char **argv)
 {
 	glutInit(&argc, argv);
 	lineInitGlutWindow();
+	lineInitMenus();
 
 	//set shader program	
 	shader *myShader = new shader("2dModel.vert", "2dModel.frag");
@@ -36,7 +37,12 @@ void drawLineApplication(int argc, char **argv)
 	glutReshapeFunc(lineOnReshape);
 	glutMouseFunc(lineOnMouseClick);
 	glutMotionFunc(lineOnActiveMotion);
-	glutMainLoop();
+	while (GL_TRUE)
+	{
+		glutMainLoopEvent();
+		glutPostRedisplay();
+	}
+	/*glutMainLoop();*/
 }
 
 void lineRender2DSence()
@@ -113,6 +119,29 @@ void lineOnActiveMotion(int x, int y)
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 }
+void lineProcessMenuEvent(int options)
+{
+	switch (options)
+	{
+	case EDIT:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+		transformStatus = EDIT;
+		break;
+	case MOVE:
+		glutSetCursor(GLUT_CURSOR_CYCLE);		
+		transformStatus = MOVE;
+		break;
+	case ROTATE:
+		glutSetCursor(GLUT_CURSOR_WAIT);
+		transformStatus = ROTATE;
+		break;
+	case ZOOM:
+		glutSetCursor(GLUT_CURSOR_SPRAY);
+		transformStatus = ZOOM;
+		break;
+		
+	}
+}
 void lineOnReshape(int width, int height)
 {
 
@@ -131,6 +160,17 @@ void lineInitGlutWindow()
 		return;
 	}
 	glViewport(0, 0, WIDTH, HEIGHT);
+}
+void lineInitMenus()
+{
+	GLint menu = glutCreateMenu(lineProcessMenuEvent);
+	glutSetMenuFont(menu, GLUT_BITMAP_9_BY_15);
+	glutAddMenuEntry("Edit Line", EDIT);
+	glutAddMenuEntry("Move Line", MOVE);
+	glutAddMenuEntry("Rotate Line", ROTATE);
+	glutAddMenuEntry("Zoom Line", ZOOM);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+	glutSetCursor(GLUT_CURSOR_INHERIT);
 }
 void lineInitVAO(GLuint &VAO,GLuint &VBO)
 {
