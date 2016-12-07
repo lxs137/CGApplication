@@ -1,6 +1,6 @@
 #include "windowSetting.h"
 
-DRAWINGMODEL drawingModel=DRAW3D;
+DRAWINGMODEL drawingModel=DRAWCIRCLE;
 
 void drawLineApplication(int argc, char **argv);
 void drawCircleApplication(int argc, char **argv);
@@ -18,6 +18,7 @@ int main(int argc,char *argv[])
 		{
 		case DRAWLINE:
 			drawLineApplication(argc, argv);
+			drawingModel = DRAW3D;
 			break;
 		case DRAWCIRCLE:
 			drawCircleApplication(argc, argv);

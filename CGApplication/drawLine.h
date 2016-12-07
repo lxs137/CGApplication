@@ -14,25 +14,31 @@ namespace drawLine{
 	GLuint myVBO;
 	GLfloat lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
 	GLboolean drawing=GL_FALSE;
+	glm::ivec3 rotateCenter = glm::ivec3(0, 0, 0);
+    std::vector<glm::ivec3> transBasisPoint;
 	enum MenuOptions
 	{
 		EDIT,
 		MOVE,
 		ROTATE,
-		ZOOM
+		ZOOM,
+		EXIT
 	};
 	MenuOptions transformStatus=EDIT;
 }
 void lineRender2DSence();
 void lineOnMouseClick(int button, int state, int x, int y);
 void lineOnActiveMotion(int x, int y);
+void lineOnMouseWheelScrollValid(int wheel, int direction, int x, int y);
+void lineOnMouseWheelScrollInvalid(int wheel, int direction, int x, int y);
 void lineProcessMenuEvent(int options);
 void lineOnReshape(int width, int height);
 void lineInitGlutWindow();
 void lineLoadImageAsTexture(unsigned int testTextureID, const char *filename);
 void lineInitVAO(GLuint &VAO,GLuint &VBO);
 void lineInitMenus();
-glm::mat4 lineGetTransformMatrix();
+void lineGetTransformMatrix(glm::ivec2 transformInfo, glm::ivec2 rotateInfo = glm::ivec2(0, 0));
+void lineSetTransBasisPoint();
 
 
 #endif

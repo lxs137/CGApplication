@@ -7,7 +7,7 @@
 #include "textureManager.h"
 #include "windowSetting.h"
 
-#include <freeglut\glut.h>
+#include <freeglut\freeglut.h>
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\type_ptr.hpp>
@@ -17,8 +17,13 @@ ellipse myEllipse;
 
 void drawEllipseApplication(int argc, char **argv)
 {
-	glutInit(&argc, argv);
-	ellipseInitGlutWindow();
+
+	if (glutGet(GLUT_INIT_STATE) != 1)
+	{
+		glutInit(&argc, argv);
+		ellipseInitGlutWindow();
+	}
+
 
 	//set shader program	
 	shader *myShader = new shader("2dModel.vert", "2dModel.frag");

@@ -15,8 +15,11 @@ using namespace draw3D;
 
 void draw3DApplication(int argc, char **argv)
 {
-	glutInit(&argc, argv);
-	d3InitGlutWindow();
+	if (glutGet(GLUT_INIT_STATE) != 1)
+	{
+		glutInit(&argc, argv);
+		d3InitGlutWindow();
+	}
 
 	//set shader program
 	shader *myShader = new shader("3dModel.vert", "3dModel.frag");

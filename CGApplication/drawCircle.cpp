@@ -7,7 +7,7 @@
 #include "textureManager.h"
 #include "windowSetting.h"
 
-#include <freeglut\glut.h>
+#include <freeglut\freeglut.h>
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\type_ptr.hpp>
@@ -17,9 +17,12 @@ circle myCircle;
 
 void drawCircleApplication(int argc, char **argv)
 {
-	glutInit(&argc, argv);
-	circleInitGlutWindow();
-
+	if (glutGet(GLUT_INIT_STATE) != 1)
+	{
+		glutInit(&argc, argv);
+		circleInitGlutWindow();
+	}
+	circleInitMenus();
 	//set shader program    
 	shader *myShader = new shader("2dModel.vert", "2dModel.frag");
 	myShaderProgram = myShader->shaderProgram;
@@ -29,16 +32,20 @@ void drawCircleApplication(int argc, char **argv)
 
 	//set transform
 	GLuint transformLocation = glGetUniformLocation(myShaderProgram, "transform");
-	glm::mat4 transformMat = circleGetTransformMatrix();
 
 	glutDisplayFunc(circleRender2DSence);
 	glutIdleFunc(circleRender2DSence);
 	glutMouseFunc(circleOnMouseClick);
 	glutMotionFunc(circleOnActiveMotion);
 	glutReshapeFunc(circleOnReshape);
-	glutMainLoop();
+	while (GL_TRUE)
+	{
+		glutMainLoopEvent();
+		if (transformStatus == EXIT)
+			break;
+		glutPostRedisplay();
+	}
 }
-
 void circleRender2DSence()
 {
 	glClearColor(1.0f, 0.8f, 1.0f, 1.0f);
@@ -100,62 +107,136 @@ void circleOnMouseClick(int button, int state, int x, int y)
 {
 	x -= WIDTH_HALF;
 	y = HEIGHT_HALF - y;
-	if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
+	switch (transformStatus)
 	{
-		if (myCircle.getPointsNum() <= 1)
+	case drawCircle::EDIT:
+		if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
 		{
-			drawing = GL_TRUE;
-			myCircle.setCenter(glm::ivec3(x, y, 0));
-			myCircle.setRadius(0);
-		}
-		else
-		{
-			GLint x1, y1, x2, y2, x3, y3, x4, y4;
-			controlPoints = myCircle.getControlPoints();
-			x1 = controlPoints[0].x, y1 = controlPoints[0].y;
-			x2 = controlPoints[1].x, y2 = controlPoints[1].y;
-			x3 = controlPoints[2].x, y3 = controlPoints[2].y;
-			x4 = controlPoints[3].x, y4 = controlPoints[3].y;
-			if ((x <= x1 + CHANGE_POINT_DIS&&x >= x1 - CHANGE_POINT_DIS&&y <= y1 + CHANGE_POINT_DIS&&y >= y1 - CHANGE_POINT_DIS)
-				|| (x <= x2 + CHANGE_POINT_DIS&&x >= x2 - CHANGE_POINT_DIS&&y <= y2 + CHANGE_POINT_DIS&&y >= y2 - CHANGE_POINT_DIS)
-				|| (x <= x3 + CHANGE_POINT_DIS&&x >= x3 - CHANGE_POINT_DIS&&y <= y3 + CHANGE_POINT_DIS&&y >= y3 - CHANGE_POINT_DIS)
-				|| (x <= x4 + CHANGE_POINT_DIS&&x >= x4 - CHANGE_POINT_DIS&&y <= y4 + CHANGE_POINT_DIS&&y >= y4 - CHANGE_POINT_DIS))
+			if (myCircle.getPointsNum() <= 1)
 			{
 				drawing = GL_TRUE;
+				myCircle.setCenter(glm::ivec3(x, y, 0));
+				myCircle.setRadius(0);
+			}
+			else
+			{
+				GLint x1, y1, x2, y2, x3, y3, x4, y4;
+				controlPoints = myCircle.getControlPoints();
+				x1 = controlPoints[0].x, y1 = controlPoints[0].y;
+				x2 = controlPoints[1].x, y2 = controlPoints[1].y;
+				x3 = controlPoints[2].x, y3 = controlPoints[2].y;
+				x4 = controlPoints[3].x, y4 = controlPoints[3].y;
+				if ((x <= x1 + CHANGE_POINT_DIS&&x >= x1 - CHANGE_POINT_DIS&&y <= y1 + CHANGE_POINT_DIS&&y >= y1 - CHANGE_POINT_DIS)
+					|| (x <= x2 + CHANGE_POINT_DIS&&x >= x2 - CHANGE_POINT_DIS&&y <= y2 + CHANGE_POINT_DIS&&y >= y2 - CHANGE_POINT_DIS)
+					|| (x <= x3 + CHANGE_POINT_DIS&&x >= x3 - CHANGE_POINT_DIS&&y <= y3 + CHANGE_POINT_DIS&&y >= y3 - CHANGE_POINT_DIS)
+					|| (x <= x4 + CHANGE_POINT_DIS&&x >= x4 - CHANGE_POINT_DIS&&y <= y4 + CHANGE_POINT_DIS&&y >= y4 - CHANGE_POINT_DIS))
+				{
+					drawing = GL_TRUE;
+				}
 			}
 		}
-	}
-	else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
-	{
-		if (drawing)
+		else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
 		{
-			drawing = GL_FALSE;
-			GLint rX, rY;
-			rX = abs(x - myCircle.getCenter().x), rY = abs(y - myCircle.getCenter().y);
-			myCircle.setRadius(rX<rY ? rX : rY);
+			if (drawing)
+			{
+				drawing = GL_FALSE;
+				GLint rX, rY;
+				rX = abs(x - myCircle.getCenter().x), rY = abs(y - myCircle.getCenter().y);
+				myCircle.setRadius(rX < rY ? rX : rY);
+				myCircle.circleUseMidpoint();
+				glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+				glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
+					myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			}
+		}
+		break;
+	case drawCircle::MOVE:
+		if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
+		{
+			lastMouseX = x, lastMouseY = y;
+		}
+		else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
+		{
+			circleGetTransformMatrix(glm::ivec2(x - lastMouseX, y - lastMouseY));
+			lastMouseX = x, lastMouseY = y;
 			myCircle.circleUseMidpoint();
 			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 			glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
 				myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
+		break;
 	}
+	
 }
 void circleOnActiveMotion(int x, int y)
 {
 	x -= WIDTH_HALF;
 	y = HEIGHT_HALF - y;
-	if (drawing)
+	switch (transformStatus)
 	{
-		GLint rX, rY;
-		rX = abs(x - myCircle.getCenter().x), rY = abs(y - myCircle.getCenter().y);
-		myCircle.setRadius(rX < rY ? rX : rY);
+	case drawCircle::EDIT:
+		if (drawing)
+		{
+			GLint rX, rY;
+			rX = abs(x - myCircle.getCenter().x), rY = abs(y - myCircle.getCenter().y);
+			myCircle.setRadius(rX < rY ? rX : rY);
+			myCircle.circleUseMidpoint();
+			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+			glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
+				myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
+		break;
+	case drawCircle::MOVE:
+		circleGetTransformMatrix(glm::ivec2(x - lastMouseX, y - lastMouseY));
+		lastMouseX = x, lastMouseY = y;
 		myCircle.circleUseMidpoint();
 		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 		glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
 			myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		break;
 	}
+
+}
+void circleProcessMenuEvent(int options)
+{
+	switch (options)
+	{
+	case EDIT:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+		glutMouseWheelFunc(circleOnMouseWheelScrollInvalid);
+		transformStatus = EDIT;
+		break;
+	case MOVE:
+		glutSetCursor(GLUT_CURSOR_CYCLE);
+		glutMouseWheelFunc(circleOnMouseWheelScrollInvalid);
+		transformStatus = MOVE;
+		break;
+	case ZOOM:
+		glutSetCursor(GLUT_CURSOR_SPRAY);
+		glutMouseWheelFunc(circleOnMouseWheelScrollValid);
+		transformStatus = ZOOM;
+		break;
+	case EXIT:
+		transformStatus = EXIT;
+		break;
+	}
+}
+void circleOnMouseWheelScrollValid(int wheel, int direction, int x, int y)
+{
+	circleGetTransformMatrix(glm::ivec2(direction * 4, direction * 4));
+	myCircle.circleUseMidpoint();
+	glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+	glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
+		myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+void circleOnMouseWheelScrollInvalid(int wheel, int direction, int x, int y)
+{
+
 }
 void circleOnReshape(int width, int height)
 {
@@ -203,12 +284,34 @@ void circleInitVAO(GLuint &VAO, GLuint &VBO)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
-glm::mat4 circleGetTransformMatrix()
+void circleInitMenus()
 {
+	GLint menu = glutCreateMenu(circleProcessMenuEvent);
+	glutSetMenuFont(menu, GLUT_BITMAP_9_BY_15);
+	glutAddMenuEntry("Edit Circle", EDIT);
+	glutAddMenuEntry("Move Circle", MOVE);
+	glutAddMenuEntry("Zoom Circle", ZOOM);
+	glutAddMenuEntry("Exit", EXIT);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+	glutSetCursor(GLUT_CURSOR_INHERIT);
+}
+void circleGetTransformMatrix(glm::ivec2 transformInfo)
+{
+	//当处于移动状态时，传入transformInfo代表x，y方向上的移动距离
+	//当处于缩放状态时，传入transformInfo代表x，y方向上的缩放百分比
 	glm::mat4 transformMat;
-	//transformMat = glm::rotate(transformMat,(GLfloat)glfwGetTime()*PI/2, glm::vec3(0, 0, 1));
-	transformMat = glm::scale(transformMat, glm::vec3(1.0, 1.0, 1.0));
-	return transformMat;
+	glm::vec2 vecA, vecB;
+	glm::ivec3 center = myCircle.getCenter();
+	switch (transformStatus)
+	{
+	case drawCircle::MOVE:
+		center.x += transformInfo.x, center.y += transformInfo.y;
+		myCircle.setCenter(center);
+		break;
+	case drawCircle::ZOOM:
+		myCircle.setRadius(myCircle.getRadius()*(transformInfo.x+100)/100.0);
+		break;
+	}
 }
 
 
