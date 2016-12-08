@@ -144,6 +144,8 @@ void circleOnMouseClick(int button, int state, int x, int y)
 				rX = abs(x - myCircle.getCenter().x), rY = abs(y - myCircle.getCenter().y);
 				myCircle.setRadius(rX < rY ? rX : rY);
 				myCircle.circleUseMidpoint();
+				if (filling)
+					myCircle.fillCircleScanLine(glm::vec3(0, 0, 1.0f));
 				glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 				glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
 					myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -161,6 +163,8 @@ void circleOnMouseClick(int button, int state, int x, int y)
 			circleGetTransformMatrix(glm::ivec2(x - lastMouseX, y - lastMouseY));
 			lastMouseX = x, lastMouseY = y;
 			myCircle.circleUseMidpoint();
+			if (filling)
+				myCircle.fillCircleScanLine(glm::vec3(0, 0, 1.0f));
 			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 			glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
 				myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -183,6 +187,8 @@ void circleOnActiveMotion(int x, int y)
 			rX = abs(x - myCircle.getCenter().x), rY = abs(y - myCircle.getCenter().y);
 			myCircle.setRadius(rX < rY ? rX : rY);
 			myCircle.circleUseMidpoint();
+			if (filling)
+				myCircle.fillCircleScanLine(glm::vec3(0, 0, 1.0f));
 			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 			glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
 				myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -193,6 +199,8 @@ void circleOnActiveMotion(int x, int y)
 		circleGetTransformMatrix(glm::ivec2(x - lastMouseX, y - lastMouseY));
 		lastMouseX = x, lastMouseY = y;
 		myCircle.circleUseMidpoint();
+		if (filling)
+			myCircle.fillCircleScanLine(glm::vec3(0, 0, 1.0f));
 		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 		glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
 			myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -220,6 +228,20 @@ void circleProcessMenuEvent(int options)
 		glutMouseWheelFunc(circleOnMouseWheelScrollValid);
 		transformStatus = ZOOM;
 		break;
+	case FILL:
+		glutMouseWheelFunc(circleOnMouseWheelScrollValid);
+		filling = !filling;
+		if (filling)
+		{
+			myCircle.fillCircleScanLine(glm::ivec3(0, 0, 1.0f));
+		}
+		else
+			myCircle.circleUseMidpoint();
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
+			myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		break;
 	case EXIT:
 		transformStatus = EXIT;
 		break;
@@ -228,7 +250,12 @@ void circleProcessMenuEvent(int options)
 void circleOnMouseWheelScrollValid(int wheel, int direction, int x, int y)
 {
 	circleGetTransformMatrix(glm::ivec2(direction * 4, direction * 4));
-	myCircle.circleUseMidpoint();
+	if (filling)
+	{
+		myCircle.fillCircleScanLine(glm::ivec3(0, 0, 1.0f));
+	}
+	else
+		myCircle.circleUseMidpoint();
 	glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 	glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
 		myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -291,6 +318,7 @@ void circleInitMenus()
 	glutAddMenuEntry("Edit Circle", EDIT);
 	glutAddMenuEntry("Move Circle", MOVE);
 	glutAddMenuEntry("Zoom Circle", ZOOM);
+	glutAddMenuEntry("Fill Circle", FILL);
 	glutAddMenuEntry("Exit", EXIT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 	glutSetCursor(GLUT_CURSOR_INHERIT);

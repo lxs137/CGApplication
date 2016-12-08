@@ -24,7 +24,7 @@ void drawEllipseApplication(int argc, char **argv)
 		ellipseInitGlutWindow();
 	}
 
-
+	ellipseInitMenus();
 	//set shader program	
 	shader *myShader = new shader("2dModel.vert", "2dModel.frag");
 	myShaderProgram = myShader->shaderProgram;
@@ -34,14 +34,19 @@ void drawEllipseApplication(int argc, char **argv)
 
 	//set transform
 	GLuint transformLocation = glGetUniformLocation(myShaderProgram, "transform");
-	glm::mat4 transformMat = ellipseGetTransformMatrix();
 
 	glutDisplayFunc(ellipseRender2DSence);
 	glutIdleFunc(ellipseRender2DSence);
 	glutReshapeFunc(ellipseOnReshape);
 	glutMouseFunc(ellipseOnMouseClick);
 	glutMotionFunc(ellipseOnActiveMotion);
-	glutMainLoop();
+	while (GL_TRUE)
+	{
+		glutMainLoopEvent();
+		if (transformStatus == EXIT)
+			break;
+		glutPostRedisplay();
+	}
 }
 
 void ellipseRender2DSence()
@@ -105,61 +110,231 @@ void ellipseOnMouseClick(int button, int state, int x, int y)
 {
 	x -= WIDTH_HALF;
 	y = HEIGHT_HALF - y;
-	if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
+	switch (transformStatus)
 	{
-		if (myEllipse.getPointsNum() <= 1)
+	case drawEllipse::EDIT:
+		if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
 		{
-			drawing = GL_TRUE;
-			myEllipse.setCenter(glm::ivec3(x, y, 0));
-			myEllipse.setRadius(0, 0);
-		}
-		else
-		{
-			GLint x1, y1, x2, y2, x3, y3, x4, y4;
-			controlPoints = myEllipse.getControlPoints();
-			x1 = controlPoints[0].x, y1 = controlPoints[0].y;
-			x2 = controlPoints[1].x, y2 = controlPoints[1].y;
-			x3 = controlPoints[2].x, y3 = controlPoints[2].y;
-			x4 = controlPoints[3].x, y4 = controlPoints[3].y;
-			if ((x <= x1 + CHANGE_POINT_DIS&&x >= x1 - CHANGE_POINT_DIS&&y <= y1 + CHANGE_POINT_DIS&&y >= y1 - CHANGE_POINT_DIS)
-				|| (x <= x2 + CHANGE_POINT_DIS&&x >= x2 - CHANGE_POINT_DIS&&y <= y2 + CHANGE_POINT_DIS&&y >= y2 - CHANGE_POINT_DIS)
-				|| (x <= x3 + CHANGE_POINT_DIS&&x >= x3 - CHANGE_POINT_DIS&&y <= y3 + CHANGE_POINT_DIS&&y >= y3 - CHANGE_POINT_DIS)
-				|| (x <= x4 + CHANGE_POINT_DIS&&x >= x4 - CHANGE_POINT_DIS&&y <= y4 + CHANGE_POINT_DIS&&y >= y4 - CHANGE_POINT_DIS))
+			if (myEllipse.getPointsNum() <= 1)
 			{
 				drawing = GL_TRUE;
+				myEllipse.setCenter(glm::ivec3(x, y, 0));
+				myEllipse.setRadius(0, 0);
+			}
+			else
+			{
+				GLint x1, y1, x2, y2, x3, y3, x4, y4;
+				controlPoints = myEllipse.getControlPoints();
+				x1 = controlPoints[0].x, y1 = controlPoints[0].y;
+				x2 = controlPoints[1].x, y2 = controlPoints[1].y;
+				x3 = controlPoints[2].x, y3 = controlPoints[2].y;
+				x4 = controlPoints[3].x, y4 = controlPoints[3].y;
+				if ((x <= x1 + CHANGE_POINT_DIS&&x >= x1 - CHANGE_POINT_DIS&&y <= y1 + CHANGE_POINT_DIS&&y >= y1 - CHANGE_POINT_DIS)
+					|| (x <= x2 + CHANGE_POINT_DIS&&x >= x2 - CHANGE_POINT_DIS&&y <= y2 + CHANGE_POINT_DIS&&y >= y2 - CHANGE_POINT_DIS)
+					|| (x <= x3 + CHANGE_POINT_DIS&&x >= x3 - CHANGE_POINT_DIS&&y <= y3 + CHANGE_POINT_DIS&&y >= y3 - CHANGE_POINT_DIS)
+					|| (x <= x4 + CHANGE_POINT_DIS&&x >= x4 - CHANGE_POINT_DIS&&y <= y4 + CHANGE_POINT_DIS&&y >= y4 - CHANGE_POINT_DIS))
+				{
+					drawing = GL_TRUE;
+				}
 			}
 		}
-	}
-	else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
-	{
-		if (drawing)
+		else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
 		{
-			drawing = GL_FALSE;
-			GLint rX, rY;
-			rX = abs(x - myEllipse.getCenter().x), rY = abs(y - myEllipse.getCenter().y);
-			myEllipse.setRadius(rX, rY);
+			if (drawing)
+			{
+				drawing = GL_FALSE;
+				GLint rX, rY;
+				if (fabs(myEllipse.getRotateDegree()) < 0.02)
+				{
+					rX = abs(x - myEllipse.getCenter().x), rY = abs(y - myEllipse.getCenter().y);
+					myEllipse.setRadius(rX, rY);
+				}
+				else
+				{
+					GLfloat degree = myEllipse.getRotateDegree();
+					if (fabs(degree - 1.57) < 0.01)
+						degree = (degree < 1.57) ? 1.56 : 1.58;
+					GLint x1 = x, y1 = y, x0 = myEllipse.getCenter().x, y0 = myEllipse.getCenter().y;
+					x = (x1 + tan(degree)*tan(degree)*x0 - fabs(tan(degree))*(y0 - y1 + cos(degree))) / (1 + tan(degree)*tan(degree));
+					y = fabs(tan(degree))*(x - x0) + y0;
+					rX = sqrt((x0 - x)*(x0 - x) + (y0 - y)*(y0 - y));
+					rY = sqrt((x1 - x)*(x1 - x) + (y1 - y)*(y1 - y));
+					if (degree < 1.57)
+						myEllipse.setRadius(rX, rY);
+					else
+						myEllipse.setRadius(rY, rX);
+				}
+				myEllipse.ellipseUseMidpoint();
+				if(filling)
+					myEllipse.fillEllipseScanLine(glm::vec3(0, 0, 1.0f));
+				glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+				glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
+					myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			}
+		}
+		break;
+	case drawEllipse::MOVE:
+		if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
+		{
+			lastMouseX = x, lastMouseY = y;
+		}
+		else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
+		{
+			ellipseGetTransformMatrix(glm::ivec2(x - lastMouseX, y - lastMouseY));
+			lastMouseX = x, lastMouseY = y;
 			myEllipse.ellipseUseMidpoint();
+			if(filling)
+				myEllipse.fillEllipseScanLine(glm::vec3(0, 0, 1.0f));
 			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 			glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
 				myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
+		break;
+	case drawEllipse::ROTATE:
+		if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
+		{
+			lastMouseX = x, lastMouseY = y;
+		}
+		else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
+		{
+			ellipseGetTransformMatrix(glm::ivec2(lastMouseX, lastMouseY), glm::ivec2(x, y));
+			lastMouseX = x, lastMouseY = y;
+			myEllipse.ellipseUseMidpoint();
+			if(filling)
+				myEllipse.fillEllipseScanLine(glm::vec3(0, 0, 1.0f));
+			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+			glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
+				myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
+		break;
 	}
+	
 }
 void ellipseOnActiveMotion(int x, int y)
 {
 	x -= WIDTH_HALF;
 	y = HEIGHT_HALF - y;
-	if (drawing)
+	switch (transformStatus)
 	{
-		GLint rX, rY;
-		rX = abs(x - myEllipse.getCenter().x), rY = abs(y - myEllipse.getCenter().y);
-		myEllipse.setRadius(rX, rY);
+	case drawEllipse::EDIT:
+		if (drawing)
+		{
+			GLint rX, rY;
+			if (fabs(myEllipse.getRotateDegree()) < 0.02)
+			{				
+				rX = abs(x - myEllipse.getCenter().x), rY = abs(y - myEllipse.getCenter().y);
+				myEllipse.setRadius(rX, rY);
+			}
+			else
+			{
+				GLfloat degree = myEllipse.getRotateDegree();
+				if (fabs(degree - 1.57) < 0.01)
+					degree = (degree < 1.57) ? 1.56 : 1.58;
+				GLint x1 = x, y1 = y, x0 = myEllipse.getCenter().x, y0 = myEllipse.getCenter().y;
+				x = (x1 + tan(degree)*tan(degree)*x0 - fabs(tan(degree))*(y0 - y1 + cos(degree))) / (1 + tan(degree)*tan(degree));
+				y = fabs(tan(degree))*(x - x0) + y0;
+				rX = sqrt((x0 - x)*(x0 - x) + (y0 - y)*(y0 - y));
+				rY = sqrt((x1 - x)*(x1 - x) + (y1 - y)*(y1 - y));
+				if (degree < 1.57)
+					myEllipse.setRadius(rX, rY);
+				else
+					myEllipse.setRadius(rY, rX);
+			}
+			myEllipse.ellipseUseMidpoint();
+			if(filling)
+				myEllipse.fillEllipseScanLine(glm::vec3(0, 0, 1.0f));
+			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+			glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
+				myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
+		break;
+	case drawEllipse::MOVE:
+		ellipseGetTransformMatrix(glm::ivec2(x - lastMouseX, y - lastMouseY));
+		lastMouseX = x, lastMouseY = y;
 		myEllipse.ellipseUseMidpoint();
+		if(filling)
+			myEllipse.fillEllipseScanLine(glm::vec3(0, 0, 1.0f));
 		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 		glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
 			myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		break;
+	case drawEllipse::ROTATE:
+		ellipseGetTransformMatrix(glm::ivec2(lastMouseX, lastMouseY), glm::ivec2(x, y));
+		lastMouseX = x, lastMouseY = y;
+		myEllipse.ellipseUseMidpoint();
+		if(filling)
+			myEllipse.fillEllipseScanLine(glm::vec3(0, 0, 1.0f));
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
+			myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		break;
+	}
+	
+}
+void ellipseOnMouseWheelScrollValid(int wheel, int direction, int x, int y)
+{
+	ellipseGetTransformMatrix(glm::ivec2(direction * 4, direction * 4));
+	if (filling)
+	{
+		myEllipse.fillEllipseScanLine(glm::ivec3(0, 0, 1.0f));
+	}
+	else
+		myEllipse.ellipseUseMidpoint();
+	glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+	glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
+		myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+void ellipseOnMouseWheelScrollInvalid(int wheel, int direction, int x, int y)
+{
+}
+void ellipseProcessMenuEvent(int options)
+{
+	switch (options)
+	{
+	case EDIT:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+		glutMouseWheelFunc(ellipseOnMouseWheelScrollInvalid);
+		transformStatus = EDIT;
+		break;
+	case MOVE:
+		glutSetCursor(GLUT_CURSOR_CYCLE);
+		glutMouseWheelFunc(ellipseOnMouseWheelScrollInvalid);
+		transformStatus = MOVE;
+		break;
+	case ROTATE:
+		glutSetCursor(GLUT_CURSOR_WAIT);
+		glutMouseWheelFunc(ellipseOnMouseWheelScrollInvalid);
+		transformStatus = ROTATE;
+		break;
+	case ZOOM:
+		glutSetCursor(GLUT_CURSOR_SPRAY);
+		glutMouseWheelFunc(ellipseOnMouseWheelScrollValid);
+		transformStatus = ZOOM;
+		break;
+	case FILL:
+		glutMouseWheelFunc(ellipseOnMouseWheelScrollInvalid);
+		filling = !filling;
+		if (filling)
+		{
+			myEllipse.fillEllipseScanLine(glm::ivec3(0, 0, 1.0f));
+		}
+		else
+			myEllipse.ellipseUseMidpoint();
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
+			myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		break;
+	case EXIT:
+		transformStatus = EXIT;
+		break;
 	}
 }
 void ellipseOnReshape(int width, int height)
@@ -180,6 +355,19 @@ void ellipseInitGlutWindow()
 		return;
 	}
 	glViewport(0, 0, WIDTH, HEIGHT);
+}
+void ellipseInitMenus()
+{
+	GLint menu = glutCreateMenu(ellipseProcessMenuEvent);
+	glutSetMenuFont(menu, GLUT_BITMAP_9_BY_15);
+	glutAddMenuEntry("Edit Ellipse", EDIT);
+	glutAddMenuEntry("Move Ellipse", MOVE);
+	glutAddMenuEntry("Rotate Ellipse", ROTATE);
+	glutAddMenuEntry("Zoom Ellipse", ZOOM);
+	glutAddMenuEntry("Fill Ellipse", FILL);
+	glutAddMenuEntry("Exit", EXIT);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+	glutSetCursor(GLUT_CURSOR_INHERIT);
 }
 void ellipseInitVAO(GLuint &VAO, GLuint &VBO)
 {
@@ -202,12 +390,35 @@ void ellipseInitVAO(GLuint &VAO, GLuint &VBO)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
-glm::mat4 ellipseGetTransformMatrix()
+void ellipseGetTransformMatrix(glm::ivec2 transformInfo, glm::ivec2 rotateInfo)
 {
+	//当处于移动状态时，传入transformInfo代表x，y方向上的移动距离，rotateInfo不传入数据
+	//当处于旋转状态时，传入transformInfo、rotateInfo分别代表旋转开始时的鼠标位置和当前鼠标位置
+	//当处于缩放状态时，传入transformInfo代表x，y方向上的缩放百分比，rotateInfo不传入数据
 	glm::mat4 transformMat;
-	//transformMat = glm::rotate(transformMat,(GLfloat)glfwGetTime()*PI/2, glm::vec3(0, 0, 1));
-	transformMat = glm::scale(transformMat, glm::vec3(1.0, 1.0, 1.0));
-	return transformMat;
+	glm::vec2 vecA, vecB;
+	glm::ivec3 center = myEllipse.getCenter();
+	switch (transformStatus)
+	{
+	case drawEllipse::MOVE:
+		center.x += transformInfo.x, center.y += transformInfo.y;
+		myEllipse.setCenter(center);
+		break;
+	case drawEllipse::ROTATE:
+		GLfloat degree;//弧度值
+		vecA = glm::vec2(transformInfo.x - center.x, transformInfo.y - center.y);
+		vecB = glm::vec2(rotateInfo.x - center.x, rotateInfo.y - center.y);
+		degree = acos((vecA.x*vecB.x + vecA.y*vecB.y) /
+			sqrt((vecA.x*vecA.x + vecA.y*vecA.y)*(vecB.x*vecB.x + vecB.y*vecB.y)));
+		if (vecA.x*vecB.y - vecA.y*vecB.x < 0)
+			degree = -degree;
+		myEllipse.addRotateDegree(degree);
+		break;
+	case drawEllipse::ZOOM:
+		myEllipse.setRadius(myEllipse.getRadius().x*(100 + transformInfo.x) / 100.0,
+			myEllipse.getRadius().y*(100 + transformInfo.y) / 100.0);
+		break;
+	}
 }
 
 
