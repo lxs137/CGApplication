@@ -272,6 +272,10 @@ public:
 			vertics.pop_back();
 		this->isPolygonClose = isClose;
 	}
+	void setFillClor(glm::vec3 color)
+	{
+		this->fillColor=color;
+	}
 	vector<glm::ivec3> getVertics()
 	{
 		return this->vertics;
@@ -312,12 +316,13 @@ public:
 			pixelsLine = tempLine.getLinePixels();
 			pixels.insert(pixels.end(), pixelsLine.begin(), pixelsLine.end());
 			pointsNum += tempLine.getPointsNum();
-			fillPolygonScanLine(glm::vec3(0.0f, 1.0f, 0.0f));
 		}	
 	}
-	void fillPolygonScanLine(glm::vec3 fillColor)
+	void fillPolygonScanLine()
 	{
-		this->fillColor = fillColor;
+		if (!this->isPolygonClose)
+			return;
+		clearPixels();
 		GLint yMax, yMin;
 		findYminYmax(&yMax, &yMin);
 		vector<list<Edge>> SET(yMax - yMin + 1);//Sorted Edge Table

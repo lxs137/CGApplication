@@ -200,6 +200,7 @@ void bezierOnMouseClick(int button, int state, int x, int y)
 			glBufferData(GL_ARRAY_BUFFER, myBezier.getPointsNum()*myBezier.getPointSize(),
 				myBezier.getBezierPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			bezierSetTransBasisPoint();
 		}
 		break;
 	}

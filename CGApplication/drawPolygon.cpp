@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <string>
 #include "drawPolygon.h"
 #include "polygon.h"
 #include "shader.h"
@@ -55,7 +56,6 @@ void polygonRender2DSence()
 
 	glUseProgram(myShaderProgram);
 	glBindVertexArray(myVAO);
-	//glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
 	glDrawArrays(GL_POINTS, 0, myPolygon.getPointsNum());
 	glBindVertexArray(0);
 	if (vertexPoints.size() != 0)
@@ -72,6 +72,22 @@ void polygonRender2DSence()
 			glVertex2f(xTemp - dertX, yTemp - dertY);
 		}
 		glEnd();
+		if (filling == 2)
+		{
+			glEnable(GL_TEXTURE_2D);
+			myTextureManager->bindTexture(textureID);
+			GLint x0 = vertexPoints[0].x, y0 = vertexPoints[0].y;
+			glBegin(GL_POLYGON);
+			for (GLint i = 0; i < vertexPoints.size(); i++)
+			{
+				xTemp = ((GLfloat)(vertexPoints[i].x)) / WIDTH_HALF;
+				yTemp = ((GLfloat)(vertexPoints[i].y)) / HEIGHT_HALF;
+				glTexCoord2f(xTemp, yTemp);
+				glVertex2f(xTemp, yTemp);
+			}
+			glEnd();
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
 
 		glFlush();
 	}
@@ -81,99 +97,157 @@ void polygonOnMouseClick(int button, int state, int x, int y)
 {
 	x -= WIDTH_HALF;
 	y = HEIGHT_HALF - y;
-	if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
+	switch (transformStatus)
 	{
-		if (!myPolygon.getIsClose())
+	case drawPolygon::EDIT:
+		if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
 		{
-			drawStatus = 1;
-			if (vertexPoints.size() >= drawingPointIndex)
+			if (!myPolygon.getIsClose())
 			{
-				vertexPoints[drawingPointIndex - 1].x = x;
-				vertexPoints[drawingPointIndex - 1].y = y;
-				myPolygon.setVertics(glm::ivec3(x, y, 0), drawingPointIndex);
+				drawStatus = 1;
+				if (vertexPoints.size() >= drawingPointIndex)
+				{
+					vertexPoints[drawingPointIndex - 1].x = x;
+					vertexPoints[drawingPointIndex - 1].y = y;
+					myPolygon.setVertics(glm::ivec3(x, y, 0), drawingPointIndex);
+				}
+				else
+				{
+					vertexPoints.push_back(glm::ivec3(x, y, 0));
+					myPolygon.setVertics(glm::ivec3(x, y, 0), drawingPointIndex);
+				}
+				if (filling == 1)
+					myPolygon.fillPolygonScanLine();
+				else
+					myPolygon.polygonUseLine();
+				glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+				glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+					myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+				if (drawingPointIndex == 1)
+					drawingPointIndex++;
 			}
 			else
 			{
-				vertexPoints.push_back(glm::ivec3(x, y, 0));
-				myPolygon.setVertics(glm::ivec3(x, y, 0), drawingPointIndex);
+				drawStatus = 2;
+				GLint xTemp, yTemp;
+				GLint i;
+				for (i = 0; i < vertexPoints.size(); i++)
+				{
+					xTemp = vertexPoints[i].x, yTemp = vertexPoints[i].y;
+					if (x <= xTemp + CHANGE_POINT_DIS&&x >= xTemp - CHANGE_POINT_DIS
+						&&y <= yTemp + CHANGE_POINT_DIS&&y >= yTemp - CHANGE_POINT_DIS)
+						break;
+				}
+				if (i != vertexPoints.size())
+					drawingPointIndex = i + 1;
+				else
+					drawStatus = 0;
 			}
-			myPolygon.polygonUseLine();
+		}
+		else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
+		{
+			if (drawStatus != 0)
+			{
+				if (drawStatus == 1 && drawingPointIndex == 2)
+				{
+					if (vertexPoints[drawingPointIndex - 2].x == x
+						&&vertexPoints[drawingPointIndex - 2].y == y)
+					{
+						drawingPointIndex--;
+						vertexPoints.clear();
+						drawStatus = 0;
+						return;
+					}
+				}
+				GLint startX = vertexPoints[0].x, startY = vertexPoints[0].y;
+				if (drawStatus == 2)
+				{
+					myPolygon.setVertics(glm::ivec3(x, y, 0), drawingPointIndex);
+					if (filling == 1)
+						myPolygon.fillPolygonScanLine();
+					else
+						myPolygon.polygonUseLine();
+					glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+					glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+						myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+					glBindBuffer(GL_ARRAY_BUFFER, 0);
+				}
+				else if (drawStatus == 1 && x <= startX + CHANGE_POINT_DIS * 2 && x >= startX - CHANGE_POINT_DIS * 2
+					&& y <= startY + CHANGE_POINT_DIS * 2 && y >= startY - CHANGE_POINT_DIS * 2)
+				{
+					myPolygon.setIsclose(GL_TRUE);
+					vertexPoints.pop_back();
+					if (filling == 1)
+						myPolygon.fillPolygonScanLine();
+					else
+						myPolygon.polygonUseLine();
+					glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+					glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+						myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+					glBindBuffer(GL_ARRAY_BUFFER, 0);
+					for (int i = 0; i < vertexPoints.size(); i++)
+						transBasisPoint.push_back(vertexPoints[i]);
+				}
+				else
+				{
+					if (vertexPoints.size() < drawingPointIndex)
+					{
+						vertexPoints.push_back(glm::ivec3(x, y, 0));
+					}
+					drawingPointIndex++;
+					if (filling == 1)
+						myPolygon.fillPolygonScanLine();
+					else
+						myPolygon.polygonUseLine();
+					glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+					glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+						myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+					glBindBuffer(GL_ARRAY_BUFFER, 0);
+				}
+
+			}
+		}
+		break;
+	case drawPolygon::MOVE:
+		if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
+		{
+			lastMouseX = x, lastMouseY = y;
+		}
+		else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
+		{
+			polygonGetTransformMatrix(glm::ivec2(x - lastMouseX, y - lastMouseY));
+			lastMouseX = x, lastMouseY = y;
+			if (filling == 1)
+				myPolygon.fillPolygonScanLine();
+			else
+				myPolygon.polygonUseLine();
 			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 			glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
 				myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			if (drawingPointIndex == 1)
-				drawingPointIndex++;
 		}
-		else
+		break;
+	case drawPolygon::ROTATE:
+		if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
 		{
-			drawStatus = 2;
-			GLint xTemp, yTemp;
-			GLint i;
-			for (i = 0; i < vertexPoints.size(); i++)
-			{
-				xTemp = vertexPoints[i].x, yTemp = vertexPoints[i].y;
-				if (x <= xTemp + CHANGE_POINT_DIS&&x >= xTemp - CHANGE_POINT_DIS
-					&&y <= yTemp + CHANGE_POINT_DIS&&y >= yTemp - CHANGE_POINT_DIS)
-					break;
-			}
-			if (i != vertexPoints.size())
-				drawingPointIndex = i + 1;
-			else
-				drawStatus = 0;
+			lastMouseX = x, lastMouseY = y;
 		}
-	}
-	else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
-	{
-		if (drawStatus != 0)
+		else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
 		{
-			if (drawStatus == 1 && drawingPointIndex == 2)
-			{
-				if (vertexPoints[drawingPointIndex - 2].x == x
-					&&vertexPoints[drawingPointIndex - 2].y == y)
-				{
-					drawingPointIndex--;
-					vertexPoints.clear();
-					drawStatus = 0;
-					return;
-				}
-			}
-			GLint startX = vertexPoints[0].x, startY = vertexPoints[0].y;
-			if (drawStatus == 2)
-			{
-				myPolygon.setVertics(glm::ivec3(x, y, 0), drawingPointIndex);
-				myPolygon.polygonUseLine();
-				glBindBuffer(GL_ARRAY_BUFFER, myVBO);
-				glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
-					myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
-				glBindBuffer(GL_ARRAY_BUFFER, 0);
-			}
-			else if (drawStatus == 1 && x <= startX + CHANGE_POINT_DIS*2&&x >= startX - CHANGE_POINT_DIS*2
-				&&y <= startY + CHANGE_POINT_DIS*2&&y >= startY - CHANGE_POINT_DIS*2)
-			{
-				myPolygon.setIsclose(GL_TRUE);
-				vertexPoints.pop_back();
-				myPolygon.polygonUseLine();
-				glBindBuffer(GL_ARRAY_BUFFER, myVBO);
-				glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
-					myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
-				glBindBuffer(GL_ARRAY_BUFFER, 0);
-			}
+			polygonGetTransformMatrix(glm::ivec2(lastMouseX, lastMouseY), glm::ivec2(x, y));
+			lastMouseX = x, lastMouseY = y;
+			if (filling == 1)
+				myPolygon.fillPolygonScanLine();
 			else
-			{
-				if (vertexPoints.size() < drawingPointIndex)
-				{
-					vertexPoints.push_back(glm::ivec3(x, y, 0));
-				}
-				drawingPointIndex++;
 				myPolygon.polygonUseLine();
-				glBindBuffer(GL_ARRAY_BUFFER, myVBO);
-				glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
-					myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
-				glBindBuffer(GL_ARRAY_BUFFER, 0);
-			}				
-			
+			polygonSetTransBasisPoint();
+			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+			glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+				myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
+		break;
 	}
 }
 void polygonOnActiveMotion(int x, int y)
@@ -197,7 +271,10 @@ void polygonOnActiveMotion(int x, int y)
 			myPolygon.setVertics(glm::ivec3(x, y, 0), drawingPointIndex);
 			if (drawStatus == 2 || drawStatus == 1)
 			{
-				myPolygon.polygonUseLine();
+				if (filling == 1)
+					myPolygon.fillPolygonScanLine();
+				else
+					myPolygon.polygonUseLine();
 			}
 			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 			glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
@@ -206,14 +283,27 @@ void polygonOnActiveMotion(int x, int y)
 		}
 		break;
 	case drawPolygon::MOVE:
+		polygonGetTransformMatrix(glm::ivec2(x - lastMouseX, y - lastMouseY));
+		lastMouseX = x, lastMouseY = y;
+		if (filling == 1)
+			myPolygon.fillPolygonScanLine();
+		else
+			myPolygon.polygonUseLine();
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+			myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		break;
 	case drawPolygon::ROTATE:
-		break;
-	case drawPolygon::ZOOM:
-		break;
-	case drawPolygon::EXIT:
-		break;
-	default:
+		polygonGetTransformMatrix(glm::ivec2(lastMouseX, lastMouseY), glm::ivec2(x, y));
+		if (filling == 1)
+			myPolygon.fillPolygonScanLine();
+		else
+			myPolygon.polygonUseLine();
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+			myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		break;
 	}
 	
@@ -221,7 +311,10 @@ void polygonOnActiveMotion(int x, int y)
 void polygonOnMouseWheelScrollValid(int wheel, int direction, int x, int y)
 {
 	polygonGetTransformMatrix(glm::ivec2(direction * 2, direction * 2));
-	myPolygon.polygonUseLine();
+	if (filling == 1)
+		myPolygon.fillPolygonScanLine();
+	else
+		myPolygon.polygonUseLine();
 	glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 	glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
 		myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -231,6 +324,7 @@ void polygonOnMouseWheelScrollInvalid(int wheel, int direction, int x, int y){}
 void polygonProcessMenuEvent(int options)
 {
 	GLint n;
+	glm::vec3 fillColor;
 	if (myPolygon.getPointsNum() == 0)//在多边形未初始化时，不能对多边形进行变换
 		return;
 	switch (options)
@@ -269,6 +363,43 @@ void polygonProcessMenuEvent(int options)
 		rotateCenter.x /= n, rotateCenter.y /= n;
 		polygonSetTransBasisPoint();
 		break;
+	case FILLCOLOR:
+		glutMouseWheelFunc(polygonOnMouseWheelScrollValid);
+		filling = (filling == 1) ? 0 : 1;
+		if (filling == 1)
+		{
+			GLint RValue, GValue, BValue;
+			cout << "输入要填充的颜色值(例如：255 0 0):" << endl;
+			cin >> RValue >> GValue >> BValue;
+			fillColor = glm::vec3(RValue / 255.0, GValue / 255.0, BValue / 255.0);
+			myPolygon.setFillClor(fillColor);
+			myPolygon.fillPolygonScanLine();
+		}			
+		else
+			myPolygon.polygonUseLine();
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+			myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		break;
+	case FILLPICTURE:
+		glutMouseWheelFunc(polygonOnMouseWheelScrollValid);
+		filling = (filling == 2) ? 0 : 2;
+		if (filling == 2)
+		{
+			//string filename;
+			//cout << "输入要填充图片的路径:";
+			//cin >> filename;
+			myTextureManager = new TextureManager();
+			myTextureManager->loadTexture("E:\\CGApplication\\img_test.png", textureID);
+		}		
+		else
+			myPolygon.polygonUseLine();
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+			myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		break;
 	case EXIT:
 		transformStatus = EXIT;
 		break;
@@ -295,12 +426,17 @@ void polygonInitGlutWindow()
 }
 void polygonInitMenus()
 {
+	GLint subMenu = glutCreateMenu(polygonProcessMenuEvent);
+	glutSetMenuFont(subMenu, GLUT_BITMAP_9_BY_15);
+	glutAddMenuEntry("Fill with color", FILLCOLOR);
+	glutAddMenuEntry("Fill with picture", FILLPICTURE);
 	GLint menu = glutCreateMenu(polygonProcessMenuEvent);
 	glutSetMenuFont(menu, GLUT_BITMAP_9_BY_15);
 	glutAddMenuEntry("Edit Polygon", EDIT);
 	glutAddMenuEntry("Move Polygon", MOVE);
 	glutAddMenuEntry("Rotate Polygon", ROTATE);
 	glutAddMenuEntry("Zoom Polygon", ZOOM);
+	glutAddSubMenu("Fill Polygon", subMenu);
 	glutAddMenuEntry("Exit", EXIT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 	glutSetCursor(GLUT_CURSOR_INHERIT);

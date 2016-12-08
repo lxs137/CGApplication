@@ -16,16 +16,20 @@ namespace drawPolygon
 	GLuint myVBO;
 	GLfloat lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
 	GLint drawStatus = 0;//0代表未处于绘制状态；1代表正在初始化顶点；2表示正在修改顶点
+	GLint filling = 0;//0代表未填充，1代表用颜色填充，2代表用图像填充
 	std::vector<glm::ivec3> vertexPoints;//多边形的各个顶点
 	std::vector<glm::ivec3> transBasisPoint;
 	glm::ivec3 rotateCenter = glm::ivec3(0, 0, 0);
 	GLint drawingPointIndex = 1;//多边形的各个顶点（从1开始）,表示正在初始化或者修改的顶点
+	unsigned int textureID = 1;
 	enum MenuOptions
 	{
 		EDIT,
 		MOVE,
 		ROTATE,
 		ZOOM,
+		FILLCOLOR,
+		FILLPICTURE,
 		EXIT
 	};
 	MenuOptions transformStatus = EDIT;
