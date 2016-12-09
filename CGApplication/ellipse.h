@@ -256,6 +256,10 @@ public:
 		this->radiusX = rX;
 		this->radiusY = rY;
 	}
+	void setFillColor(glm::vec3 color)
+	{
+		this->fillColor = color;
+	}
 	void addRotateDegree(GLfloat rotateDegree)
 	{
 		this->degree+=rotateDegree;
@@ -359,10 +363,9 @@ public:
 		}
 		pushSymmetryPoint(glm::ivec3(radiusX, 0, 0));
 	}
-	void fillEllipseScanLine(glm::vec3 fillColor)
+	void fillEllipseScanLine()
 	{
 		clearPixels();
-		this->fillColor = fillColor;
 		xMin = -WIDTH, xMax = WIDTH, yMin = -HEIGHT, yMax = HEIGHT;
 		fillEllipseWithWindow();
 	}

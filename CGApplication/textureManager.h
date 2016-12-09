@@ -20,7 +20,7 @@ public:
 		if (myTextureMap.find(textureID) != myTextureMap.end())
 			glDeleteTextures(1, &(myTextureMap[textureID]));
 
-		glTexture = SOIL_load_OGL_texture(filename, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
+		glTexture = SOIL_load_OGL_texture(filename, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y | SOIL_FLAG_TEXTURE_REPEATS |SOIL_FLAG_POWER_OF_TWO);
 		myTextureMap[textureID] = glTexture;
 
 		//unsigned char *imageBits(0);

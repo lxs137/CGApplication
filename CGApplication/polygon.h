@@ -272,7 +272,7 @@ public:
 			vertics.pop_back();
 		this->isPolygonClose = isClose;
 	}
-	void setFillClor(glm::vec3 color)
+	void setFillColor(glm::vec3 color)
 	{
 		this->fillColor=color;
 	}

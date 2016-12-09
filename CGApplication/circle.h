@@ -135,6 +135,10 @@ public:
 	{
 		this->radius = r;
 	}
+	void setFillColor(glm::vec3 color)
+	{
+		this->fillColor = color;
+	}
 	vector<GLfloat> getCirclePixels()
 	{
 		return this->pixels;
@@ -197,9 +201,8 @@ public:
 		pushPoint(glm::ivec3(-x + centerX, y + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
 		pushPoint(glm::ivec3(-x + centerX, -y + centerY, 0), -WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
 	}
-	void fillCircleScanLine(glm::vec3 fillColor)
+	void fillCircleScanLine()
 	{
-		this->fillColor = fillColor;
 		clearPixels();
 		fillCircleWithWindow(-WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
 	}

@@ -28,12 +28,13 @@ void drawPolygonApplication(int argc, char **argv)
 	//set shader program	
 	shader *myShader = new shader("2dModel.vert", "2dModel.frag");
 	myShaderProgram = myShader->shaderProgram;
+	myTextureManager = new TextureManager();
 
 	//set VAO
 	polygonInitVAO(myVAO, myVBO);
 
-	//set transform
-	GLuint transformLocation = glGetUniformLocation(myShaderProgram, "transform");
+	//set textureSwitch Loaction
+	textureSwitchLoc = glGetUniformLocation(myShaderProgram, "isUseTexture");
 
 	glEnable(GL_TEXTURE_2D);
 	glutDisplayFunc(polygonRender2DSence);
@@ -54,7 +55,13 @@ void polygonRender2DSence()
 {
 	glClearColor(1.0f, 0.8f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-
+	if (filling == 2)
+	{
+		glUniform1i(textureSwitchLoc, 1);
+	}
+	else
+		glUniform1i(textureSwitchLoc, 0);
+	myTextureManager->bindTexture(textureID);
 	glUseProgram(myShaderProgram);
 	glBindVertexArray(myVAO);
 	glDrawArrays(GL_POINTS, 0, myPolygon.getPointsNum());
@@ -64,7 +71,6 @@ void polygonRender2DSence()
 		GLfloat dertX, dertY, xTemp, yTemp;
 		dertX = ((GLfloat)CHANGE_POINT_DIS) / WIDTH_HALF, dertY = ((GLfloat)CHANGE_POINT_DIS) / HEIGHT_HALF;
 		glBegin(GL_QUADS);
-		glColor3f(0.7f, 0.0f, 0.0f);
 		for (GLint i = 0; i < vertexPoints.size(); i++)
 		{
 			xTemp = ((GLfloat)vertexPoints[i].x) / WIDTH_HALF, yTemp = ((GLfloat)vertexPoints[i].y) / HEIGHT_HALF;
@@ -74,21 +80,6 @@ void polygonRender2DSence()
 			glVertex2f(xTemp - dertX, yTemp - dertY);
 		}
 		glEnd();
-		if (filling == 2)
-		{
-			myTextureManager->bindTexture(textureID);
-			GLint x0 = vertexPoints[0].x, y0 = vertexPoints[0].y;
-			glBegin(GL_POLYGON);
-			for (GLint i = 0; i < vertexPoints.size(); i++)
-			{
-				xTemp = ((GLfloat)(vertexPoints[i].x)) / WIDTH_HALF;
-				yTemp = ((GLfloat)(vertexPoints[i].y)) / HEIGHT_HALF;
-
-				glVertex2f(xTemp*20, yTemp*20);
-				glTexCoord2f(xTemp, yTemp);
-			}
-			glEnd(); 
-		}
 
 		glFlush();
 	}
@@ -117,7 +108,7 @@ void polygonOnMouseClick(int button, int state, int x, int y)
 					vertexPoints.push_back(glm::ivec3(x, y, 0));
 					myPolygon.setVertics(glm::ivec3(x, y, 0), drawingPointIndex);
 				}
-				if (filling == 1)
+				if (filling != 0)
 					myPolygon.fillPolygonScanLine();
 				else
 					myPolygon.polygonUseLine();
@@ -165,7 +156,7 @@ void polygonOnMouseClick(int button, int state, int x, int y)
 				if (drawStatus == 2)
 				{
 					myPolygon.setVertics(glm::ivec3(x, y, 0), drawingPointIndex);
-					if (filling == 1)
+					if (filling != 0)
 						myPolygon.fillPolygonScanLine();
 					else
 						myPolygon.polygonUseLine();
@@ -179,7 +170,7 @@ void polygonOnMouseClick(int button, int state, int x, int y)
 				{
 					myPolygon.setIsclose(GL_TRUE);
 					vertexPoints.pop_back();
-					if (filling == 1)
+					if (filling != 0)
 						myPolygon.fillPolygonScanLine();
 					else
 						myPolygon.polygonUseLine();
@@ -197,7 +188,7 @@ void polygonOnMouseClick(int button, int state, int x, int y)
 						vertexPoints.push_back(glm::ivec3(x, y, 0));
 					}
 					drawingPointIndex++;
-					if (filling == 1)
+					if (filling != 0)
 						myPolygon.fillPolygonScanLine();
 					else
 						myPolygon.polygonUseLine();
@@ -219,7 +210,7 @@ void polygonOnMouseClick(int button, int state, int x, int y)
 		{
 			polygonGetTransformMatrix(glm::ivec2(x - lastMouseX, y - lastMouseY));
 			lastMouseX = x, lastMouseY = y;
-			if (filling == 1)
+			if (filling != 0)
 				myPolygon.fillPolygonScanLine();
 			else
 				myPolygon.polygonUseLine();
@@ -238,7 +229,7 @@ void polygonOnMouseClick(int button, int state, int x, int y)
 		{
 			polygonGetTransformMatrix(glm::ivec2(lastMouseX, lastMouseY), glm::ivec2(x, y));
 			lastMouseX = x, lastMouseY = y;
-			if (filling == 1)
+			if (filling != 0)
 				myPolygon.fillPolygonScanLine();
 			else
 				myPolygon.polygonUseLine();
@@ -272,7 +263,7 @@ void polygonOnActiveMotion(int x, int y)
 			myPolygon.setVertics(glm::ivec3(x, y, 0), drawingPointIndex);
 			if (drawStatus == 2 || drawStatus == 1)
 			{
-				if (filling == 1)
+				if (filling != 0)
 					myPolygon.fillPolygonScanLine();
 				else
 					myPolygon.polygonUseLine();
@@ -286,7 +277,7 @@ void polygonOnActiveMotion(int x, int y)
 	case drawPolygon::MOVE:
 		polygonGetTransformMatrix(glm::ivec2(x - lastMouseX, y - lastMouseY));
 		lastMouseX = x, lastMouseY = y;
-		if (filling == 1)
+		if (filling != 0)
 			myPolygon.fillPolygonScanLine();
 		else
 			myPolygon.polygonUseLine();
@@ -297,7 +288,7 @@ void polygonOnActiveMotion(int x, int y)
 		break;
 	case drawPolygon::ROTATE:
 		polygonGetTransformMatrix(glm::ivec2(lastMouseX, lastMouseY), glm::ivec2(x, y));
-		if (filling == 1)
+		if (filling != 0)
 			myPolygon.fillPolygonScanLine();
 		else
 			myPolygon.polygonUseLine();
@@ -312,7 +303,7 @@ void polygonOnActiveMotion(int x, int y)
 void polygonOnMouseWheelScrollValid(int wheel, int direction, int x, int y)
 {
 	polygonGetTransformMatrix(glm::ivec2(direction * 2, direction * 2));
-	if (filling == 1)
+	if (filling != 0)
 		myPolygon.fillPolygonScanLine();
 	else
 		myPolygon.polygonUseLine();
@@ -373,7 +364,7 @@ void polygonProcessMenuEvent(int options)
 			cout << "输入要填充的颜色值(例如：255 0 0):" << endl;
 			cin >> RValue >> GValue >> BValue;
 			fillColor = glm::vec3(RValue / 255.0, GValue / 255.0, BValue / 255.0);
-			myPolygon.setFillClor(fillColor);
+			myPolygon.setFillColor(fillColor);
 			myPolygon.fillPolygonScanLine();
 		}			
 		else
@@ -388,11 +379,11 @@ void polygonProcessMenuEvent(int options)
 		filling = (filling == 2) ? 0 : 2;
 		if (filling == 2)
 		{
-			//string filename;
-			//cout << "输入要填充图片的路径:";
-			//cin >> filename;
-			myTextureManager = new TextureManager();
-			myTextureManager->loadTexture("E:\\CGApplication\\boardTexture.jpg", textureID);
+			string filename;
+			cout << "输入要填充图片的路径:";
+			cin >> filename;
+			myTextureManager->loadTexture(filename.c_str(), textureID);
+			myPolygon.fillPolygonScanLine();
 		}		
 		else
 			myPolygon.polygonUseLine();

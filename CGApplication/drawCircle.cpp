@@ -26,13 +26,15 @@ void drawCircleApplication(int argc, char **argv)
 	//set shader program    
 	shader *myShader = new shader("2dModel.vert", "2dModel.frag");
 	myShaderProgram = myShader->shaderProgram;
+	myTextureManager = new TextureManager();
 
 	//set VAO
 	circleInitVAO(myVAO,myVBO);
 
 	//set transform
-	GLuint transformLocation = glGetUniformLocation(myShaderProgram, "transform");
+	textureSwitchLoc = glGetUniformLocation(myShaderProgram, "isUseTexture");
 
+	glEnable(GL_TEXTURE_2D);
 	glutDisplayFunc(circleRender2DSence);
 	glutIdleFunc(circleRender2DSence);
 	glutMouseFunc(circleOnMouseClick);
@@ -51,10 +53,15 @@ void circleRender2DSence()
 	glClearColor(1.0f, 0.8f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
+	if (filling == 2)
+	{
+		glUniform1i(textureSwitchLoc, 1);
+	}
+	else
+		glUniform1i(textureSwitchLoc, 0);
+	myTextureManager->bindTexture(textureID);
 	glUseProgram(myShaderProgram);
-	//myTextureManager->bindTexture(testTextureID);
 	glBindVertexArray(myVAO);
-	//glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
 	glDrawArrays(GL_POINTS, 0, myCircle.getPointsNum());
 	glBindVertexArray(0);
 
@@ -144,8 +151,8 @@ void circleOnMouseClick(int button, int state, int x, int y)
 				rX = abs(x - myCircle.getCenter().x), rY = abs(y - myCircle.getCenter().y);
 				myCircle.setRadius(rX < rY ? rX : rY);
 				myCircle.circleUseMidpoint();
-				if (filling)
-					myCircle.fillCircleScanLine(glm::vec3(0, 0, 1.0f));
+				if (filling != 0)
+					myCircle.fillCircleScanLine();
 				glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 				glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
 					myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -163,8 +170,8 @@ void circleOnMouseClick(int button, int state, int x, int y)
 			circleGetTransformMatrix(glm::ivec2(x - lastMouseX, y - lastMouseY));
 			lastMouseX = x, lastMouseY = y;
 			myCircle.circleUseMidpoint();
-			if (filling)
-				myCircle.fillCircleScanLine(glm::vec3(0, 0, 1.0f));
+			if (filling != 0)
+				myCircle.fillCircleScanLine();
 			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 			glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
 				myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -187,8 +194,8 @@ void circleOnActiveMotion(int x, int y)
 			rX = abs(x - myCircle.getCenter().x), rY = abs(y - myCircle.getCenter().y);
 			myCircle.setRadius(rX < rY ? rX : rY);
 			myCircle.circleUseMidpoint();
-			if (filling)
-				myCircle.fillCircleScanLine(glm::vec3(0, 0, 1.0f));
+			if (filling != 0)
+				myCircle.fillCircleScanLine();
 			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 			glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
 				myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -199,8 +206,8 @@ void circleOnActiveMotion(int x, int y)
 		circleGetTransformMatrix(glm::ivec2(x - lastMouseX, y - lastMouseY));
 		lastMouseX = x, lastMouseY = y;
 		myCircle.circleUseMidpoint();
-		if (filling)
-			myCircle.fillCircleScanLine(glm::vec3(0, 0, 1.0f));
+		if (filling != 0)
+			myCircle.fillCircleScanLine();
 		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 		glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
 			myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -211,6 +218,7 @@ void circleOnActiveMotion(int x, int y)
 }
 void circleProcessMenuEvent(int options)
 {
+	glm::vec3 fillColor;
 	switch (options)
 	{
 	case EDIT:
@@ -228,12 +236,35 @@ void circleProcessMenuEvent(int options)
 		glutMouseWheelFunc(circleOnMouseWheelScrollValid);
 		transformStatus = ZOOM;
 		break;
-	case FILL:
+	case FILLCOLOR:
 		glutMouseWheelFunc(circleOnMouseWheelScrollValid);
-		filling = !filling;
-		if (filling)
+		filling = (filling == 1) ? 0 : 1;
+		if (filling == 1)
 		{
-			myCircle.fillCircleScanLine(glm::ivec3(0, 0, 1.0f));
+			GLint RValue, GValue, BValue;
+			cout << "输入要填充的颜色值(例如：255 0 0):" << endl;
+			cin >> RValue >> GValue >> BValue;
+			fillColor = glm::vec3(RValue / 255.0, GValue / 255.0, BValue / 255.0);
+			myCircle.setFillColor(fillColor);
+			myCircle.fillCircleScanLine();
+		}
+		else
+			myCircle.circleUseMidpoint();
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myCircle.getPointsNum()*myCircle.getPointSize(),
+			myCircle.getCirclePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		break;
+	case FILLPICTURE:
+		glutMouseWheelFunc(circleOnMouseWheelScrollValid);
+		filling = (filling == 2) ? 0 : 2;
+		if (filling == 2)
+		{
+			string filename;
+			cout << "输入要填充图片的路径:";
+			cin >> filename;
+			myTextureManager->loadTexture(filename.c_str(), textureID);
+			myCircle.fillCircleScanLine();
 		}
 		else
 			myCircle.circleUseMidpoint();
@@ -250,9 +281,9 @@ void circleProcessMenuEvent(int options)
 void circleOnMouseWheelScrollValid(int wheel, int direction, int x, int y)
 {
 	circleGetTransformMatrix(glm::ivec2(direction * 4, direction * 4));
-	if (filling)
+	if (filling != 0)
 	{
-		myCircle.fillCircleScanLine(glm::ivec3(0, 0, 1.0f));
+		myCircle.fillCircleScanLine();
 	}
 	else
 		myCircle.circleUseMidpoint();
@@ -313,12 +344,16 @@ void circleInitVAO(GLuint &VAO, GLuint &VBO)
 }
 void circleInitMenus()
 {
+	GLint subMenu = glutCreateMenu(circleProcessMenuEvent);
+	glutSetMenuFont(subMenu, GLUT_BITMAP_9_BY_15);
+	glutAddMenuEntry("Fill with color", FILLCOLOR);
+	glutAddMenuEntry("Fill with picture", FILLPICTURE);
 	GLint menu = glutCreateMenu(circleProcessMenuEvent);
 	glutSetMenuFont(menu, GLUT_BITMAP_9_BY_15);
 	glutAddMenuEntry("Edit Circle", EDIT);
 	glutAddMenuEntry("Move Circle", MOVE);
 	glutAddMenuEntry("Zoom Circle", ZOOM);
-	glutAddMenuEntry("Fill Circle", FILL);
+	glutAddSubMenu("Fill Circle", subMenu);
 	glutAddMenuEntry("Exit", EXIT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 	glutSetCursor(GLUT_CURSOR_INHERIT);

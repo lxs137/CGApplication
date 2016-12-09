@@ -14,7 +14,9 @@ namespace drawCircle{
 	GLuint myVBO;
 	GLfloat lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
 	GLboolean drawing = GL_FALSE;
-	GLboolean filling = GL_FALSE;
+	GLint filling = 0;//0代表未填充，1代表用颜色填充，2代表用图像填充
+	unsigned int textureID = 3;
+	GLuint textureSwitchLoc;
 	std::vector<glm::ivec3> controlPoints;
 	glm::ivec3 rotateCenter = glm::ivec3(0, 0, 0);
 	enum MenuOptions
@@ -22,7 +24,8 @@ namespace drawCircle{
 		EDIT,
 		MOVE,
 		ZOOM,
-		FILL,
+		FILLCOLOR,
+		FILLPICTURE,
 		EXIT
 	};
 	MenuOptions transformStatus = EDIT;

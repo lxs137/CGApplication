@@ -1,6 +1,6 @@
 #include "windowSetting.h"
 
-DRAWINGMODEL drawingModel=DRAW3D;
+DRAWINGMODEL drawingModel=DRAWELLIPSE;
 
 void drawLineApplication(int argc, char **argv);
 void drawCircleApplication(int argc, char **argv);

@@ -28,13 +28,15 @@ void drawEllipseApplication(int argc, char **argv)
 	//set shader program	
 	shader *myShader = new shader("2dModel.vert", "2dModel.frag");
 	myShaderProgram = myShader->shaderProgram;
+	myTextureManager = new TextureManager();
 
 	//set VAO
 	ellipseInitVAO(myVAO, myVBO);
 
 	//set transform
-	GLuint transformLocation = glGetUniformLocation(myShaderProgram, "transform");
+	textureSwitchLoc = glGetUniformLocation(myShaderProgram, "isUseTexture");
 
+	glEnable(GL_TEXTURE_2D);
 	glutDisplayFunc(ellipseRender2DSence);
 	glutIdleFunc(ellipseRender2DSence);
 	glutReshapeFunc(ellipseOnReshape);
@@ -54,10 +56,15 @@ void ellipseRender2DSence()
 	glClearColor(1.0f, 0.8f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
+	if (filling == 2)
+	{
+		glUniform1i(textureSwitchLoc, 1);
+	}
+	else
+		glUniform1i(textureSwitchLoc, 0);
+	myTextureManager->bindTexture(textureID);
 	glUseProgram(myShaderProgram);
-	//myTextureManager->bindTexture(testTextureID);
 	glBindVertexArray(myVAO);
-	//glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transformMat));
 	glDrawArrays(GL_POINTS, 0, myEllipse.getPointsNum());
 	glBindVertexArray(0);
 	if ((!drawing) && myEllipse.getPointsNum() >= 1)
@@ -165,8 +172,8 @@ void ellipseOnMouseClick(int button, int state, int x, int y)
 						myEllipse.setRadius(rY, rX);
 				}
 				myEllipse.ellipseUseMidpoint();
-				if(filling)
-					myEllipse.fillEllipseScanLine(glm::vec3(0, 0, 1.0f));
+				if(filling != 0)
+					myEllipse.fillEllipseScanLine();
 				glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 				glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
 					myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -184,8 +191,8 @@ void ellipseOnMouseClick(int button, int state, int x, int y)
 			ellipseGetTransformMatrix(glm::ivec2(x - lastMouseX, y - lastMouseY));
 			lastMouseX = x, lastMouseY = y;
 			myEllipse.ellipseUseMidpoint();
-			if(filling)
-				myEllipse.fillEllipseScanLine(glm::vec3(0, 0, 1.0f));
+			if(filling != 0)
+				myEllipse.fillEllipseScanLine();
 			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 			glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
 				myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -202,8 +209,8 @@ void ellipseOnMouseClick(int button, int state, int x, int y)
 			ellipseGetTransformMatrix(glm::ivec2(lastMouseX, lastMouseY), glm::ivec2(x, y));
 			lastMouseX = x, lastMouseY = y;
 			myEllipse.ellipseUseMidpoint();
-			if(filling)
-				myEllipse.fillEllipseScanLine(glm::vec3(0, 0, 1.0f));
+			if(filling != 0)
+				myEllipse.fillEllipseScanLine();
 			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 			glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
 				myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -244,8 +251,8 @@ void ellipseOnActiveMotion(int x, int y)
 					myEllipse.setRadius(rY, rX);
 			}
 			myEllipse.ellipseUseMidpoint();
-			if(filling)
-				myEllipse.fillEllipseScanLine(glm::vec3(0, 0, 1.0f));
+			if(filling != 0)
+				myEllipse.fillEllipseScanLine();
 			glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 			glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
 				myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -256,8 +263,8 @@ void ellipseOnActiveMotion(int x, int y)
 		ellipseGetTransformMatrix(glm::ivec2(x - lastMouseX, y - lastMouseY));
 		lastMouseX = x, lastMouseY = y;
 		myEllipse.ellipseUseMidpoint();
-		if(filling)
-			myEllipse.fillEllipseScanLine(glm::vec3(0, 0, 1.0f));
+		if(filling != 0)
+			myEllipse.fillEllipseScanLine();
 		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 		glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
 			myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -267,8 +274,8 @@ void ellipseOnActiveMotion(int x, int y)
 		ellipseGetTransformMatrix(glm::ivec2(lastMouseX, lastMouseY), glm::ivec2(x, y));
 		lastMouseX = x, lastMouseY = y;
 		myEllipse.ellipseUseMidpoint();
-		if(filling)
-			myEllipse.fillEllipseScanLine(glm::vec3(0, 0, 1.0f));
+		if(filling != 0)
+			myEllipse.fillEllipseScanLine();
 		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 		glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
 			myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
@@ -280,9 +287,9 @@ void ellipseOnActiveMotion(int x, int y)
 void ellipseOnMouseWheelScrollValid(int wheel, int direction, int x, int y)
 {
 	ellipseGetTransformMatrix(glm::ivec2(direction * 4, direction * 4));
-	if (filling)
+	if (filling != 0)
 	{
-		myEllipse.fillEllipseScanLine(glm::ivec3(0, 0, 1.0f));
+		myEllipse.fillEllipseScanLine();
 	}
 	else
 		myEllipse.ellipseUseMidpoint();
@@ -296,6 +303,7 @@ void ellipseOnMouseWheelScrollInvalid(int wheel, int direction, int x, int y)
 }
 void ellipseProcessMenuEvent(int options)
 {
+	glm::vec3 fillColor;
 	switch (options)
 	{
 	case EDIT:
@@ -318,12 +326,35 @@ void ellipseProcessMenuEvent(int options)
 		glutMouseWheelFunc(ellipseOnMouseWheelScrollValid);
 		transformStatus = ZOOM;
 		break;
-	case FILL:
-		glutMouseWheelFunc(ellipseOnMouseWheelScrollInvalid);
-		filling = !filling;
-		if (filling)
+	case FILLCOLOR:
+		glutMouseWheelFunc(ellipseOnMouseWheelScrollValid);
+		filling = (filling == 1) ? 0 : 1;
+		if (filling == 1)
 		{
-			myEllipse.fillEllipseScanLine(glm::ivec3(0, 0, 1.0f));
+			GLint RValue, GValue, BValue;
+			cout << "输入要填充的颜色值(例如：255 0 0):" << endl;
+			cin >> RValue >> GValue >> BValue;
+			fillColor = glm::vec3(RValue / 255.0, GValue / 255.0, BValue / 255.0);
+			myEllipse.setFillColor(fillColor);
+			myEllipse.fillEllipseScanLine();
+		}
+		else
+			myEllipse.ellipseUseMidpoint();
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
+			myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		break;
+	case FILLPICTURE:
+		glutMouseWheelFunc(ellipseOnMouseWheelScrollValid);
+		filling = (filling == 2) ? 0 : 2;
+		if (filling == 2)
+		{
+			string filename;
+			cout << "输入要填充图片的路径:";
+			cin >> filename;
+			myTextureManager->loadTexture(filename.c_str(), textureID);
+			myEllipse.fillEllipseScanLine();
 		}
 		else
 			myEllipse.ellipseUseMidpoint();
@@ -358,13 +389,17 @@ void ellipseInitGlutWindow()
 }
 void ellipseInitMenus()
 {
+	GLint subMenu = glutCreateMenu(ellipseProcessMenuEvent);
+	glutSetMenuFont(subMenu, GLUT_BITMAP_9_BY_15);
+	glutAddMenuEntry("Fill with color", FILLCOLOR);
+	glutAddMenuEntry("Fill with picture", FILLPICTURE);
 	GLint menu = glutCreateMenu(ellipseProcessMenuEvent);
 	glutSetMenuFont(menu, GLUT_BITMAP_9_BY_15);
 	glutAddMenuEntry("Edit Ellipse", EDIT);
 	glutAddMenuEntry("Move Ellipse", MOVE);
 	glutAddMenuEntry("Rotate Ellipse", ROTATE);
 	glutAddMenuEntry("Zoom Ellipse", ZOOM);
-	glutAddMenuEntry("Fill Ellipse", FILL);
+	glutAddSubMenu("Fill Ellipse", subMenu);
 	glutAddMenuEntry("Exit", EXIT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 	glutSetCursor(GLUT_CURSOR_INHERIT);
