@@ -21,7 +21,7 @@ namespace drawPolygon
 	std::vector<glm::ivec3> transBasisPoint;
 	glm::ivec3 rotateCenter = glm::ivec3(0, 0, 0);
 	GLint drawingPointIndex = 1;//多边形的各个顶点（从1开始）,表示正在初始化或者修改的顶点
-	unsigned int textureID = 1;
+	unsigned int textureID = 2;
 	enum MenuOptions
 	{
 		EDIT,

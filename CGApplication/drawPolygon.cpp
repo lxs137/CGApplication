@@ -35,6 +35,7 @@ void drawPolygonApplication(int argc, char **argv)
 	//set transform
 	GLuint transformLocation = glGetUniformLocation(myShaderProgram, "transform");
 
+	glEnable(GL_TEXTURE_2D);
 	glutDisplayFunc(polygonRender2DSence);
 	glutIdleFunc(polygonRender2DSence);
 	glutReshapeFunc(polygonOnReshape);
@@ -63,6 +64,7 @@ void polygonRender2DSence()
 		GLfloat dertX, dertY, xTemp, yTemp;
 		dertX = ((GLfloat)CHANGE_POINT_DIS) / WIDTH_HALF, dertY = ((GLfloat)CHANGE_POINT_DIS) / HEIGHT_HALF;
 		glBegin(GL_QUADS);
+		glColor3f(0.7f, 0.0f, 0.0f);
 		for (GLint i = 0; i < vertexPoints.size(); i++)
 		{
 			xTemp = ((GLfloat)vertexPoints[i].x) / WIDTH_HALF, yTemp = ((GLfloat)vertexPoints[i].y) / HEIGHT_HALF;
@@ -74,7 +76,6 @@ void polygonRender2DSence()
 		glEnd();
 		if (filling == 2)
 		{
-			glEnable(GL_TEXTURE_2D);
 			myTextureManager->bindTexture(textureID);
 			GLint x0 = vertexPoints[0].x, y0 = vertexPoints[0].y;
 			glBegin(GL_POLYGON);
@@ -82,11 +83,11 @@ void polygonRender2DSence()
 			{
 				xTemp = ((GLfloat)(vertexPoints[i].x)) / WIDTH_HALF;
 				yTemp = ((GLfloat)(vertexPoints[i].y)) / HEIGHT_HALF;
+
+				glVertex2f(xTemp*20, yTemp*20);
 				glTexCoord2f(xTemp, yTemp);
-				glVertex2f(xTemp, yTemp);
 			}
-			glEnd();
-			glBindTexture(GL_TEXTURE_2D, 0);
+			glEnd(); 
 		}
 
 		glFlush();
@@ -391,7 +392,7 @@ void polygonProcessMenuEvent(int options)
 			//cout << "输入要填充图片的路径:";
 			//cin >> filename;
 			myTextureManager = new TextureManager();
-			myTextureManager->loadTexture("E:\\CGApplication\\img_test.png", textureID);
+			myTextureManager->loadTexture("E:\\CGApplication\\boardTexture.jpg", textureID);
 		}		
 		else
 			myPolygon.polygonUseLine();
