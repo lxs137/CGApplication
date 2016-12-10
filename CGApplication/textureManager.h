@@ -22,6 +22,7 @@ public:
 
 		glTexture = SOIL_load_OGL_texture(filename, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y | SOIL_FLAG_TEXTURE_REPEATS |SOIL_FLAG_POWER_OF_TWO);
 		myTextureMap[textureID] = glTexture;
+		myTexturePathMap[textureID] = (std::string)filename;
 
 		//unsigned char *imageBits(0);
 		//int width = 0, height = 0;
@@ -43,6 +44,7 @@ public:
 		{
 			glDeleteTextures(1, &(myTextureMap[textureID]));
 			myTextureMap.erase(textureID);
+			myTexturePathMap.erase(textureID);
 			return true;
 		}
 		else
@@ -64,9 +66,37 @@ public:
 		for (mapi = myTextureMap.begin(); mapi != myTextureMap.end(); )
 			unloadTexture(mapi->first);
 		myTextureMap.clear();
+		myTexturePathMap.clear();
+	}
+	void saveScreenshot(const char *filePath)
+	{
+		if (SOIL_save_screenshot(filePath, SOIL_SAVE_TYPE_BMP, 0, 0, WIDTH, HEIGHT) == 1)
+			std::cout << "Í¼Æ¬±£´æ³É¹¦"<<std::endl;
+		else
+			std::cout << "Í¼Æ¬±£´æÊ§°Ü"<<std::endl;
+	}
+	std::string getTexturePath(const unsigned int textureID)
+	{
+		if (myTexturePathMap.find(textureID) != myTexturePathMap.end())
+		{
+			return myTexturePathMap[textureID];
+		}
+		else
+			return "";
+	}
+	void changeTexturePath(const unsigned int textureID, std::string newFilePath)
+	{
+		if (myTexturePathMap.find(textureID) != myTexturePathMap.end())
+		{
+			myTexturePathMap[textureID] = newFilePath;
+			glDeleteTextures(1, &(myTextureMap[textureID]));
+			myTextureMap[textureID] = SOIL_load_OGL_texture(newFilePath.c_str(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y | SOIL_FLAG_TEXTURE_REPEATS | SOIL_FLAG_POWER_OF_TWO);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
 	}
 private:
 	std::map<unsigned int, GLuint> myTextureMap;
+	std::map<unsigned int, std::string> myTexturePathMap;
 };
 
 

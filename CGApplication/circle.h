@@ -5,6 +5,8 @@
 #include <glm\glm.hpp>
 #include <vector>
 #include <cmath>
+#include <fstream>
+#include <string>
 using namespace std;
 
 class circle
@@ -84,6 +86,37 @@ private:
 			pushFillScanLine(-x + centerX, x + centerX, -y + centerY, xWMin, xWMax, yWMin, yWMax);
 			pushFillScanLine(-y + centerX, y + centerX, x + centerY, xWMin, xWMax, yWMin, yWMax);
 			pushFillScanLine(-y + centerX, y + centerX, -x + centerY, xWMin, xWMax, yWMin, yWMax);
+		}
+		pushPoint(glm::ivec3(x + centerX, y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+		pushPoint(glm::ivec3(x + centerX, -y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+		pushPoint(glm::ivec3(-x + centerX, y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+		pushPoint(glm::ivec3(-x + centerX, -y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+	}
+	void midpointCircleWithWindow(GLint xWMin, GLint xWMax, GLint yWMin, GLint yWMax)
+	{
+		GLint x = 0, y = radius;
+		GLfloat p0 = 5.0f / 4 - radius;
+		pushPoint(glm::ivec3(centerX, radius + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+		pushPoint(glm::ivec3(centerX, -radius + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+		for (x = 1; x < y; x++)
+		{
+			if (p0 < 0)
+			{
+				p0 = p0 + x + x + 1;
+			}
+			else
+			{
+				y--;
+				p0 = p0 + x + x - y - y + 1;
+			}
+			pushPoint(glm::ivec3(x + centerX, y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+			pushPoint(glm::ivec3(-x + centerX, y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+			pushPoint(glm::ivec3(x + centerX, -y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+			pushPoint(glm::ivec3(-x + centerX, -y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+			pushPoint(glm::ivec3(y + centerX, x + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+			pushPoint(glm::ivec3(y + centerX, -x + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+			pushPoint(glm::ivec3(-y + centerX, x + centerY, 0), xWMin, xWMax, yWMin, yWMax);
+			pushPoint(glm::ivec3(-y + centerX, -x + centerY, 0), xWMin, xWMax, yWMin, yWMax);
 		}
 		pushPoint(glm::ivec3(x + centerX, y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
 		pushPoint(glm::ivec3(x + centerX, -y + centerY, 0), xWMin, xWMax, yWMin, yWMax);
@@ -206,7 +239,7 @@ public:
 		clearPixels();
 		fillCircleWithWindow(-WIDTH_HALF, WIDTH_HALF, -HEIGHT_HALF, HEIGHT_HALF);
 	}
-	void clipUseRect(glm::ivec3 winP1, glm::ivec3 winP2)
+	void clipUseRect(glm::ivec3 winP1, glm::ivec3 winP2,GLboolean filling=GL_FALSE)
 	{
 		GLint xMin = winP1.x<winP2.x ? winP1.x : winP2.x, xMax = winP1.x>winP2.x ? winP1.x : winP2.x,
 			yMin = winP1.y<winP2.y ? winP1.y : winP2.y, yMax = winP1.y>winP2.y ? winP1.y : winP2.y;
@@ -222,7 +255,104 @@ public:
 			return;
 		}
 		clearPixels();
-		fillCircleWithWindow(xMin, xMax, yMin, yMax);
+		if (filling)
+			fillCircleWithWindow(xMin, xMax, yMin, yMax);
+		else
+			midpointCircleWithWindow(xMin, xMax, yMin, yMax);
+	}
+	GLint loadCircleFromFile(string filePath,string & texturePath)
+	{
+		GLint filling;
+		ifstream ifFile(filePath);
+		if (ifFile.is_open())
+		{
+			string str;
+			ifFile >> str;
+			if (str.find("Circle") != string::npos)
+			{
+				ifFile >> str >> str;
+				str = str.substr(1, str.size() - 2);
+				string::size_type n;
+				lineColor.r = stof(str.substr(0, n = str.find(",")));
+				str = str.substr(n + 1);
+				lineColor.g = stof(str.substr(0, n = str.find(",")));
+				str = str.substr(n + 1);
+				lineColor.b = stof(str.substr(0));
+
+				ifFile >> str;
+				if (str == "fill:")
+				{
+					ifFile >> str;
+					filling = 0;
+				}
+				else if (str.find("fillColor") != string::npos)
+				{
+					ifFile >> str;
+					str = str.substr(1, str.size() - 2);
+					fillColor.r = stof(str.substr(0, n = str.find(",")));
+					str = str.substr(n + 1);
+					fillColor.g = stof(str.substr(0, n = str.find(",")));
+					str = str.substr(n + 1);
+					fillColor.b = stof(str.substr(0));
+					filling = 1;
+				}
+				else if (str.find("fillTexture") != string::npos)
+				{
+					string fileTempStr;
+					ifFile >> fileTempStr;
+					str = fileTempStr.substr(1);
+					while (str.find("\"") == string::npos)
+					{
+						ifFile >> fileTempStr;
+						str += (" " + fileTempStr);
+					}
+					str = str.substr(0, str.size() - 1);
+					filling = 2;
+					texturePath = str;
+				}
+
+				ifFile >> str >> str;
+				str = str.substr(1, str.size() - 2);
+				centerX = stoi(str.substr(0, n = str.find(",")));
+				str = str.substr(n + 1);
+				centerY = stoi(str.substr(0));
+
+				ifFile >> str >> str;
+				radius = stoi(str);
+
+				cout << "文件打开成功，读入圆形数据" << endl;
+			}
+			else
+				cout << "文件中没有保存圆形的数据" << endl;
+		}
+		else
+			cout << "文件打开出错" << endl;
+		ifFile.close();
+		return filling;
+	}
+	void saveCircleIntoFile(string filePath,GLboolean filled= GL_FALSE,string texturePath = "")
+	{
+		ofstream ofFile(filePath);
+		if (ofFile.is_open())
+		{
+			ofFile << "Circle:" << "\n";
+			ofFile << "lineColor:" << " (" << lineColor.r << "," << lineColor.g << "," << lineColor.b << ")\n";
+			if (filled)
+			{
+				if (texturePath == "")
+					ofFile << "fillColor:" << " (" << fillColor.r << "," << fillColor.g << "," << fillColor.b << ")\n";
+				else
+					ofFile << "fillTexture:" << " \"" << texturePath << "\"\n";
+			}
+			else
+				ofFile << "fill: none\n";
+			ofFile << "center:" << " (" << centerX << "," << centerY << ")\n";
+			ofFile << "radius:" << " " << radius << "\n";
+			cout << "文件保存成功" << endl;
+		}
+		else
+			cout << "文件保存出错" << endl;
+		ofFile.close();
 	}
 };
 

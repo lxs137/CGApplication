@@ -86,16 +86,30 @@ private:
 	}
 	void pushFillScanLine(glm::ivec3 point)
 	{
+		GLboolean cliping = GL_FALSE;
+		glm::ivec3 clipWinP1, clipWinP2;
+		if (xMin == -WIDTH_HALF && xMax == WIDTH_HALF && yMin == -HEIGHT_HALF && yMax == HEIGHT_HALF)
+			cliping = GL_FALSE;
+		else
+		{
+			cliping = GL_TRUE;
+			clipWinP1 = glm::ivec3(xMin, yMin, 0);
+			clipWinP2 = glm::ivec3(xMax, yMax, 0);
+		}
+
 		if (fabs(degree) < 0.02)
 		{
 			GLint xLeft, xRight, yValue;
 			xLeft = centerX - point.x, xRight = centerX + point.x, yValue = centerY + point.y;
-			if (yValue<yMin || yValue>yMax)
-				return;
-			else
+			if (cliping)
 			{
-				xLeft = xLeft < xMin ? (xMin - 1) : xLeft;
-				xRight = xRight < xMax ? xRight : (xMax + 1);
+				if (yValue<yMin || yValue>yMax)
+					return;
+				else
+				{
+					xLeft = xLeft < xMin ? (xMin - 1) : xLeft;
+					xRight = xRight < xMax ? xRight : (xMax + 1);
+				}
 			}
 			for (GLint k = xLeft + 1; k <= xRight - 1; k++)
 			{
@@ -108,12 +122,15 @@ private:
 				pointsNum++;
 			}
 			xLeft = centerX - point.x, xRight = centerX + point.x, yValue = centerY - point.y;
-			if (yValue<yMin || yValue>yMax)
-				return;
-			else
+			if (cliping)
 			{
-				xLeft = xLeft < xMin ? (xMin - 1) : xLeft;
-				xRight = xRight < xMax ? xRight : (xMax + 1);
+				if (yValue<yMin || yValue>yMax)
+					return;
+				else
+				{
+					xLeft = xLeft < xMin ? (xMin - 1) : xLeft;
+					xRight = xRight < xMax ? xRight : (xMax + 1);
+				}
 			}
 			for (GLint k = xLeft + 1; k <= xRight - 1; k++)
 			{
@@ -139,6 +156,10 @@ private:
 			tempPoint2 = degreeMartix*tempPoint2;
 			lineFill=line(glm::ivec3((GLint)tempPoint1.x, (GLint)tempPoint1.y, 0),
 				glm::ivec3((GLint)tempPoint2.x, (GLint)tempPoint2.y, 0),fillColor);
+			if (cliping)
+				lineFill.clipUseRect(clipWinP1, clipWinP2);
+			else
+				lineFill.lineUseBresenham();
 			lineFill.lineUseBresenham();
 			fillPixels=lineFill.getLinePixels();
 			this->pixels.insert(this->pixels.end(), fillPixels.begin(), fillPixels.end());
@@ -151,7 +172,10 @@ private:
 			tempPoint2 = degreeMartix*tempPoint2;
 			lineFill = line(glm::ivec3((GLint)tempPoint1.x, (GLint)tempPoint1.y, 0),
 				glm::ivec3((GLint)tempPoint2.x, (GLint)tempPoint2.y, 0), fillColor);
-			lineFill.lineUseBresenham();
+			if (cliping)
+				lineFill.clipUseRect(clipWinP1, clipWinP2);
+			else
+				lineFill.lineUseBresenham();
 			fillPixels = lineFill.getLinePixels();
 			this->pixels.insert(this->pixels.end(), fillPixels.begin(), fillPixels.end());
 			this->pointsNum += lineFill.getPointsNum();
@@ -197,6 +221,43 @@ private:
 		}
 		pushSymmetryPoint(glm::ivec3(radiusX, 0, 0));
 		pushFillScanLine(glm::ivec3(radiusX, 0, 0));
+	}
+	void midpointEllipseWithWindow()
+	{
+		GLint x = 0, y = radiusY;
+		GLfloat p1 = radiusY*radiusY - radiusX*radiusX*radiusY + radiusX*radiusX*0.25f;
+		pushSymmetryPoint(glm::ivec3(0, radiusY, 0));
+		do
+		{
+			x++;
+			if (p1 <= 0)
+			{
+				p1 = p1 + 2 * radiusY*radiusY*x + radiusY*radiusY;
+			}
+			else
+			{
+				y = y - 1;
+				p1 = p1 + 2 * radiusY*radiusY*x - 2 * radiusX*radiusX*y + radiusY*radiusY;
+			}
+			pushSymmetryPoint(glm::ivec3(x, y, 0));
+			//fill the Ellipse
+		} while (radiusY*radiusY*x <= radiusX*radiusX*y);
+		p1 = radiusY*radiusY*(x*x + x + 0.25f) + radiusX*radiusX*(y - 1)*(y - 1) - radiusX*radiusX*radiusY*radiusY;
+		for (y--; y > 0; y--)
+		{
+			if (p1 <= 0)
+			{
+				x = x + 1;
+				p1 = p1 + 2 * radiusY*radiusY*x - 2 * radiusX*radiusX*y + radiusX*radiusX;
+			}
+			else
+			{
+				p1 = p1 - 2 * radiusX*radiusX*y + radiusX*radiusX;
+			}
+			pushSymmetryPoint(glm::ivec3(x, y, 0));
+			//fill the Ellipse
+		}
+		pushSymmetryPoint(glm::ivec3(radiusX, 0, 0));
 	}
 	inline void clearPixels()
 	{
@@ -369,25 +430,134 @@ public:
 		xMin = -WIDTH, xMax = WIDTH, yMin = -HEIGHT, yMax = HEIGHT;
 		fillEllipseWithWindow();
 	}
-	void clipUseRect(glm::ivec3 winP1, glm::ivec3 winP2)
+	void clipUseRect(glm::ivec3 winP1, glm::ivec3 winP2,GLboolean filling=GL_FALSE)
 	{
 		GLint xWMin = winP1.x<winP2.x ? winP1.x : winP2.x, xWMax = winP1.x>winP2.x ? winP1.x : winP2.x,
 			yWMin = winP1.y<winP2.y ? winP1.y : winP2.y, yWMax = winP1.y>winP2.y ? winP1.y : winP2.y;
-		//check RectWindow and Circle position
-		if ((centerX + radiusX <= xWMin || centerY + radiusY <= yWMin)
-			|| (centerX - radiusX >= xWMax || centerY - radiusY >= yWMax))
+		if (fabs(this->degree) < 0.02)
 		{
-			clearPixels();
-			return;
-		}
-		else if (centerX - radiusX >= xWMin&&centerX + radiusX <= xWMax
-			&&centerY - radiusY >= yWMin&&centerY + radiusY <= yWMax)
-		{
-			return;
+			//check RectWindow and Circle position
+			if ((centerX + radiusX <= xWMin || centerY + radiusY <= yWMin)
+				|| (centerX - radiusX >= xWMax || centerY - radiusY >= yWMax))
+			{
+				clearPixels();
+				return;
+			}
+			else if (centerX - radiusX >= xWMin&&centerX + radiusX <= xWMax
+				&&centerY - radiusY >= yWMin&&centerY + radiusY <= yWMax)
+			{
+				return;
+			}
 		}
 		clearPixels();
 		xMin = xWMin, xMax = xWMax, yMin = yWMin, yMax = yWMax;
-		fillEllipseWithWindow();
+
+		if (filling)
+			fillEllipseWithWindow();
+		else
+			midpointEllipseWithWindow();
+	}
+	GLint loadEllipseFromFile(string filePath, string & texturePath)
+	{
+		GLint filling;
+		ifstream ifFile(filePath);
+		if (ifFile.is_open())
+		{
+			string str;
+			ifFile >> str;
+			if (str.find("Ellipse") != string::npos)
+			{
+				ifFile >> str >> str;
+				str = str.substr(1, str.size() - 2);
+				string::size_type n;
+				lineColor.r = stof(str.substr(0, n = str.find(",")));
+				str = str.substr(n + 1);
+				lineColor.g = stof(str.substr(0, n = str.find(",")));
+				str = str.substr(n + 1);
+				lineColor.b = stof(str.substr(0));
+
+				ifFile >> str;
+				if (str == "fill:")
+				{
+					ifFile >> str;
+					filling = 0;
+				}
+				else if (str.find("fillColor") != string::npos)
+				{
+					ifFile >> str;
+					str = str.substr(1, str.size() - 2);
+					fillColor.r = stof(str.substr(0, n = str.find(",")));
+					str = str.substr(n + 1);
+					fillColor.g = stof(str.substr(0, n = str.find(",")));
+					str = str.substr(n + 1);
+					fillColor.b = stof(str.substr(0));
+					filling = 1;
+				}
+				else if (str.find("fillTexture") != string::npos)
+				{
+					string fileTempStr;
+					ifFile >> fileTempStr;
+					str = fileTempStr.substr(1);
+					while (str.find("\"") == string::npos)
+					{
+						ifFile >> fileTempStr;
+						str += (" " + fileTempStr);
+					}
+					str = str.substr(0, str.size() - 1);
+					filling = 2;
+					texturePath = str;
+				}
+
+				ifFile >> str >> str;
+				str = str.substr(1, str.size() - 2);
+				centerX = stoi(str.substr(0, n = str.find(",")));
+				str = str.substr(n + 1);
+				centerY = stoi(str.substr(0));
+
+				ifFile >> str >> str;
+				str = str.substr(1, str.size() - 2);
+				radiusX = stoi(str.substr(0, n = str.find(",")));
+				str = str.substr(n + 1);
+				radiusY = stoi(str.substr(0));
+
+				ifFile >> str >> str;
+				degree = stof(str);
+				addRotateDegree(0);
+
+				cout << "文件打开成功，读入椭圆数据" << endl;
+			}
+			else
+				cout << "文件中没有保存椭圆的数据" << endl;
+		}
+		else
+			cout << "文件打开出错" << endl;
+		ifFile.close();
+		return filling;
+	}
+	void saveEllipseIntoFile(string filePath, GLboolean filled = GL_FALSE, string texturePath = "")
+	{
+		ofstream ofFile(filePath);
+		if (ofFile.is_open())
+		{
+			ofFile << "Ellipse:" << "\n";
+			ofFile << "lineColor:" << " (" << lineColor.r << "," << lineColor.g << "," << lineColor.b << ")\n";
+			if (filled)
+			{
+				if (texturePath == "")
+					ofFile << "fillColor:" << " (" << fillColor.r << "," << fillColor.g << "," << fillColor.b << ")\n";
+				else
+					ofFile << "fillTexture:" << " \"" << texturePath << "\"\n";
+			}
+			else
+				ofFile << "fill: none\n";
+			ofFile << "center:" << " (" << centerX << "," << centerY << ")\n";
+			ofFile << "radius:" << " (" << radiusX << "," << radiusY << ")\n";
+			ofFile << "degree:" << " " << degree << "\n";
+			cout << "文件保存成功" << endl;
+		}
+		else
+			cout << "文件保存出错" << endl;
+		ofFile.close();
 	}
 };
 #endif 

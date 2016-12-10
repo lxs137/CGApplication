@@ -34,9 +34,6 @@ void drawLineApplication(int argc, char **argv)
 	//set VAO
 	lineInitVAO(myVAO,myVBO);
 
-	//set transform
-	GLuint transformLocation = glGetUniformLocation(myShaderProgram, "transform");
-
 	glutDisplayFunc(lineRender2DSence);
 	glutIdleFunc(lineRender2DSence);
 	glutReshapeFunc(lineOnReshape);
@@ -77,6 +74,49 @@ void lineRender2DSence()
 		glVertex2f(x2 + dertX, y2 - dertY);
 		glVertex2f(x2 - dertX, y2 - dertY);
 		glEnd();
+		glFlush();
+	}
+	if (transformStatus == CLIP && (cliping || (!cliping && myClipWindow.windowWidthHalf != -1)))
+	{
+		GLfloat x1, y1, x2, y2, x3, y3, x4, y4, dertX, dertY;
+		dertX = ((GLfloat)CHANGE_POINT_DIS) / WIDTH_HALF, dertY = ((GLfloat)CHANGE_POINT_DIS) / HEIGHT_HALF;
+		GLint centerX, centerY, heightHalf, widthHalf;
+		centerX = myClipWindow.clipWindowCenter.x, centerY = myClipWindow.clipWindowCenter.y;
+		heightHalf = myClipWindow.windowHeightHalf, widthHalf = myClipWindow.windowWidthHalf;
+		x1 = ((GLfloat)(centerX - widthHalf)) / WIDTH_HALF, y1 = ((GLfloat)(centerY + heightHalf)) / HEIGHT_HALF;
+		x2 = ((GLfloat)(centerX + widthHalf)) / WIDTH_HALF, y2 = ((GLfloat)(centerY + heightHalf)) / HEIGHT_HALF;
+		x3 = ((GLfloat)(centerX + widthHalf)) / WIDTH_HALF, y3 = ((GLfloat)(centerY - heightHalf)) / HEIGHT_HALF;
+		x4 = ((GLfloat)(centerX - widthHalf)) / WIDTH_HALF, y4 = ((GLfloat)(centerY - heightHalf)) / HEIGHT_HALF;
+		glBegin(GL_QUADS);
+		glVertex2f(x1 - dertX, y1 + dertY);
+		glVertex2f(x1 + dertX, y1 + dertY);
+		glVertex2f(x1 + dertX, y1 - dertY);
+		glVertex2f(x1 - dertX, y1 - dertY);
+
+		glVertex2f(x2 - dertX, y2 + dertY);
+		glVertex2f(x2 + dertX, y2 + dertY);
+		glVertex2f(x2 + dertX, y2 - dertY);
+		glVertex2f(x2 - dertX, y2 - dertY);
+
+		glVertex2f(x3 - dertX, y3 + dertY);
+		glVertex2f(x3 + dertX, y3 + dertY);
+		glVertex2f(x3 + dertX, y3 - dertY);
+		glVertex2f(x3 - dertX, y3 - dertY);
+
+		glVertex2f(x4 - dertX, y4 + dertY);
+		glVertex2f(x4 + dertX, y4 + dertY);
+		glVertex2f(x4 + dertX, y4 - dertY);
+		glVertex2f(x4 - dertX, y4 - dertY);
+		glEnd();
+		glLineStipple(2, 0x5555);
+		glEnable(GL_LINE_STIPPLE);
+		glBegin(GL_LINE_LOOP);
+		glVertex2f(x1, y1);
+		glVertex2f(x2, y2);
+		glVertex2f(x3, y3);
+		glVertex2f(x4, y4);
+		glEnd();
+		glDisable(GL_LINE_STIPPLE);
 		glFlush();
 	}
 	glutSwapBuffers();
@@ -146,6 +186,55 @@ void lineOnMouseClick(int button, int state, int x, int y)
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
 		break;
+	case drawLine::CLIP:
+		if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
+		{
+			if (myClipWindow.windowWidthHalf == -1)
+			{
+				cliping = GL_TRUE;
+				myClipWindow.clipWindowCenter.x = x, myClipWindow.clipWindowCenter.y = y;
+				myClipWindow.windowWidthHalf = 0, myClipWindow.windowHeightHalf = 0;
+			}
+			else
+			{
+				GLint x1, y1, x2, y2, x3, y3, x4, y4;
+				GLint centerX, centerY,heightHalf,widthHalf;
+				centerX = myClipWindow.clipWindowCenter.x, centerY = myClipWindow.clipWindowCenter.y;
+				heightHalf = myClipWindow.windowHeightHalf, widthHalf = myClipWindow.windowWidthHalf;
+				x1 = centerX - widthHalf, y1 = centerY + heightHalf;
+				x2 = centerX + widthHalf, y2 = centerY + heightHalf;
+				x3 = centerX + widthHalf, y3 = centerY - heightHalf;
+				x4 = centerX - widthHalf, y4 = centerY - heightHalf;
+				if ((x <= x1 + CHANGE_POINT_DIS&&x >= x1 - CHANGE_POINT_DIS&&y <= y1 + CHANGE_POINT_DIS&&y >= y1 - CHANGE_POINT_DIS)
+					|| (x <= x2 + CHANGE_POINT_DIS&&x >= x2 - CHANGE_POINT_DIS&&y <= y2 + CHANGE_POINT_DIS&&y >= y2 - CHANGE_POINT_DIS)
+					|| (x <= x3 + CHANGE_POINT_DIS&&x >= x3 - CHANGE_POINT_DIS&&y <= y3 + CHANGE_POINT_DIS&&y >= y3 - CHANGE_POINT_DIS)
+					|| (x <= x4 + CHANGE_POINT_DIS&&x >= x4 - CHANGE_POINT_DIS&&y <= y4 + CHANGE_POINT_DIS&&y >= y4 - CHANGE_POINT_DIS))
+				{
+					cliping = GL_TRUE;
+				}
+			}
+		}
+		else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
+		{
+			if (cliping)
+			{
+				cliping = GL_FALSE;
+				glm::ivec3 windowP1, windowP2;
+				myClipWindow.windowWidthHalf = abs(x - myClipWindow.clipWindowCenter.x);
+				myClipWindow.windowHeightHalf = abs(y - myClipWindow.clipWindowCenter.y);
+				windowP1 = glm::ivec3(myClipWindow.clipWindowCenter.x - myClipWindow.windowWidthHalf,
+					myClipWindow.clipWindowCenter.y - myClipWindow.windowHeightHalf, 0);
+				windowP2 = glm::ivec3(myClipWindow.clipWindowCenter.x + myClipWindow.windowWidthHalf,
+					myClipWindow.clipWindowCenter.y + myClipWindow.windowHeightHalf, 0);
+				myLine.clipUseRect(windowP1, windowP2);
+				lineSetTransBasisPoint();
+				glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+				glBufferData(GL_ARRAY_BUFFER, myLine.getPointsNum()*myLine.getPointSize(),
+					myLine.getLinePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			}
+		}
+		break;
 	}
 	
 }
@@ -182,6 +271,13 @@ void lineOnActiveMotion(int x, int y)
 			myLine.getLinePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		break;
+	case drawLine::CLIP:
+		if (cliping)
+		{
+			myClipWindow.windowWidthHalf = abs(x - myClipWindow.clipWindowCenter.x);
+			myClipWindow.windowHeightHalf = abs(y - myClipWindow.clipWindowCenter.y);
+		}
+		break;
 	}
 	
 }
@@ -202,6 +298,7 @@ void lineOnMouseWheelScrollInvalid(int wheel, int direction, int x, int y)
 }
 void lineProcessMenuEvent(int options)
 {
+	string filePath;
 	switch (options)
 	{
 	case EDIT:
@@ -216,7 +313,7 @@ void lineProcessMenuEvent(int options)
 		lineSetTransBasisPoint();
 		break;
 	case ROTATE:
-		glutSetCursor(GLUT_CURSOR_WAIT);
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
 		glutMouseWheelFunc(lineOnMouseWheelScrollInvalid);
 		transformStatus = ROTATE;
 		rotateCenter.x = (myLine.getPoint(0).x + myLine.getPoint(1).x) / 2;
@@ -229,6 +326,34 @@ void lineProcessMenuEvent(int options)
 		transformStatus = ZOOM;
 		rotateCenter.x = (myLine.getPoint(0).x + myLine.getPoint(1).x) / 2;
 		rotateCenter.y = (myLine.getPoint(0).y + myLine.getPoint(1).y) / 2;
+		lineSetTransBasisPoint();
+		break;
+	case CLIP:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+		glutMouseWheelFunc(lineOnMouseWheelScrollInvalid);
+		transformStatus = CLIP;
+		myClipWindow.windowHeightHalf = -1;
+		myClipWindow.windowWidthHalf = -1;
+		myClipWindow.clipWindowCenter = glm::ivec3(0, 0, 0);
+		break;
+	case SAVEFILE:
+		glutMouseWheelFunc(lineOnMouseWheelScrollInvalid);
+		transformStatus = SAVEFILE;
+		cout << "请输入保存文件的路径:" << endl;
+		cin >> filePath;
+		myLine.saveLineIntoFile(filePath);
+		break;
+	case OPENFILE:
+		glutMouseWheelFunc(lineOnMouseWheelScrollInvalid);
+		transformStatus = OPENFILE;
+		cout << "请输入打开文件的路径:" << endl;
+		cin >> filePath;
+		myLine.loadLineFromFile(filePath);
+		myLine.lineUseBresenham();
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myLine.getPointsNum()*myLine.getPointSize(),
+			myLine.getLinePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		lineSetTransBasisPoint();
 		break;
 	case EXIT:
@@ -257,12 +382,18 @@ void lineInitGlutWindow()
 }
 void lineInitMenus()
 {
+	GLint subMenu = glutCreateMenu(lineProcessMenuEvent);
+	glutSetMenuFont(subMenu, GLUT_BITMAP_9_BY_15);
+	glutAddMenuEntry("Save File", SAVEFILE);
+	glutAddMenuEntry("Open File", OPENFILE);
 	GLint menu = glutCreateMenu(lineProcessMenuEvent);
 	glutSetMenuFont(menu, GLUT_BITMAP_9_BY_15);
 	glutAddMenuEntry("Edit Line", EDIT);
 	glutAddMenuEntry("Move Line", MOVE);
 	glutAddMenuEntry("Rotate Line", ROTATE);
 	glutAddMenuEntry("Zoom Line", ZOOM);
+	glutAddMenuEntry("Clip Line Use Rect", CLIP);
+	glutAddSubMenu("File", subMenu);
 	glutAddMenuEntry("Exit", EXIT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 	glutSetCursor(GLUT_CURSOR_INHERIT);

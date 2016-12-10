@@ -14,11 +14,18 @@ namespace drawCircle{
 	GLuint myVBO;
 	GLfloat lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
 	GLboolean drawing = GL_FALSE;
+	GLboolean cliping = 0;
 	GLint filling = 0;//0代表未填充，1代表用颜色填充，2代表用图像填充
 	unsigned int textureID = 3;
 	GLuint textureSwitchLoc;
 	std::vector<glm::ivec3> controlPoints;
 	glm::ivec3 rotateCenter = glm::ivec3(0, 0, 0);
+	struct ClipWindow
+	{
+		glm::ivec3 clipWindowCenter;
+		GLint windowHeightHalf;
+		GLint windowWidthHalf;
+	}myClipWindow;
 	enum MenuOptions
 	{
 		EDIT,
@@ -26,6 +33,9 @@ namespace drawCircle{
 		ZOOM,
 		FILLCOLOR,
 		FILLPICTURE,
+		CLIP,
+		SAVEFILE,
+		OPENFILE,
 		EXIT
 	};
 	MenuOptions transformStatus = EDIT;

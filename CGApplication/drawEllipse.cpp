@@ -110,7 +110,49 @@ void ellipseRender2DSence()
 
 		glFlush();
 	}
+	if (transformStatus == CLIP && (cliping || (!cliping && myClipWindow.windowWidthHalf != -1)))
+	{
+		GLfloat x1, y1, x2, y2, x3, y3, x4, y4, dertX, dertY;
+		dertX = ((GLfloat)CHANGE_POINT_DIS) / WIDTH_HALF, dertY = ((GLfloat)CHANGE_POINT_DIS) / HEIGHT_HALF;
+		GLint centerX, centerY, heightHalf, widthHalf;
+		centerX = myClipWindow.clipWindowCenter.x, centerY = myClipWindow.clipWindowCenter.y;
+		heightHalf = myClipWindow.windowHeightHalf, widthHalf = myClipWindow.windowWidthHalf;
+		x1 = ((GLfloat)(centerX - widthHalf)) / WIDTH_HALF, y1 = ((GLfloat)(centerY + heightHalf)) / HEIGHT_HALF;
+		x2 = ((GLfloat)(centerX + widthHalf)) / WIDTH_HALF, y2 = ((GLfloat)(centerY + heightHalf)) / HEIGHT_HALF;
+		x3 = ((GLfloat)(centerX + widthHalf)) / WIDTH_HALF, y3 = ((GLfloat)(centerY - heightHalf)) / HEIGHT_HALF;
+		x4 = ((GLfloat)(centerX - widthHalf)) / WIDTH_HALF, y4 = ((GLfloat)(centerY - heightHalf)) / HEIGHT_HALF;
+		glBegin(GL_QUADS);
+		glVertex2f(x1 - dertX, y1 + dertY);
+		glVertex2f(x1 + dertX, y1 + dertY);
+		glVertex2f(x1 + dertX, y1 - dertY);
+		glVertex2f(x1 - dertX, y1 - dertY);
 
+		glVertex2f(x2 - dertX, y2 + dertY);
+		glVertex2f(x2 + dertX, y2 + dertY);
+		glVertex2f(x2 + dertX, y2 - dertY);
+		glVertex2f(x2 - dertX, y2 - dertY);
+
+		glVertex2f(x3 - dertX, y3 + dertY);
+		glVertex2f(x3 + dertX, y3 + dertY);
+		glVertex2f(x3 + dertX, y3 - dertY);
+		glVertex2f(x3 - dertX, y3 - dertY);
+
+		glVertex2f(x4 - dertX, y4 + dertY);
+		glVertex2f(x4 + dertX, y4 + dertY);
+		glVertex2f(x4 + dertX, y4 - dertY);
+		glVertex2f(x4 - dertX, y4 - dertY);
+		glEnd();
+		glLineStipple(2, 0x5555);
+		glEnable(GL_LINE_STIPPLE);
+		glBegin(GL_LINE_LOOP);
+		glVertex2f(x1, y1);
+		glVertex2f(x2, y2);
+		glVertex2f(x3, y3);
+		glVertex2f(x4, y4);
+		glEnd();
+		glDisable(GL_LINE_STIPPLE);
+		glFlush();
+	}
 	glutSwapBuffers();
 }
 void ellipseOnMouseClick(int button, int state, int x, int y)
@@ -217,6 +259,57 @@ void ellipseOnMouseClick(int button, int state, int x, int y)
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
 		break;
+	case drawEllipse::CLIP:
+		if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
+		{
+			if (myClipWindow.windowWidthHalf == -1)
+			{
+				cliping = GL_TRUE;
+				myClipWindow.clipWindowCenter.x = x, myClipWindow.clipWindowCenter.y = y;
+				myClipWindow.windowWidthHalf = 0, myClipWindow.windowHeightHalf = 0;
+			}
+			else
+			{
+				GLint x1, y1, x2, y2, x3, y3, x4, y4;
+				GLint centerX, centerY, heightHalf, widthHalf;
+				centerX = myClipWindow.clipWindowCenter.x, centerY = myClipWindow.clipWindowCenter.y;
+				heightHalf = myClipWindow.windowHeightHalf, widthHalf = myClipWindow.windowWidthHalf;
+				x1 = centerX - widthHalf, y1 = centerY + heightHalf;
+				x2 = centerX + widthHalf, y2 = centerY + heightHalf;
+				x3 = centerX + widthHalf, y3 = centerY - heightHalf;
+				x4 = centerX - widthHalf, y4 = centerY - heightHalf;
+				if ((x <= x1 + CHANGE_POINT_DIS&&x >= x1 - CHANGE_POINT_DIS&&y <= y1 + CHANGE_POINT_DIS&&y >= y1 - CHANGE_POINT_DIS)
+					|| (x <= x2 + CHANGE_POINT_DIS&&x >= x2 - CHANGE_POINT_DIS&&y <= y2 + CHANGE_POINT_DIS&&y >= y2 - CHANGE_POINT_DIS)
+					|| (x <= x3 + CHANGE_POINT_DIS&&x >= x3 - CHANGE_POINT_DIS&&y <= y3 + CHANGE_POINT_DIS&&y >= y3 - CHANGE_POINT_DIS)
+					|| (x <= x4 + CHANGE_POINT_DIS&&x >= x4 - CHANGE_POINT_DIS&&y <= y4 + CHANGE_POINT_DIS&&y >= y4 - CHANGE_POINT_DIS))
+				{
+					cliping = GL_TRUE;
+				}
+			}
+		}
+		else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
+		{
+			if (cliping)
+			{
+				cliping = GL_FALSE;
+				glm::ivec3 windowP1, windowP2;
+				myClipWindow.windowWidthHalf = abs(x - myClipWindow.clipWindowCenter.x);
+				myClipWindow.windowHeightHalf = abs(y - myClipWindow.clipWindowCenter.y);
+				windowP1 = glm::ivec3(myClipWindow.clipWindowCenter.x - myClipWindow.windowWidthHalf,
+					myClipWindow.clipWindowCenter.y - myClipWindow.windowHeightHalf, 0);
+				windowP2 = glm::ivec3(myClipWindow.clipWindowCenter.x + myClipWindow.windowWidthHalf,
+					myClipWindow.clipWindowCenter.y + myClipWindow.windowHeightHalf, 0);
+				if (filling == 0)
+					myEllipse.clipUseRect(windowP1, windowP2);
+				else
+					myEllipse.clipUseRect(windowP1, windowP2, GL_TRUE);
+				glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+				glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
+					myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			}
+		}
+		break;
 	}
 	
 }
@@ -281,6 +374,13 @@ void ellipseOnActiveMotion(int x, int y)
 			myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		break;
+	case drawEllipse::CLIP:
+		if (cliping)
+		{
+			myClipWindow.windowWidthHalf = abs(x - myClipWindow.clipWindowCenter.x);
+			myClipWindow.windowHeightHalf = abs(y - myClipWindow.clipWindowCenter.y);
+		}
+		break;
 	}
 	
 }
@@ -304,6 +404,18 @@ void ellipseOnMouseWheelScrollInvalid(int wheel, int direction, int x, int y)
 void ellipseProcessMenuEvent(int options)
 {
 	glm::vec3 fillColor;
+	std::string filePath, texturePath;
+	if (options != CLIP && myClipWindow.windowWidthHalf != -1)
+	{
+		if (filling == 0)
+			myEllipse.ellipseUseMidpoint();
+		else if (filling == 1 || filling == 2)
+			myEllipse.fillEllipseScanLine();
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
+			myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
 	switch (options)
 	{
 	case EDIT:
@@ -328,6 +440,7 @@ void ellipseProcessMenuEvent(int options)
 		break;
 	case FILLCOLOR:
 		glutMouseWheelFunc(ellipseOnMouseWheelScrollValid);
+		transformStatus = FILLCOLOR;
 		filling = (filling == 1) ? 0 : 1;
 		if (filling == 1)
 		{
@@ -347,6 +460,7 @@ void ellipseProcessMenuEvent(int options)
 		break;
 	case FILLPICTURE:
 		glutMouseWheelFunc(ellipseOnMouseWheelScrollValid);
+		transformStatus = FILLPICTURE;
 		filling = (filling == 2) ? 0 : 2;
 		if (filling == 2)
 		{
@@ -362,6 +476,48 @@ void ellipseProcessMenuEvent(int options)
 		glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
 			myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		break;
+	case SAVEFILE:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+		glutMouseWheelFunc(ellipseOnMouseWheelScrollInvalid);
+		transformStatus = SAVEFILE;
+		cout << "请输入保存文件的路径:" << endl;
+		cin >> filePath;
+		if (filling == 0)
+			myEllipse.saveEllipseIntoFile(filePath);
+		else if (filling == 1)
+			myEllipse.saveEllipseIntoFile(filePath, GL_TRUE);
+		else
+			myEllipse.saveEllipseIntoFile(filePath, GL_TRUE, myTextureManager->getTexturePath(textureID));
+		break;
+	case OPENFILE:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+		glutMouseWheelFunc(ellipseOnMouseWheelScrollInvalid);
+		transformStatus = OPENFILE;
+		cout << "请输入打开文件的路径:" << endl;
+		cin >> filePath;
+		filling = myEllipse.loadEllipseFromFile(filePath, texturePath);
+		if (filling == 0)
+			myEllipse.ellipseUseMidpoint();
+		else if (filling == 1)
+			myEllipse.fillEllipseScanLine();
+		else if (filling == 2)
+		{
+			myTextureManager->changeTexturePath(textureID, texturePath);
+			myEllipse.fillEllipseScanLine();
+		}
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myEllipse.getPointsNum()*myEllipse.getPointSize(),
+			myEllipse.getEllipsePixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		break;
+	case CLIP:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+		glutMouseWheelFunc(ellipseOnMouseWheelScrollInvalid);
+		transformStatus = CLIP;
+		myClipWindow.windowHeightHalf = -1;
+		myClipWindow.windowWidthHalf = -1;
+		myClipWindow.clipWindowCenter = glm::ivec3(0, 0, 0);
 		break;
 	case EXIT:
 		transformStatus = EXIT;
@@ -389,17 +545,23 @@ void ellipseInitGlutWindow()
 }
 void ellipseInitMenus()
 {
-	GLint subMenu = glutCreateMenu(ellipseProcessMenuEvent);
-	glutSetMenuFont(subMenu, GLUT_BITMAP_9_BY_15);
+	GLint subMenuFill = glutCreateMenu(ellipseProcessMenuEvent);
+	glutSetMenuFont(subMenuFill, GLUT_BITMAP_9_BY_15);
 	glutAddMenuEntry("Fill with color", FILLCOLOR);
 	glutAddMenuEntry("Fill with picture", FILLPICTURE);
+	GLint subMenuFile = glutCreateMenu(ellipseProcessMenuEvent);
+	glutSetMenuFont(subMenuFile, GLUT_BITMAP_9_BY_15);
+	glutAddMenuEntry("Save File", SAVEFILE);
+	glutAddMenuEntry("Open File", OPENFILE);
 	GLint menu = glutCreateMenu(ellipseProcessMenuEvent);
 	glutSetMenuFont(menu, GLUT_BITMAP_9_BY_15);
 	glutAddMenuEntry("Edit Ellipse", EDIT);
 	glutAddMenuEntry("Move Ellipse", MOVE);
 	glutAddMenuEntry("Rotate Ellipse", ROTATE);
 	glutAddMenuEntry("Zoom Ellipse", ZOOM);
-	glutAddSubMenu("Fill Ellipse", subMenu);
+	glutAddSubMenu("Fill Ellipse", subMenuFill);
+	glutAddMenuEntry("Clip Ellipse", CLIP);
+	glutAddSubMenu("File", subMenuFile);
 	glutAddMenuEntry("Exit", EXIT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 	glutSetCursor(GLUT_CURSOR_INHERIT);

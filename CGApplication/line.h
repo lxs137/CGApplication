@@ -2,6 +2,8 @@
 #define LINE_H
 
 #include "windowSetting.h"
+#include <fstream>
+#include <string>
 #include <glm\glm.hpp>
 #include <cmath>
 #include <vector>
@@ -424,6 +426,57 @@ class line
 			}
 			else
 				return false;
+		}
+		void loadLineFromFile(string filePath)
+		{
+			ifstream ifFile(filePath);
+			if (ifFile.is_open())
+			{
+				string str;
+				ifFile >> str;
+				if (str.find("Line") != string::npos)
+				{
+					ifFile>>str>>str;
+					str = str.substr(1, str.size() - 2);
+					string::size_type n;
+					color.r = stof(str.substr(0, n = str.find(",")));
+					str = str.substr(n + 1);
+					color.g = stof(str.substr(0, n = str.find(",")));
+					str = str.substr(n + 1);
+					color.b = stof(str.substr(0));
+
+					ifFile >> str >> str;
+					str = str.substr(1, str.size() - 2);
+					x1 = stoi(str.substr(0, n = str.find(",")));
+					str = str.substr(n + 1);
+					y1 = stoi(str.substr(0));
+					ifFile >> str;
+					str = str.substr(1, str.size() - 2);
+					x2 = stoi(str.substr(0, n = str.find(",")));
+					str = str.substr(n + 1);
+					y2 = stoi(str.substr(0));
+					cout<<"文件打开成功，读入直线数据"<<endl;
+				}
+				else
+					cout << "文件中没有保存直线的数据"<<endl;
+			}
+			else
+				cout << "文件打开出错"<<endl;
+			
+		}
+		void saveLineIntoFile(string filePath)
+		{
+			ofstream ofFile(filePath);
+			if (ofFile.is_open())
+			{
+				ofFile << "Line:" << "\n";
+				ofFile << "lineColor:" << " (" << color.r << "," << color.g << "," << color.b << ")\n";
+				ofFile << "point:" << " (" << x1 << "," << y1 << ")" << " (" << x2 << "," << y2 << ")\n";
+				cout<<"文件保存成功"<<endl;
+			}
+			else
+				cout << "文件保存出错"<<endl;
+			ofFile.close();
 		}
 };
 
