@@ -405,8 +405,10 @@ void ellipseProcessMenuEvent(int options)
 {
 	glm::vec3 fillColor;
 	std::string filePath, texturePath;
+	GLboolean saveAsBmp = GL_FALSE;
 	if (options != CLIP && myClipWindow.windowWidthHalf != -1)
 	{
+		saveAsBmp = GL_TRUE;
 		if (filling == 0)
 			myEllipse.ellipseUseMidpoint();
 		else if (filling == 1 || filling == 2)
@@ -489,6 +491,11 @@ void ellipseProcessMenuEvent(int options)
 			myEllipse.saveEllipseIntoFile(filePath, GL_TRUE);
 		else
 			myEllipse.saveEllipseIntoFile(filePath, GL_TRUE, myTextureManager->getTexturePath(textureID));
+		if (saveAsBmp)
+		{
+			cout << "裁剪后为不规则图形,已保存为图片" << endl;
+			myTextureManager->saveScreenshot(filePath.append(".bmp").c_str());
+		}
 		break;
 	case OPENFILE:
 		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);

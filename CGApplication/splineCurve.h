@@ -19,6 +19,7 @@ private:
 	vector<GLfloat> pixels;
 	GLint x1, y1, x2, y2, x3, y3, x4, y4;
 	glm::vec3 color;
+	vector<glm::vec2> tArray;
 	void pushLine(glm::ivec3 startPoint, glm::ivec3 endPoint)
 	{
 		line tempLine = line(startPoint, endPoint, color);
@@ -43,14 +44,14 @@ private:
 		vector<GLfloat>::iterator iVector;
 		GLfloat a, b, c, d;
 		//find intersection of points at xWMin
-		a = (-x[0] + 3 * x[1] - 3 * x[2] + x3) / 6.0f, b = (3 * x[0] - 6 * x[1] + 3 * x[2]) / 6.0f,
+		a = (-x[0] + 3 * x[1] - 3 * x[2] + x[3]) / 6.0f, b = (3 * x[0] - 6 * x[1] + 3 * x[2]) / 6.0f,
 			c = (-3 * x[0] + 3 * x[2]) / 6.0f, d = (x[0] + 4 * x[1] + x[2]) / 6.0f - x0;
 		realRoots = findRealRoot(a, b, c, d);
 		for (iVector = realRoots.begin(); iVector != realRoots.end(); iVector++)
 		{
 			if (*iVector >= 0 && *iVector <= 1)
 			{
-				GLint yValue = (GLint)((-y[0] + 3 * y[1] - 3 * y[2] + y3) / 6.0f*pow(*iVector, 3) +
+				GLint yValue = (GLint)((-y[0] + 3 * y[1] - 3 * y[2] + y[3]) / 6.0f*pow(*iVector, 3) +
 					(3 * y[0] - 6 * y[1] + 3 * y[2]) / 6.0f*pow(*iVector, 2) + 
 					(-3 * y[0] + 3 * y[2]) / 6.0f*(*iVector) + (y[0] + 4 * y[1] + y[2]) / 6.0f );
 				if (yValue >= yMin&&yValue <= yMax)
@@ -73,6 +74,8 @@ public:
 		this->x1 = 0, this->x2 = 0, this->x3 = 0, this->x4 = 0;
 		this->y1 = 0, this->y2 = 0, this->y3 = 0, this->y4 = 0;
 		this->color = glm::vec3(0.0f, 0.0f, 0.0f);
+		this->tArray.clear();
+		this->tArray.push_back(glm::vec2(0, 1));
 	}
 	spline(glm::ivec3 p1, glm::ivec3 p2, glm::ivec3 p3, glm::ivec3 p4, glm::vec3 splineColor)
 	{
@@ -81,6 +84,8 @@ public:
 		this->x1 = p1.x, this->x2 = p2.x, this->x3 = p3.x, this->x4 = p4.x;
 		this->y1 = p1.y, this->y2 = p2.y, this->y3 = p3.y, this->y4 = p4.y;
 		this->color = splineColor;
+		this->tArray.clear();
+		this->tArray.push_back(glm::vec2(0, 1));
 	}
 	vector<GLfloat> getSplinePixels()
 	{
@@ -121,21 +126,31 @@ public:
 	{
 		clearPixels();
 		glm::ivec3 startPoint , endPoint;
-		GLfloat b1, b2, b3, b4, x, y;
-		x = x1*1.0f / 6 + x2*2.0f / 3 + x3*1.0f / 6;
-		y = y1*1.0f / 6 + y2*2.0f / 3 + y3*1.0f / 6;
-		startPoint = glm::ivec3((GLint)x,(GLint)y,0);
-		for (GLfloat t = SPLINE_DERT_T; t <= 1.0f; t += SPLINE_DERT_T)
+		GLfloat b1, b2, b3, b4, x, y, t;
+		for (GLint i = 0; i < tArray.size(); i++)
 		{
-			b1 = (1 - t)*(1 - t)*(1 - t)/6.0f;
-			b2 = (3*t*t*t-6*t*t+4)/6.0f;
-			b3 = (-3*t*t*t+3*t*t+3*t+1)/6.0f;
-			b4 = t * t * t/6.0f;
+			t = tArray[i].x;
+			b1 = (1 - t)*(1 - t)*(1 - t) / 6.0f;
+			b2 = (3 * t*t*t - 6 * t*t + 4) / 6.0f;
+			b3 = (-3 * t*t*t + 3 * t*t + 3 * t + 1) / 6.0f;
+			b4 = t * t * t / 6.0f;
 			x = b1*x1 + b2*x2 + b3*x3 + b4*x4;
 			y = b1*y1 + b2*y2 + b3*y3 + b4*y4;
-			endPoint = glm::ivec3((GLint)x, (GLint)y, 0);
-			pushLine(startPoint, endPoint);
-			startPoint = endPoint;
+			startPoint = glm::ivec3((GLint)x, (GLint)y, 0);
+			t += SPLINE_DERT_T;
+			do 
+			{
+				b1 = (1 - t)*(1 - t)*(1 - t) / 6.0f;
+				b2 = (3 * t*t*t - 6 * t*t + 4) / 6.0f;
+				b3 = (-3 * t*t*t + 3 * t*t + 3 * t + 1) / 6.0f;
+				b4 = t * t * t / 6.0f;
+				x = b1*x1 + b2*x2 + b3*x3 + b4*x4;
+				y = b1*y1 + b2*y2 + b3*y3 + b4*y4;
+				endPoint = glm::ivec3((GLint)x, (GLint)y, 0);
+				pushLine(startPoint, endPoint);
+				startPoint = endPoint;
+				t += SPLINE_DERT_T;
+			} while (t<=tArray[i].y);
 		}
 	}
 	void clipUseRect(glm::ivec3 winP1, glm::ivec3 winP2)
@@ -168,25 +183,32 @@ public:
 		vector<GLfloat> intersectPointsT;
 		//find intersection of points at xWMin
 		findIntersection(x, y, xWMin, yWMin, yWMax, intersectPointsT);
-		//find intersection of points at xWMin
+		//find intersection of points at xWMax
 		findIntersection(x, y, xWMax, yWMin, yWMax, intersectPointsT);
-		//find intersection of points at xWMin
+		//find intersection of points at yWMin
 		findIntersection(y, x, yWMin, xWMin, xWMax, intersectPointsT);
-		//find intersection of points at xWMin
+		//find intersection of points at yWMax
 		findIntersection(y, x, yWMax, xWMin, xWMax, intersectPointsT);
 		sort(intersectPointsT.begin(), intersectPointsT.end());
 
-		if (x1 >= xWMin&&x1 <= xWMax&&y1 >= yWMin&&y1 <= yWMax)
+		GLint xStart, yStart, xEnd, yEnd;
+		xStart = (1.0f / 6)*x1 + (2.0f / 3)*x2 + (1.0f / 6)*x3;
+		yStart = (1.0f / 6)*y1 + (2.0f / 3)*y2 + (1.0f / 6)*y3;
+		xEnd = (1.0f / 6)*x2 + (2.0f / 3)*x3 + (1.0f / 6)*x4;
+		yEnd = (1.0f / 6)*y2 + (2.0f / 3)*y3 + (1.0f / 6)*y4;
+		if (xStart >= xWMin&&xStart <= xWMax&&yStart >= yWMin&&yStart <= yWMax)
 		{
 			intersectPointsT.insert(intersectPointsT.begin(), 0.0f);
 		}
-		if (x4 >= xWMin&&x4 <= xWMax&&y4 >= yWMin&&y4 <= yWMax)
+		if (xEnd >= xWMin&&xEnd <= xWMax&&yEnd >= yWMin&&yEnd <= yWMax)
 		{
 			intersectPointsT.push_back(1.0f);
 		}
+		tArray.clear();
 		for (int i = 0; (2 * i + 1) < intersectPointsT.size(); i++)
 		{
 			GLfloat tStart = intersectPointsT[2 * i], tEnd = intersectPointsT[2 * i + 1];
+			tArray.push_back(glm::vec2(tStart, tEnd));
 			glm::ivec3 startPoint, endPoint;
 			GLfloat a1, a2, a3, a4, x, y;
 			a1 = (1 - tStart)*(1 - tStart)*(1 - tStart) / 6.0f;
@@ -216,6 +238,87 @@ public:
 		pushPoint(glm::ivec3(x2, y2, 0));
 		pushPoint(glm::ivec3(x3, y3, 0));
 		pushPoint(glm::ivec3(x4, y4, 0));
+	}
+	void loadSplineFromFile(string filePath)
+	{
+		ifstream ifFile(filePath);
+		if (ifFile.is_open())
+		{
+			string str;
+			ifFile >> str;
+			if (str.find("Spline") != string::npos)
+			{
+				ifFile >> str >> str;
+				str = str.substr(1, str.size() - 2);
+				string::size_type n;
+				color.r = stof(str.substr(0, n = str.find(",")));
+				str = str.substr(n + 1);
+				color.g = stof(str.substr(0, n = str.find(",")));
+				str = str.substr(n + 1);
+				color.b = stof(str.substr(0));
+
+				ifFile >> str >> str;
+				str = str.substr(1, str.size() - 2);
+				x1 = stoi(str.substr(0, n = str.find(",")));
+				str = str.substr(n + 1);
+				y1 = stoi(str.substr(0));
+				ifFile >> str;
+				str = str.substr(1, str.size() - 2);
+				x2 = stoi(str.substr(0, n = str.find(",")));
+				str = str.substr(n + 1);
+				y2 = stoi(str.substr(0));
+				ifFile >> str;
+				str = str.substr(1, str.size() - 2);
+				x3 = stoi(str.substr(0, n = str.find(",")));
+				str = str.substr(n + 1);
+				y3 = stoi(str.substr(0));
+				ifFile >> str;
+				str = str.substr(1, str.size() - 2);
+				x4 = stoi(str.substr(0, n = str.find(",")));
+				str = str.substr(n + 1);
+				y4 = stoi(str.substr(0));
+
+				ifFile >> str >> str >> str;
+				GLfloat tStart, tEnd;
+				tArray.clear();
+				while (str.find("}") == string::npos)
+				{
+					str = str.substr(1, str.size() - 2);
+					tStart = stof(str.substr(0, n = str.find(",")));
+					str = str.substr(n + 1);
+					tEnd = stof(str.substr(0));
+					tArray.push_back(glm::vec2(tStart, tEnd));
+					ifFile >> str;
+				}
+				cout << "文件打开成功，读入B样条曲线数据" << endl;
+			}
+			else
+				cout << "文件中没有保存B样条曲线的数据" << endl;
+		}
+		else
+			cout << "文件打开出错" << endl;
+		ifFile.close();
+	}
+	void saveSplineIntoFile(string filePath)
+	{
+		ofstream ofFile(filePath);
+		if (ofFile.is_open())
+		{
+			ofFile << "Spline:" << "\n";
+			ofFile << "lineColor:" << " (" << color.r << "," << color.g << "," << color.b << ")\n";
+			ofFile << "controlPoint:" << " (" << x1 << "," << y1 << ") (" << x2 << "," << y2 << ") ("
+				<< x3 << "," << y3 << ") (" << x4 << "," << y4 << ")\n";
+			ofFile << "tArray: {";
+			for (GLint i = 0; i < tArray.size(); i++)
+			{
+				ofFile << " (" << tArray[i].x << "," << tArray[i].y << ")";
+			}
+			ofFile << " }\n";
+			cout << "文件保存成功" << endl;
+		}
+		else
+			cout << "文件保存出错" << endl;
+		ofFile.close();
 	}
 };
 

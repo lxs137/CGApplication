@@ -89,6 +89,49 @@ void bezierRender2DSence()
 
 		glFlush();
 	}
+	if (transformStatus == CLIP && (cliping || (!cliping && myClipWindow.windowWidthHalf != -1)))
+	{
+		GLfloat x1, y1, x2, y2, x3, y3, x4, y4, dertX, dertY;
+		dertX = ((GLfloat)CHANGE_POINT_DIS) / WIDTH_HALF, dertY = ((GLfloat)CHANGE_POINT_DIS) / HEIGHT_HALF;
+		GLint centerX, centerY, heightHalf, widthHalf;
+		centerX = myClipWindow.clipWindowCenter.x, centerY = myClipWindow.clipWindowCenter.y;
+		heightHalf = myClipWindow.windowHeightHalf, widthHalf = myClipWindow.windowWidthHalf;
+		x1 = ((GLfloat)(centerX - widthHalf)) / WIDTH_HALF, y1 = ((GLfloat)(centerY + heightHalf)) / HEIGHT_HALF;
+		x2 = ((GLfloat)(centerX + widthHalf)) / WIDTH_HALF, y2 = ((GLfloat)(centerY + heightHalf)) / HEIGHT_HALF;
+		x3 = ((GLfloat)(centerX + widthHalf)) / WIDTH_HALF, y3 = ((GLfloat)(centerY - heightHalf)) / HEIGHT_HALF;
+		x4 = ((GLfloat)(centerX - widthHalf)) / WIDTH_HALF, y4 = ((GLfloat)(centerY - heightHalf)) / HEIGHT_HALF;
+		glBegin(GL_QUADS);
+		glVertex2f(x1 - dertX, y1 + dertY);
+		glVertex2f(x1 + dertX, y1 + dertY);
+		glVertex2f(x1 + dertX, y1 - dertY);
+		glVertex2f(x1 - dertX, y1 - dertY);
+
+		glVertex2f(x2 - dertX, y2 + dertY);
+		glVertex2f(x2 + dertX, y2 + dertY);
+		glVertex2f(x2 + dertX, y2 - dertY);
+		glVertex2f(x2 - dertX, y2 - dertY);
+
+		glVertex2f(x3 - dertX, y3 + dertY);
+		glVertex2f(x3 + dertX, y3 + dertY);
+		glVertex2f(x3 + dertX, y3 - dertY);
+		glVertex2f(x3 - dertX, y3 - dertY);
+
+		glVertex2f(x4 - dertX, y4 + dertY);
+		glVertex2f(x4 + dertX, y4 + dertY);
+		glVertex2f(x4 + dertX, y4 - dertY);
+		glVertex2f(x4 - dertX, y4 - dertY);
+		glEnd();
+		glLineStipple(2, 0x5555);
+		glEnable(GL_LINE_STIPPLE);
+		glBegin(GL_LINE_LOOP);
+		glVertex2f(x1, y1);
+		glVertex2f(x2, y2);
+		glVertex2f(x3, y3);
+		glVertex2f(x4, y4);
+		glEnd();
+		glDisable(GL_LINE_STIPPLE);
+		glFlush();
+	}
 	glutSwapBuffers();
 }
 void bezierOnMouseClick(int button, int state, int x, int y)
@@ -203,6 +246,54 @@ void bezierOnMouseClick(int button, int state, int x, int y)
 			bezierSetTransBasisPoint();
 		}
 		break;
+	case drawBezier::CLIP:
+		if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
+		{
+			if (myClipWindow.windowWidthHalf == -1)
+			{
+				cliping = GL_TRUE;
+				myClipWindow.clipWindowCenter.x = x, myClipWindow.clipWindowCenter.y = y;
+				myClipWindow.windowWidthHalf = 0, myClipWindow.windowHeightHalf = 0;
+			}
+			else
+			{
+				GLint x1, y1, x2, y2, x3, y3, x4, y4;
+				GLint centerX, centerY, heightHalf, widthHalf;
+				centerX = myClipWindow.clipWindowCenter.x, centerY = myClipWindow.clipWindowCenter.y;
+				heightHalf = myClipWindow.windowHeightHalf, widthHalf = myClipWindow.windowWidthHalf;
+				x1 = centerX - widthHalf, y1 = centerY + heightHalf;
+				x2 = centerX + widthHalf, y2 = centerY + heightHalf;
+				x3 = centerX + widthHalf, y3 = centerY - heightHalf;
+				x4 = centerX - widthHalf, y4 = centerY - heightHalf;
+				if ((x <= x1 + CHANGE_POINT_DIS&&x >= x1 - CHANGE_POINT_DIS&&y <= y1 + CHANGE_POINT_DIS&&y >= y1 - CHANGE_POINT_DIS)
+					|| (x <= x2 + CHANGE_POINT_DIS&&x >= x2 - CHANGE_POINT_DIS&&y <= y2 + CHANGE_POINT_DIS&&y >= y2 - CHANGE_POINT_DIS)
+					|| (x <= x3 + CHANGE_POINT_DIS&&x >= x3 - CHANGE_POINT_DIS&&y <= y3 + CHANGE_POINT_DIS&&y >= y3 - CHANGE_POINT_DIS)
+					|| (x <= x4 + CHANGE_POINT_DIS&&x >= x4 - CHANGE_POINT_DIS&&y <= y4 + CHANGE_POINT_DIS&&y >= y4 - CHANGE_POINT_DIS))
+				{
+					cliping = GL_TRUE;
+				}
+			}
+		}
+		else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
+		{
+			if (cliping)
+			{
+				cliping = GL_FALSE;
+				glm::ivec3 windowP1, windowP2;
+				myClipWindow.windowWidthHalf = abs(x - myClipWindow.clipWindowCenter.x);
+				myClipWindow.windowHeightHalf = abs(y - myClipWindow.clipWindowCenter.y);
+				windowP1 = glm::ivec3(myClipWindow.clipWindowCenter.x - myClipWindow.windowWidthHalf,
+					myClipWindow.clipWindowCenter.y - myClipWindow.windowHeightHalf, 0);
+				windowP2 = glm::ivec3(myClipWindow.clipWindowCenter.x + myClipWindow.windowWidthHalf,
+					myClipWindow.clipWindowCenter.y + myClipWindow.windowHeightHalf, 0);
+				myBezier.clipUseRect(windowP1, windowP2);
+				glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+				glBufferData(GL_ARRAY_BUFFER, myBezier.getPointsNum()*myBezier.getPointSize(),
+					myBezier.getBezierPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			}
+		}
+		break;
 	}
 	
 }
@@ -252,6 +343,13 @@ void bezierOnActiveMotion(int x, int y)
 			myBezier.getBezierPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		break;
+	case drawBezier::CLIP:
+		if (cliping)
+		{
+			myClipWindow.windowWidthHalf = abs(x - myClipWindow.clipWindowCenter.x);
+			myClipWindow.windowHeightHalf = abs(y - myClipWindow.clipWindowCenter.y);
+		}
+		break;
 	}	
 }
 void bezierOnMouseWheelScrollValid(int wheel, int direction, int x, int y)
@@ -269,7 +367,8 @@ void bezierOnMouseWheelScrollInvalid(int wheel, int direction, int x, int y)
 void bezierProcessMenuEvent(int options)
 {
 	GLint n;
-	if (myBezier.getPointsNum() == 0)//在曲线未初始化时，不能对曲线进行变换
+	std::string filePath;
+	if (myBezier.getPointsNum() == 0 && options!= OPENFILE)//在曲线未初始化时，不能对曲线进行变换
 		return;
 	switch (options)
 	{
@@ -307,6 +406,37 @@ void bezierProcessMenuEvent(int options)
 		rotateCenter.x /= n, rotateCenter.y /= n;
 		bezierSetTransBasisPoint();
 		break;
+	case SAVEFILE:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+		glutMouseWheelFunc(bezierOnMouseWheelScrollInvalid);
+		transformStatus = SAVEFILE;
+		cout << "请输入保存文件的路径:" << endl;
+		cin >> filePath;
+		myBezier.saveBezierIntoFile(filePath);
+		break;
+	case OPENFILE:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+		glutMouseWheelFunc(bezierOnMouseWheelScrollInvalid);
+		transformStatus = OPENFILE;
+		cout << "请输入打开文件的路径:" << endl;
+		cin >> filePath;
+		myBezier.loadBezierFromFile(filePath);
+		controlPoints = myBezier.getControlPoints();
+		bezierSetTransBasisPoint();
+		myBezier.bezierUseLine();
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myBezier.getPointsNum()*myBezier.getPointSize(),
+			myBezier.getBezierPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		break;
+	case CLIP:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+		glutMouseWheelFunc(bezierOnMouseWheelScrollInvalid);
+		transformStatus = CLIP;
+		myClipWindow.windowHeightHalf = -1;
+		myClipWindow.windowWidthHalf = -1;
+		myClipWindow.clipWindowCenter = glm::ivec3(0, 0, 0);
+		break;
 	case EXIT:
 		transformStatus = EXIT;
 		break;
@@ -332,12 +462,18 @@ void bezierInitGlutWindow()
 }
 void bezierInitMenus()
 {
+	GLint subMenuFile = glutCreateMenu(bezierProcessMenuEvent);
+	glutSetMenuFont(subMenuFile, GLUT_BITMAP_9_BY_15);
+	glutAddMenuEntry("Save File", SAVEFILE);
+	glutAddMenuEntry("Open File", OPENFILE);
 	GLint menu = glutCreateMenu(bezierProcessMenuEvent);
 	glutSetMenuFont(menu, GLUT_BITMAP_9_BY_15);
 	glutAddMenuEntry("Edit Bezier", EDIT);
 	glutAddMenuEntry("Move Bezier", MOVE);
 	glutAddMenuEntry("Rotate Bezier", ROTATE);
 	glutAddMenuEntry("Zoom Bezier", ZOOM);
+	glutAddMenuEntry("Clip Bezier", CLIP);
+	glutAddSubMenu("File", subMenuFile);
 	glutAddMenuEntry("Exit", EXIT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 	glutSetCursor(GLUT_CURSOR_INHERIT);

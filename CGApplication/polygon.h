@@ -233,22 +233,14 @@ public:
 		this->fillColor = glm::vec3(0.0f, 0.0f, 0.0f);
 		this->isPolygonClose = GL_FALSE;
 	}
-	polygon(vector<glm::ivec3> verticsPoint)
-	{
-		this->pointsNum = 0;
-		this->pointSize = 6 * sizeof(GLfloat);
-		this->vertics.insert(vertics.end(), verticsPoint.begin(), verticsPoint.end());
-		this->lineColor = glm::vec3(0.0f, 0.0f, 0.0f);
-		this->fillColor = glm::vec3(0.0f, 0.0f, 0.0f);
-		this->isPolygonClose = GL_FALSE;
-	}
-	polygon(vector<glm::ivec3> verticsPoint, glm::ivec3 lineColor)
+	polygon(vector<glm::ivec3> verticsPoint, glm::ivec3 lineColor=glm::ivec3(0,0,0))
 	{
 		this->pointsNum = 0;
 		this->pointSize = 6 * sizeof(GLfloat);
 		this->vertics.insert(vertics.end(), verticsPoint.begin(), verticsPoint.end());
 		this->lineColor = lineColor;
 		this->fillColor = glm::vec3(0.0f, 0.0f, 0.0f);
+		this->isPolygonClose = GL_FALSE;
 	}
 	vector<GLfloat> getPolygonPixels()
 	{
@@ -292,8 +284,12 @@ public:
 			vertics.push_back(glm::ivec3(point.x, point.y, 0));	
 	}
 	//isClose 代表多边形是否闭合，即是否连接最后一个顶点与第一个顶点
-	void polygonUseLine()
+	void polygonUseLine(GLboolean setClose = GL_FALSE)
 	{
+		if (setClose)
+			this->isPolygonClose = GL_TRUE;
+		if (vertics.size() == 0)
+			return;
 		clearPixels();
 		glm::ivec3 startPoint = glm::ivec3(vertics[0].x, vertics[0].y, 0), endPoint;
 		line tempLine;
@@ -318,9 +314,13 @@ public:
 			pointsNum += tempLine.getPointsNum();
 		}	
 	}
-	void fillPolygonScanLine()
+	void fillPolygonScanLine(GLboolean setClose=GL_FALSE)
 	{
-		if (!this->isPolygonClose)
+		if (setClose)
+		{
+			this->isPolygonClose = GL_TRUE;
+		}
+		else if (!this->isPolygonClose)
 			return;
 		clearPixels();
 		GLint yMax, yMin;
@@ -331,7 +331,7 @@ public:
 		initActiveEdgeTable(SET, AET, yMin, yMax);
 		fillScanLine(AET, yMin);
 	}
-	vector<polygon> clipWithPolygon(vector<glm::ivec3> windowVertics)
+	vector<polygon> clipWithPolygon(vector<glm::ivec3> windowVertics,GLboolean filling = GL_FALSE)
 	{
 		clearPixels();
 		points2Clockwise(windowVertics);
@@ -339,15 +339,127 @@ public:
 		vector<vector<glm::ivec3>> clipVertics = clipPolygonUseWA(this->vertics, windowVertics);
 		vector<polygon> clipPolygon;
 		polygon onePolygon;
+		vector<GLfloat> onePolygonPixels;
 		for (GLint i=0; i<clipVertics.size(); i++)
 		{
-			onePolygon = polygon(clipVertics[i]);
+			onePolygon = polygon(clipVertics[i],lineColor);
+			if (filling)
+			{
+				onePolygon.setFillColor(fillColor);
+				onePolygon.fillPolygonScanLine(GL_TRUE);
+			}
+			else
+			{
+				onePolygon.polygonUseLine(GL_TRUE);
+			}
+			onePolygonPixels = onePolygon.getPolygonPixels();
+			this->pixels.insert(pixels.end(), onePolygonPixels.begin(), onePolygonPixels.end());
+			this->pointsNum += onePolygon.getPointsNum();
 			clipPolygon.push_back(onePolygon);
-			//cout << "polygon:" << endl;
-			//for (GLint j = 0; j < clipVertics[i].size(); j++)
-			//	cout << "    (" << clipVertics[i][j].x << "," << clipVertics[i][j].y << ")" << endl;
 		}
 		return clipPolygon;
+	}
+	GLint loadPolygonFromFile(string filePath, string & texturePath)
+	{
+		GLint filling = 0;
+		ifstream ifFile(filePath);
+		if (ifFile.is_open())
+		{
+			string str;
+			ifFile >> str;
+			if (str.find("Polygon") != string::npos)
+			{
+				ifFile >> str >> str;
+				str = str.substr(1, str.size() - 2);
+				string::size_type n;
+				lineColor.r = stof(str.substr(0, n = str.find(",")));
+				str = str.substr(n + 1);
+				lineColor.g = stof(str.substr(0, n = str.find(",")));
+				str = str.substr(n + 1);
+				lineColor.b = stof(str.substr(0));
+
+				ifFile >> str;
+				if (str == "fill:")
+				{
+					ifFile >> str;
+					filling = 0;
+				}
+				else if (str.find("fillColor") != string::npos)
+				{
+					ifFile >> str;
+					str = str.substr(1, str.size() - 2);
+					fillColor.r = stof(str.substr(0, n = str.find(",")));
+					str = str.substr(n + 1);
+					fillColor.g = stof(str.substr(0, n = str.find(",")));
+					str = str.substr(n + 1);
+					fillColor.b = stof(str.substr(0));
+					filling = 1;
+				}
+				else if (str.find("fillTexture") != string::npos)
+				{
+					string fileTempStr;
+					ifFile >> fileTempStr;
+					str = fileTempStr.substr(1);
+					while (str.find("\"") == string::npos)
+					{
+						ifFile >> fileTempStr;
+						str += (" " + fileTempStr);
+					}
+					str = str.substr(0, str.size() - 1);
+					filling = 2;
+					texturePath = str;
+				}
+
+				ifFile >> str >> str >> str;
+				GLint verticX, verticY;
+				vertics.clear();
+				while (str.find("}") == string::npos)
+				{
+					str = str.substr(1, str.size() - 2);
+					verticX = stoi(str.substr(0, n = str.find(",")));
+					str = str.substr(n + 1);
+					verticY = stof(str.substr(0));
+					vertics.push_back(glm::ivec3(verticX, verticY, 0));
+					ifFile >> str;
+				}
+
+				cout << "文件打开成功，读入多边形数据" << endl;
+			}
+			else
+				cout << "文件中没有保存多边形的数据" << endl;
+		}
+		else
+			cout << "文件打开出错" << endl;
+		ifFile.close();
+		return filling;
+	}
+	void savePolygonIntoFile(string filePath, GLboolean filled = GL_FALSE, string texturePath = "")
+	{
+		ofstream ofFile(filePath);
+		if (ofFile.is_open())
+		{
+			ofFile << "Polygon:" << "\n";
+			ofFile << "lineColor:" << " (" << lineColor.r << "," << lineColor.g << "," << lineColor.b << ")\n";
+			if (filled)
+			{
+				if (texturePath == "")
+					ofFile << "fillColor:" << " (" << fillColor.r << "," << fillColor.g << "," << fillColor.b << ")\n";
+				else
+					ofFile << "fillTexture:" << " \"" << texturePath << "\"\n";
+			}
+			else
+				ofFile << "fill: none\n";
+			ofFile << "vertics: {";
+			for (GLint i = 0; i < vertics.size(); i++)
+			{
+				ofFile << " (" << vertics[i].x << "," << vertics[i].y << ")";
+			}
+			ofFile << " }\n";
+			cout << "文件保存成功" << endl;
+		}
+		else
+			cout << "文件保存出错" << endl;
+		ofFile.close();
 	}
 };
 

@@ -93,6 +93,12 @@ public:
 			myTextureMap[textureID] = SOIL_load_OGL_texture(newFilePath.c_str(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y | SOIL_FLAG_TEXTURE_REPEATS | SOIL_FLAG_POWER_OF_TWO);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
+		else
+		{
+			myTextureMap[textureID] = SOIL_load_OGL_texture(newFilePath.c_str(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y | SOIL_FLAG_TEXTURE_REPEATS | SOIL_FLAG_POWER_OF_TWO);
+			myTexturePathMap[textureID] = (std::string)newFilePath;
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
 	}
 private:
 	std::map<unsigned int, GLuint> myTextureMap;

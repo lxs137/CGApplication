@@ -66,7 +66,7 @@ void polygonRender2DSence()
 	glBindVertexArray(myVAO);
 	glDrawArrays(GL_POINTS, 0, myPolygon.getPointsNum());
 	glBindVertexArray(0);
-	if (vertexPoints.size() != 0)
+	if (vertexPoints.size() != 0 && transformStatus != CLIP)
 	{
 		GLfloat dertX, dertY, xTemp, yTemp;
 		dertX = ((GLfloat)CHANGE_POINT_DIS) / WIDTH_HALF, dertY = ((GLfloat)CHANGE_POINT_DIS) / HEIGHT_HALF;
@@ -82,6 +82,38 @@ void polygonRender2DSence()
 		glEnd();
 
 		glFlush();
+	}
+	if (transformStatus == CLIP && !myClipWindow.vertex.empty())
+	{
+		GLfloat dertX, dertY, xTemp, yTemp;
+		dertX = ((GLfloat)CHANGE_POINT_DIS) / WIDTH_HALF, dertY = ((GLfloat)CHANGE_POINT_DIS) / HEIGHT_HALF;
+		glBegin(GL_QUADS);
+		for (GLint i = 0; i < myClipWindow.vertex.size(); i++)
+		{
+			xTemp = ((GLfloat)myClipWindow.vertex[i].x) / WIDTH_HALF, yTemp = ((GLfloat)myClipWindow.vertex[i].y) / HEIGHT_HALF;
+			glVertex2f(xTemp - dertX, yTemp + dertY);
+			glVertex2f(xTemp + dertX, yTemp + dertY);
+			glVertex2f(xTemp + dertX, yTemp - dertY);
+			glVertex2f(xTemp - dertX, yTemp - dertY);
+		}
+		glEnd();
+
+		glLineStipple(3, 0x5555);
+		glLineWidth(4.0);
+		glEnable(GL_LINE_STIPPLE);
+		if (myClipWindow.isClose)
+			glBegin(GL_LINE_LOOP);
+		else
+			glBegin(GL_LINE_STRIP);
+		glColor3f(1.0f, 1.0f, 1.0f);
+		for (GLint i = 0; i < myClipWindow.vertex.size(); i++)
+		{
+			xTemp = ((GLfloat)myClipWindow.vertex[i].x) / WIDTH_HALF, yTemp = ((GLfloat)myClipWindow.vertex[i].y) / HEIGHT_HALF;
+			glVertex2f(xTemp, yTemp);
+		}
+		glEnd();
+		glDisable(GL_LINE_STIPPLE);
+		glLineWidth(1.0);
 	}
 	glutSwapBuffers();
 }
@@ -197,7 +229,6 @@ void polygonOnMouseClick(int button, int state, int x, int y)
 						myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 					glBindBuffer(GL_ARRAY_BUFFER, 0);
 				}
-
 			}
 		}
 		break;
@@ -238,6 +269,91 @@ void polygonOnMouseClick(int button, int state, int x, int y)
 			glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
 				myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
+		break;
+	case drawPolygon::CLIP:
+		if (button == GLUT_LEFT_BUTTON&&state == GLUT_DOWN)
+		{
+			if (!myClipWindow.isClose)
+			{
+				myClipWindow.clipStatus = 1;
+				if (myClipWindow.vertex.size() >= myClipWindow.clipPointIndex)
+				{
+					myClipWindow.vertex[myClipWindow.clipPointIndex - 1].x = x;
+					myClipWindow.vertex[myClipWindow.clipPointIndex - 1].y = y;
+				}
+				else
+				{
+					myClipWindow.vertex.push_back(glm::ivec3(x, y, 0));
+				}
+				if (myClipWindow.clipPointIndex == 1)
+					myClipWindow.clipPointIndex++;
+			}
+			else
+			{
+				myClipWindow.clipStatus = 2;
+				GLint xTemp, yTemp;
+				GLint i;
+				for (i = 0; i < myClipWindow.vertex.size(); i++)
+				{
+					xTemp = myClipWindow.vertex[i].x, yTemp = myClipWindow.vertex[i].y;
+					if (x <= xTemp + CHANGE_POINT_DIS&&x >= xTemp - CHANGE_POINT_DIS
+						&&y <= yTemp + CHANGE_POINT_DIS&&y >= yTemp - CHANGE_POINT_DIS)
+						break;
+				}
+				if (i != myClipWindow.vertex.size())
+					myClipWindow.clipPointIndex= i + 1;
+				else
+					myClipWindow.clipStatus = 0;
+			}
+		}
+		else if (button == GLUT_LEFT_BUTTON&&state == GLUT_UP)
+		{
+			if (myClipWindow.clipStatus != 0)
+			{
+				if (myClipWindow.clipStatus == 1 && myClipWindow.clipPointIndex == 2)
+				{
+					if (myClipWindow.vertex[myClipWindow.clipPointIndex - 2].x == x
+						&&myClipWindow.vertex[myClipWindow.clipPointIndex - 2].y == y)
+					{
+						myClipWindow.clipPointIndex--;
+						myClipWindow.vertex.clear();
+						myClipWindow.clipStatus = 0;
+						return;
+					}
+				}
+				GLint startX = myClipWindow.vertex[0].x, startY = myClipWindow.vertex[0].y;
+				if (myClipWindow.clipStatus == 2)
+				{
+					myClipWindow.vertex[myClipWindow.clipPointIndex - 1] = glm::ivec3(x, y, 0);
+					std::vector<polygon> resultPolygon = myPolygon.clipWithPolygon(myClipWindow.vertex,
+						(filling == 0) ? GL_FALSE : GL_TRUE);
+					glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+					glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+						myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+					glBindBuffer(GL_ARRAY_BUFFER, 0);
+				}
+				else if (myClipWindow.clipStatus == 1 && x <= startX + CHANGE_POINT_DIS * 2 && x >= startX - CHANGE_POINT_DIS * 2
+					&& y <= startY + CHANGE_POINT_DIS * 2 && y >= startY - CHANGE_POINT_DIS * 2)
+				{
+					myClipWindow.isClose = GL_TRUE;
+					myClipWindow.vertex.pop_back();
+					std::vector<polygon> resultPolygon = myPolygon.clipWithPolygon(myClipWindow.vertex,
+						(filling == 0) ? GL_FALSE : GL_TRUE);
+					glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+					glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+						myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+					glBindBuffer(GL_ARRAY_BUFFER, 0);
+				}
+				else
+				{
+					if (myClipWindow.vertex.size() < myClipWindow.clipPointIndex)
+					{
+						myClipWindow.vertex.push_back(glm::ivec3(x, y, 0));
+					}
+					myClipWindow.clipPointIndex++;
+				}
+			}
 		}
 		break;
 	}
@@ -297,6 +413,20 @@ void polygonOnActiveMotion(int x, int y)
 			myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		break;
+	case drawPolygon::CLIP:
+		if (myClipWindow.clipStatus != 0)
+		{
+			if (myClipWindow.vertex.size() >= myClipWindow.clipPointIndex)
+			{
+				myClipWindow.vertex[myClipWindow.clipPointIndex - 1].x = x;
+				myClipWindow.vertex[myClipWindow.clipPointIndex - 1].y = y;
+			}
+			else
+			{
+				myClipWindow.vertex.push_back(glm::ivec3(x, y, 0));
+			}
+		}
+		break;
 	}
 	
 }
@@ -317,7 +447,21 @@ void polygonProcessMenuEvent(int options)
 {
 	GLint n;
 	glm::vec3 fillColor;
-	if (myPolygon.getPointsNum() == 0)//在多边形未初始化时，不能对多边形进行变换
+	std::string filePath, texturePath;
+	GLboolean saveAsBmp = GL_FALSE;
+	if (options != CLIP && myClipWindow.vertex.size() != 0)
+	{
+		saveAsBmp = GL_TRUE;
+		if (filling == 0)
+			myPolygon.polygonUseLine();
+		else if (filling == 1 || filling == 2)
+			myPolygon.fillPolygonScanLine();
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+			myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+	if (myPolygon.getPointsNum() == 0 && options != OPENFILE)//在多边形未初始化时，不能对多边形进行变换
 		return;
 	switch (options)
 	{
@@ -379,10 +523,10 @@ void polygonProcessMenuEvent(int options)
 		filling = (filling == 2) ? 0 : 2;
 		if (filling == 2)
 		{
-			string filename;
+			string textureName;
 			cout << "输入要填充图片的路径:";
-			cin >> filename;
-			myTextureManager->loadTexture(filename.c_str(), textureID);
+			cin >> textureName;
+			myTextureManager->loadTexture(textureName.c_str(), textureID);
 			myPolygon.fillPolygonScanLine();
 		}		
 		else
@@ -391,6 +535,63 @@ void polygonProcessMenuEvent(int options)
 		glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
 			myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		break;
+	case SAVEFILE:
+		if (!myPolygon.getIsClose())
+		{
+			cout << "多边形未闭合" << endl;
+			return;
+		}
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+		glutMouseWheelFunc(polygonOnMouseWheelScrollInvalid);
+		transformStatus = SAVEFILE;
+		cout << "请输入保存文件的路径:" << endl;
+		cin >> filePath;
+		if (filling == 0)
+			myPolygon.savePolygonIntoFile(filePath);
+		else if (filling == 1)
+			myPolygon.savePolygonIntoFile(filePath, GL_TRUE);
+		else
+			myPolygon.savePolygonIntoFile(filePath, GL_TRUE, myTextureManager->getTexturePath(textureID));
+		if (saveAsBmp)
+		{
+			cout << "裁剪后为不规则图形,已保存为图片" << endl;
+			myTextureManager->saveScreenshot(filePath.append(".bmp").c_str());
+		}
+		break;
+	case OPENFILE:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+		glutMouseWheelFunc(polygonOnMouseWheelScrollInvalid);
+		transformStatus = OPENFILE;
+		cout << "请输入打开文件的路径:" << endl;
+		cin >> filePath;
+		filling = myPolygon.loadPolygonFromFile(filePath, texturePath);
+		if (filling == 0)
+			myPolygon.polygonUseLine();
+		else if (filling == 1)
+			myPolygon.fillPolygonScanLine();
+		else if (filling == 2)
+		{
+			myTextureManager->changeTexturePath(textureID, texturePath);
+			myPolygon.fillPolygonScanLine(GL_TRUE);
+		}
+		vertexPoints = myPolygon.getVertics();
+		polygonSetTransBasisPoint(GL_TRUE);
+		if (myPolygon.getPointsNum() == 0)
+			transformStatus = EDIT;
+		glBindBuffer(GL_ARRAY_BUFFER, myVBO);
+		glBufferData(GL_ARRAY_BUFFER, myPolygon.getPointsNum()*myPolygon.getPointSize(),
+			myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		break;
+	case CLIP:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+		glutMouseWheelFunc(polygonOnMouseWheelScrollInvalid);
+		transformStatus = CLIP;
+		myClipWindow.vertex.clear();
+		myClipWindow.clipStatus = 0;
+		myClipWindow.clipPointIndex = 1;
+		myClipWindow.isClose = GL_FALSE;
 		break;
 	case EXIT:
 		transformStatus = EXIT;
@@ -418,8 +619,12 @@ void polygonInitGlutWindow()
 }
 void polygonInitMenus()
 {
-	GLint subMenu = glutCreateMenu(polygonProcessMenuEvent);
-	glutSetMenuFont(subMenu, GLUT_BITMAP_9_BY_15);
+	GLint subMenuFile = glutCreateMenu(polygonProcessMenuEvent);
+	glutSetMenuFont(subMenuFile, GLUT_BITMAP_9_BY_15);
+	glutAddMenuEntry("Open file", OPENFILE);
+	glutAddMenuEntry("Save file", SAVEFILE);
+	GLint subMenuFill = glutCreateMenu(polygonProcessMenuEvent);
+	glutSetMenuFont(subMenuFill, GLUT_BITMAP_9_BY_15);
 	glutAddMenuEntry("Fill with color", FILLCOLOR);
 	glutAddMenuEntry("Fill with picture", FILLPICTURE);
 	GLint menu = glutCreateMenu(polygonProcessMenuEvent);
@@ -428,7 +633,9 @@ void polygonInitMenus()
 	glutAddMenuEntry("Move Polygon", MOVE);
 	glutAddMenuEntry("Rotate Polygon", ROTATE);
 	glutAddMenuEntry("Zoom Polygon", ZOOM);
-	glutAddSubMenu("Fill Polygon", subMenu);
+	glutAddSubMenu("Fill Polygon", subMenuFill);
+	glutAddMenuEntry("Clip Polygon", CLIP);
+	glutAddSubMenu("File", subMenuFile);
 	glutAddMenuEntry("Exit", EXIT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 	glutSetCursor(GLUT_CURSOR_INHERIT);
@@ -506,13 +713,25 @@ void polygonGetTransformMatrix(glm::ivec2 transformInfo, glm::ivec2 rotateInfo)
 		}
 	}
 }
-void polygonSetTransBasisPoint()
+void polygonSetTransBasisPoint(GLboolean initTansBasis)
 {
-	for (int i = 0; i < transBasisPoint.size(); i++)
+	if (initTansBasis)
 	{
-		transBasisPoint[i].x = vertexPoints[i].x;
-		transBasisPoint[i].y = vertexPoints[i].y;
+		transBasisPoint.clear();
+		for (int i = 0; i < vertexPoints.size(); i++)
+		{
+			transBasisPoint.push_back(glm::ivec3(vertexPoints[i].x, vertexPoints[i].y, 0));
+		}
 	}
+	else
+	{
+		for (int i = 0; i < vertexPoints.size(); i++)
+		{
+			transBasisPoint[i].x = vertexPoints[i].x;
+			transBasisPoint[i].y = vertexPoints[i].y;
+		}
+	}
+
 }
 
 

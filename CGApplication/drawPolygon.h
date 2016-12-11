@@ -23,6 +23,13 @@ namespace drawPolygon
 	glm::ivec3 rotateCenter = glm::ivec3(0, 0, 0);
 	GLint drawingPointIndex = 1;//多边形的各个顶点（从1开始）,表示正在初始化或者修改的顶点
 	unsigned int textureID = 2;
+	struct clipPolygon 
+	{
+		std::vector<glm::ivec3> vertex;
+		GLint clipStatus = 0;//表示裁剪窗口状态。0代表未处于裁剪状态；1代表正在初始化顶点；2表示正在修改顶点
+		GLint clipPointIndex = 1;//裁剪窗口的各个顶点（从1开始）,表示正在初始化或者修改的顶点
+		GLboolean isClose = GL_FALSE;
+	}myClipWindow;
 	enum MenuOptions
 	{
 		EDIT,
@@ -31,6 +38,9 @@ namespace drawPolygon
 		ZOOM,
 		FILLCOLOR,
 		FILLPICTURE,
+		CLIP,
+		SAVEFILE,
+		OPENFILE,
 		EXIT
 	};
 	MenuOptions transformStatus = EDIT;
@@ -46,6 +56,6 @@ void polygonInitGlutWindow();
 void polygonInitMenus();
 void polygonInitVAO(GLuint &VAO, GLuint &VBO);
 void polygonGetTransformMatrix(glm::ivec2 transformInfo, glm::ivec2 rotateInfo = glm::ivec2(0, 0));
-void polygonSetTransBasisPoint();
+void polygonSetTransBasisPoint(GLboolean initTansBasis = GL_FALSE);
 
 #endif // !DRAWPOLYGON_H

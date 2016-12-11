@@ -152,7 +152,8 @@ vector<vector<glm::ivec3>> clipPolygonUseWA(vector<glm::ivec3> polygonVertics,ve
 			{
 				if (whichInjectVertics == 1)
 				{
-					if (polygonAddInject[indexInPolygon].status != 1)
+					if (polygonAddInject[indexInPolygon].flag == 0 ||
+						(polygonAddInject[indexInPolygon].flag == 1 && polygonAddInject[indexInPolygon].status != 1))
 					{
 						onePolygon.push_back(polygonAddInject[indexInPolygon].point);
 						polygonAddInject[indexInPolygon].status = -1;
@@ -166,7 +167,8 @@ vector<vector<glm::ivec3>> clipPolygonUseWA(vector<glm::ivec3> polygonVertics,ve
 				}
 				else if (whichInjectVertics == 2)
 				{
-					if (windowAddInject[indexInWindow].status != 0)
+					if (windowAddInject[indexInWindow].flag == 0 ||
+						(windowAddInject[indexInWindow].flag == 1 && windowAddInject[indexInWindow].status != 0))
 					{
 						onePolygon.push_back(windowAddInject[indexInWindow].point);
 						windowAddInject[indexInWindow].status = -1;

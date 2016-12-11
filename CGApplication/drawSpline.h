@@ -15,16 +15,26 @@ namespace drawSpline{
 	GLuint myVBO;
 	GLfloat lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
 	GLint drawStatus = 0;//0代表未处于绘制状态；1代表正在初始化控制点；2表示正在修改控制点
+	GLboolean cliping = GL_FALSE;
 	std::vector<glm::ivec3> controlPoints;//Bezier曲线的四个控制点
 	std::vector<glm::ivec3> transBasisPoint;
 	glm::ivec3 rotateCenter = glm::ivec3(0, 0, 0);
 	GLint drawingPointIndex = 1;//有1，2，3，4四种值，代表四个控制点,表示正在初始化或者修改的控制点
+	struct ClipWindow
+	{
+		glm::ivec3 clipWindowCenter;
+		GLint windowHeightHalf;
+		GLint windowWidthHalf;
+	}myClipWindow;
 	enum MenuOptions
 	{
 		EDIT,
 		MOVE,
 		ROTATE,
 		ZOOM,
+		CLIP,
+		SAVEFILE,
+		OPENFILE,
 		EXIT
 	};
 	MenuOptions transformStatus = EDIT;
