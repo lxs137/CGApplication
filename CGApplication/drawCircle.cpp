@@ -22,6 +22,19 @@ void drawCircleApplication(int argc, char **argv)
 		glutInit(&argc, argv);
 		circleInitGlutWindow();
 	}
+
+	//init
+	lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
+	drawing = GL_FALSE;
+	cliping = 0;
+	filling = 0;
+	controlPoints.clear();
+	rotateCenter = glm::ivec3(0, 0, 0);
+	myClipWindow.windowHeightHalf = -1;
+	myClipWindow.windowWidthHalf = -1;
+	myClipWindow.clipWindowCenter = glm::ivec3(0, 0, 0);
+	transformStatus = EDIT;
+
 	circleInitMenus();
 	//set shader program    
 	shader *myShader = new shader("2dModel.vert", "2dModel.frag");
@@ -50,7 +63,7 @@ void drawCircleApplication(int argc, char **argv)
 }
 void circleRender2DSence()
 {
-	glClearColor(1.0f, 0.8f, 1.0f, 1.0f);
+	glClearColor(1.0f, 0.9215f, 0.8037f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	if (filling == 2)
@@ -442,6 +455,7 @@ void circleProcessMenuEvent(int options)
 		myClipWindow.clipWindowCenter = glm::ivec3(0, 0, 0);
 		break;
 	case EXIT:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
 		transformStatus = EXIT;
 		break;
 	}

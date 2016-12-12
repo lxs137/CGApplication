@@ -9,7 +9,6 @@
 #include <glm\glm.hpp>
 
 namespace drawBezier{
-	TextureManager *myTextureManager;
 	GLuint myShaderProgram;
 	GLuint myVAO;
 	GLuint myVBO;

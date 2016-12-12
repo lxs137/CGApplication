@@ -89,7 +89,11 @@ private:
 		GLboolean cliping = GL_FALSE;
 		glm::ivec3 clipWinP1, clipWinP2;
 		if (xMin == -WIDTH_HALF && xMax == WIDTH_HALF && yMin == -HEIGHT_HALF && yMax == HEIGHT_HALF)
+		{
 			cliping = GL_FALSE;
+			clipWinP1 = glm::ivec3(-WIDTH_HALF, -HEIGHT_HALF, 0);
+			clipWinP2 = glm::ivec3(WIDTH_HALF, HEIGHT_HALF, 0);
+		}
 		else
 		{
 			cliping = GL_TRUE;
@@ -185,7 +189,8 @@ private:
 	void fillEllipseWithWindow()
 	{
 		GLint x = 0, y = radiusY;
-		GLfloat p1 = radiusY*radiusY - radiusX*radiusX*radiusY + radiusX*radiusX*0.25f;
+		GLfloat p1;
+		p1 = radiusY*radiusY - radiusX*radiusX*radiusY + radiusX*radiusX*0.25f;
 		pushSymmetryPoint(glm::ivec3(0, radiusY, 0));
 		do
 		{
@@ -427,7 +432,7 @@ public:
 	void fillEllipseScanLine()
 	{
 		clearPixels();
-		xMin = -WIDTH, xMax = WIDTH, yMin = -HEIGHT, yMax = HEIGHT;
+		xMin = -WIDTH_HALF, xMax = WIDTH_HALF, yMin = -HEIGHT_HALF, yMax = HEIGHT_HALF;
 		fillEllipseWithWindow();
 	}
 	void clipUseRect(glm::ivec3 winP1, glm::ivec3 winP2,GLboolean filling=GL_FALSE)

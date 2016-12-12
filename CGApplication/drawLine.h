@@ -13,7 +13,7 @@ namespace drawLine{
 	GLuint myVBO;
 	GLfloat lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
 	GLboolean drawing=GL_FALSE;
-	GLboolean cliping=0;
+	GLboolean cliping=GL_FALSE;
 	glm::ivec3 rotateCenter = glm::ivec3(0, 0, 0);
     std::vector<glm::ivec3> transBasisPoint;
 	struct ClipWindow

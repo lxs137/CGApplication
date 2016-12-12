@@ -108,6 +108,7 @@
     <ClInclude Include="drawLine.h" />
     <ClInclude Include="drawPolygon.h" />
     <ClInclude Include="drawSpline.h" />
+    <ClInclude Include="entermenu.h" />
     <ClInclude Include="line.h" />
     <ClInclude Include="ellipse.h" />
     <ClInclude Include="polygon.h" />

@@ -24,6 +24,17 @@ void drawEllipseApplication(int argc, char **argv)
 		ellipseInitGlutWindow();
 	}
 
+	//init
+	drawing = GL_FALSE;
+	cliping = 0;
+	filling = 0;
+	lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
+	controlPoints.clear();
+	myClipWindow.windowHeightHalf = -1;
+	myClipWindow.windowWidthHalf = -1;
+	myClipWindow.clipWindowCenter = glm::ivec3(0, 0, 0);
+	transformStatus = EDIT;
+
 	ellipseInitMenus();
 	//set shader program	
 	shader *myShader = new shader("2dModel.vert", "2dModel.frag");
@@ -53,7 +64,7 @@ void drawEllipseApplication(int argc, char **argv)
 
 void ellipseRender2DSence()
 {
-	glClearColor(1.0f, 0.8f, 1.0f, 1.0f);
+	glClearColor(1.0f, 0.9215f, 0.8037f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	if (filling == 2)
@@ -431,7 +442,7 @@ void ellipseProcessMenuEvent(int options)
 		transformStatus = MOVE;
 		break;
 	case ROTATE:
-		glutSetCursor(GLUT_CURSOR_WAIT);
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
 		glutMouseWheelFunc(ellipseOnMouseWheelScrollInvalid);
 		transformStatus = ROTATE;
 		break;
@@ -527,6 +538,7 @@ void ellipseProcessMenuEvent(int options)
 		myClipWindow.clipWindowCenter = glm::ivec3(0, 0, 0);
 		break;
 	case EXIT:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
 		transformStatus = EXIT;
 		break;
 	}

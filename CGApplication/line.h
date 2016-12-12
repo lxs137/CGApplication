@@ -2,6 +2,7 @@
 #define LINE_H
 
 #include "windowSetting.h"
+#include <iostream>
 #include <fstream>
 #include <string>
 #include <glm\glm.hpp>
@@ -63,27 +64,30 @@ class line
 		GLboolean clipTestLiangBarsky(GLfloat p, GLfloat q, GLfloat &u1, GLfloat &u2)
 		{
 			//Be used in Liang-Barsky Clip function
-			GLfloat r;
-			if (p < 0.0){
+			GLfloat r = 0.0f;
+			if (p < 0.0f)
+			{
 				r=q / p;
-				if (r > u1){
+				if (r > u1)
+				{
 					u1 = r;
 					if (u1 > u2)
 						return false;
-				}				
+				}		
 			}
-			else if (p > 0.0){
+			else if (p > 0.0f)
+			{
 				r = q / p;
-				if (r < u2){
+				if (r < u2)
+				{
 					u2 = r;
 					if (u1 > u2)
 						return false;
 				}
 			}
-			else{
-				if (q < 0.0)
+			else if (q < 0.0)
 					return false;
-			}
+			return true;
 		}
 		inline void clearPixels()
 		{
@@ -380,24 +384,24 @@ class line
 		void clipUseRect(glm::ivec3 winP1,glm::ivec3 winP2)
 		{
 			//Clip use Liang-Barsky
-			GLfloat u1 = 0.0, u2 = 1.0;
-			GLint xMin=winP1.x<winP2.x?winP1.x:winP2.x,xMax=winP1.x>winP2.x?winP1.x:winP2.x,
-				yMin=winP1.y<winP2.y?winP1.y:winP2.y,yMax=winP1.y>winP2.y?winP1.y:winP2.y;
-			GLint dx = x2 - x1, dy = y2 - y1;
-			if (clipTestLiangBarsky(-dx, x1 - xMin, u1, u2))
-				if (clipTestLiangBarsky(dx, xMax - x1, u1, u2))
-					if (clipTestLiangBarsky(-dy, y1 - yMin, u1, u2))
-						if (clipTestLiangBarsky(dy, yMax - y1, u1, u2))
+			GLfloat u1 = 0.0f, u2 = 1.0f;
+			GLfloat xMin = winP1.x<winP2.x ? winP1.x : winP2.x, xMax = winP1.x>winP2.x ? winP1.x : winP2.x,
+				yMin = winP1.y<winP2.y ? winP1.y : winP2.y, yMax = winP1.y>winP2.y ? winP1.y : winP2.y;
+			GLfloat dx = this->x2 - this->x1, dy = this->y2 - this->y1;
+			if (clipTestLiangBarsky(-dx, (GLfloat)this->x1 - xMin, u1, u2))
+				if (clipTestLiangBarsky(dx, xMax - (GLfloat)this->x1, u1, u2))
+					if (clipTestLiangBarsky(-dy, (GLfloat)this->y1 - yMin, u1, u2))
+						if (clipTestLiangBarsky(dy, yMax - (GLfloat)this->y1, u1, u2))
 						{
 							if (u2 < 1.0)
 							{
-								x2 = x1 + u2*dx;
-								y2 = y1 + u2*dy;
+								this->x2 = this->x1 + (GLint)(u2*dx);
+								this->y2 = this->y1 + (GLint)(u2*dy);
 							}
 							if (u1 > 0.0)
 							{
-								x1 = x1 + u1*dx;
-								y1 = y1 + u1*dy;
+								this->x1 = this->x1 + (GLint)(u1*dx);
+								this->y1 = this->y1 + (GLint)(u1*dy);
 							}	
 							lineUseBresenham();
 						}		

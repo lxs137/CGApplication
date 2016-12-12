@@ -24,11 +24,25 @@ void drawPolygonApplication(int argc, char **argv)
 		polygonInitGlutWindow();
 	}
 
+	//init
+	myTextureManager = new TextureManager();
+	lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
+	drawStatus = 0;
+	filling = 0;
+	vertexPoints.clear();
+	transBasisPoint.clear();
+	rotateCenter = glm::ivec3(0, 0, 0);
+	drawingPointIndex = 1;
+	myClipWindow.vertex.clear();
+	myClipWindow.clipStatus = 0;
+	myClipWindow.clipPointIndex = 1;
+	myClipWindow.isClose = GL_FALSE;
+	transformStatus = EDIT;
+
 	polygonInitMenus();
 	//set shader program	
 	shader *myShader = new shader("2dModel.vert", "2dModel.frag");
 	myShaderProgram = myShader->shaderProgram;
-	myTextureManager = new TextureManager();
 
 	//set VAO
 	polygonInitVAO(myVAO, myVBO);
@@ -46,14 +60,14 @@ void drawPolygonApplication(int argc, char **argv)
 	{
 		glutMainLoopEvent();
 		if (transformStatus == EXIT)
-			break;
+			return;
 		glutPostRedisplay();
 	}
 }
 
 void polygonRender2DSence()
 {
-	glClearColor(1.0f, 0.8f, 1.0f, 1.0f);
+	glClearColor(1.0f, 0.9215f, 0.8037f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	if (filling == 2)
 	{
@@ -461,7 +475,7 @@ void polygonProcessMenuEvent(int options)
 			myPolygon.getPolygonPixels().begin()._Ptr, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
-	if (myPolygon.getPointsNum() == 0 && options != OPENFILE)//在多边形未初始化时，不能对多边形进行变换
+	if (myPolygon.getPointsNum() == 0 && options != OPENFILE && options != EXIT)//在多边形未初始化时，不能对多边形进行变换
 		return;
 	switch (options)
 	{
@@ -478,7 +492,7 @@ void polygonProcessMenuEvent(int options)
 		polygonSetTransBasisPoint();
 		break;
 	case ROTATE:
-		glutSetCursor(GLUT_CURSOR_WAIT);
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
 		glutMouseWheelFunc(polygonOnMouseWheelScrollInvalid);
 		transformStatus = ROTATE;
 		rotateCenter.x = 0, rotateCenter.y = 0;
@@ -594,6 +608,7 @@ void polygonProcessMenuEvent(int options)
 		myClipWindow.isClose = GL_FALSE;
 		break;
 	case EXIT:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
 		transformStatus = EXIT;
 		break;
 	}

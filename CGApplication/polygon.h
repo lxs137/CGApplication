@@ -4,6 +4,7 @@
 #include "windowSetting.h"
 #include "line.h"
 #include "Weiler_Atherton.h"
+#include <iostream>
 #include <cmath>
 #include <vector>
 #include <list>

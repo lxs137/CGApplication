@@ -21,6 +21,14 @@ void draw3DApplication(int argc, char **argv)
 		d3InitGlutWindow();
 	}
 
+	myCamera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
+	lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
+	for (GLint i = 0; i < 128; i++)
+		normalKeys[i] = GL_FALSE;
+	firstMouse = GL_FALSE;
+	ifExit = GL_FALSE;
+
+	d3InitMenus();
 	//set shader program
 	shader *myShader = new shader("3dModel.vert", "3dModel.frag");
 	myShaderProgram = myShader->shaderProgram;
@@ -45,7 +53,14 @@ void draw3DApplication(int argc, char **argv)
 	glutMouseFunc(d3OnMouseClick);
 	glutMotionFunc(d3OnMouseActiveMotion);
 	glutMouseWheelFunc(d3OnMouseWheelScroll);
-	glutMainLoop();
+	while (true)
+	{
+		glutMainLoopEvent();
+		if (ifExit)
+			break;
+		glutPostRedisplay();
+	}
+	
 	//clean all resources
 	glDeleteVertexArrays(1, &myVAO);
 }
@@ -113,6 +128,15 @@ void d3OnMouseWheelScroll(int wheel, int direction, int x, int y)
 {
 	myCamera.processMouseScroll(direction);
 }
+void d3ProcessMenuEvent(int options)
+{
+	switch (options)
+	{
+	case 0:
+		ifExit = GL_TRUE;
+		break;
+	}
+}
 void d3DoMovement()
 {
 	if (normalKeys[119] || normalKeys[87])
@@ -131,6 +155,14 @@ void d3DoMovement()
 	{
 		myCamera.processKeyBoard(LEFT);
 	}
+}
+void d3InitMenus()
+{
+	GLint menu = glutCreateMenu(d3ProcessMenuEvent);
+	glutSetMenuFont(menu, GLUT_BITMAP_9_BY_15);
+	glutAddMenuEntry("Exit", 0);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+	glutSetCursor(GLUT_CURSOR_INHERIT);
 }
 void d3InitGlutWindow()
 {

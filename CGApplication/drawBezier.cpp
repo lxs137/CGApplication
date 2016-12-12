@@ -23,11 +23,25 @@ void drawBezierApplication(int argc, char **argv)
 		bezierInitGlutWindow();
 	}
 
+	//init
+	lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
+	drawStatus = 0;
+	cliping = GL_FALSE;
+	controlPoints.clear();
+	transBasisPoint.clear();
+	transBasisPoint.push_back(glm::ivec3(0, 0, 0));
+	transBasisPoint.push_back(glm::ivec3(0, 0, 0));
+	transBasisPoint.push_back(glm::ivec3(0, 0, 0));
+	transBasisPoint.push_back(glm::ivec3(0, 0, 0));
+	rotateCenter = glm::ivec3(0, 0, 0);
+	drawingPointIndex = 1;
+	myClipWindow.windowHeightHalf = -1;
+	myClipWindow.windowWidthHalf = -1;
+	myClipWindow.clipWindowCenter = glm::ivec3(0, 0, 0);
+	transformStatus = EDIT;
+
 	bezierInitMenus();
-	transBasisPoint.push_back(glm::ivec3(0, 0, 0));
-	transBasisPoint.push_back(glm::ivec3(0, 0, 0));
-	transBasisPoint.push_back(glm::ivec3(0, 0, 0));
-	transBasisPoint.push_back(glm::ivec3(0, 0, 0));
+
 	//set shader program	
 	shader *myShader = new shader("2dModel.vert", "2dModel.frag");
 	myShaderProgram = myShader->shaderProgram;
@@ -54,7 +68,7 @@ void drawBezierApplication(int argc, char **argv)
 
 void bezierRender2DSence()
 {
-	glClearColor(1.0f, 0.8f, 1.0f, 1.0f);
+	glClearColor(1.0f, 0.9215f, 0.8037f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glUseProgram(myShaderProgram);
@@ -385,7 +399,7 @@ void bezierProcessMenuEvent(int options)
 		bezierSetTransBasisPoint();
 		break;
 	case ROTATE:
-		glutSetCursor(GLUT_CURSOR_WAIT);
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
 		glutMouseWheelFunc(bezierOnMouseWheelScrollInvalid);
 		transformStatus = ROTATE;
 		rotateCenter.x = 0, rotateCenter.y = 0;
@@ -438,6 +452,7 @@ void bezierProcessMenuEvent(int options)
 		myClipWindow.clipWindowCenter = glm::ivec3(0, 0, 0);
 		break;
 	case EXIT:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
 		transformStatus = EXIT;
 		break;
 	}

@@ -23,9 +23,20 @@ void drawLineApplication(int argc, char **argv)
 		lineInitGlutWindow();
 	}
 
+	//init
+	lastMouseX = WIDTH_HALF, lastMouseY = HEIGHT_HALF;
+	drawing = GL_FALSE;
+	cliping = GL_FALSE;
+	rotateCenter = glm::ivec3(0, 0, 0);
+	transBasisPoint.clear();
+	transBasisPoint.push_back(glm::ivec3(0, 0, 0));
+	transBasisPoint.push_back(glm::ivec3(0, 0, 0));
+	myClipWindow.windowHeightHalf = -1;
+	myClipWindow.windowWidthHalf = -1;
+	myClipWindow.clipWindowCenter = glm::ivec3(0, 0, 0);
+	transformStatus = EDIT;
+
 	lineInitMenus();
-	transBasisPoint.push_back(glm::ivec3(0, 0, 0));
-	transBasisPoint.push_back(glm::ivec3(0, 0, 0));
 
 	//set shader program	
 	shader *myShader = new shader("2dModel.vert", "2dModel.frag");
@@ -50,7 +61,7 @@ void drawLineApplication(int argc, char **argv)
 
 void lineRender2DSence()
 {
-	glClearColor(1.0f, 0.8f, 1.0f, 1.0f);
+	glClearColor(1.0f, 0.9215f, 0.8037f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glUseProgram(myShaderProgram);
@@ -357,6 +368,7 @@ void lineProcessMenuEvent(int options)
 		lineSetTransBasisPoint();
 		break;
 	case EXIT:
+		glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
 		transformStatus = EXIT;
 		break;
 	}
