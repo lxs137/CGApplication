@@ -38,7 +38,7 @@ void draw3DApplication(int argc, char **argv)
 
 	//set texture
 	myTextureManager = new TextureManager();
-	myTextureManager->loadTexture("E:\\CGApplication\\boardTexture.jpg", testTextureID);
+	myTextureManager->loadDeafaultTexture(testTextureID);
 
 	//set transform
 	uniformLoc.modelLocation = glGetUniformLocation(myShaderProgram, "model");

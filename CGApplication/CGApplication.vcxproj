@@ -42,6 +42,11 @@
     <EmbedManifest>false</EmbedManifest>
     <IncludePath>E:\CGApplication\CGApplication\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>E:\CGApplication\CGApplication\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\CGApplication\CGApplication\lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>E:\CGApplication\CGApplication\bin;$(ExecutablePath)</ExecutablePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -68,13 +73,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32s.lib;FreeImage.lib;SOIL.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <IgnoreSpecificDefaultLibraries>LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>opengl32.lib;glew32s.lib;SOIL.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>MSVCRTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -87,14 +93,26 @@
     <ClCompile Include="drawPolygon.cpp" />
     <ClCompile Include="drawSpline.cpp" />
     <ClCompile Include="enterMenu.cpp" />
-    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="3dModel.frag" />
-    <None Include="3dModel.vert" />
+    <None Include="..\Release\2dModel.frag" />
+    <None Include="..\Release\2dModel.vert" />
+    <None Include="..\Release\3dModel.frag" />
+    <None Include="..\Release\3dModel.vert" />
+    <None Include="texture2.bin" />
+    <Text Include="3dModel.frag">
+      <FileType>Document</FileType>
+    </Text>
+    <Text Include="3dModel.vert">
+      <FileType>Document</FileType>
+    </Text>
     <None Include="ClassDiagram1.cd" />
-    <None Include="2dModel.frag" />
-    <None Include="2dModel.vert" />
+    <Text Include="2dModel.frag">
+      <FileType>Document</FileType>
+    </Text>
+    <Text Include="2dModel.vert">
+      <FileType>Document</FileType>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bezier.h" />
@@ -112,11 +130,18 @@
     <ClInclude Include="line.h" />
     <ClInclude Include="ellipse.h" />
     <ClInclude Include="polygon.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="splineCurve.h" />
     <ClInclude Include="textureManager.h" />
     <ClInclude Include="Weiler_Atherton.h" />
     <ClInclude Include="windowSetting.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\boardTexture.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

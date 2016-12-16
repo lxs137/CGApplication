@@ -4,6 +4,7 @@
 #include "windowSetting.h"
 #include <map>
 #include <SOIL.h>
+#include <Windows.h>
 
 class TextureManager
 {
@@ -24,19 +25,34 @@ public:
 		myTextureMap[textureID] = glTexture;
 		myTexturePathMap[textureID] = (std::string)filename;
 
-		//unsigned char *imageBits(0);
-		//int width = 0, height = 0;
-		//imageBits=SOIL_load_image(filename, &width, &height, 0, SOIL_LOAD_RGB);
-		//if (imageBits == 0 || width == 0 || height == 0)
-		//	return false;
-
-		//glTexImage2D(GL_TEXTURE_2D, level, internal_format, width, height, border, image_format, GL_UNSIGNED_BYTE, imageBits);
-		//glGenerateMipmap(GL_TEXTURE_2D);
-		//SOIL_free_image_data(imageBits);
-
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		return true;
+	}
+	void loadDeafaultTexture(const unsigned int textureID)
+	{
+		GLuint glTexture;
+
+		if (myTextureMap.find(textureID) != myTextureMap.end())
+			glDeleteTextures(1, &(myTextureMap[textureID]));
+
+		HRSRC hRsrc = FindResource(NULL, MAKEINTRESOURCE(101), TEXT("TEXTURE"));
+		if (NULL == hRsrc)
+			return;
+		DWORD dwSize = SizeofResource(NULL, hRsrc);
+		if (0 == dwSize)
+			return;
+		HGLOBAL hGlobal = LoadResource(NULL, hRsrc);
+		if (NULL == hGlobal)
+			return;
+		LPVOID pBuffer = LockResource(hGlobal);
+		if (NULL == pBuffer)
+			return;
+		glTexture=SOIL_load_OGL_texture_from_memory((const unsigned char *)pBuffer, dwSize, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y | SOIL_FLAG_TEXTURE_REPEATS | SOIL_FLAG_POWER_OF_TWO);
+		myTextureMap[textureID] = glTexture;
+		myTexturePathMap[textureID] = (std::string)"boardTexture";
+
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	bool unloadTexture(const unsigned int textureID)
 	{

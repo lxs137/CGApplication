@@ -4,10 +4,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <Windows.h>
 #include "windowSetting.h"
 using namespace std;
-
-
 
 class shader
 {
@@ -73,10 +72,47 @@ private:
 		string sourceCode;
 		infile.open(filePath);
 		if (!infile)
-			cout << filePath << " open error" << endl;
+		{
+			sourceCode=readGLSLFromMemory(filePath);
+			return sourceCode;
+		}
 		sourceCode.assign(istreambuf_iterator<char>(infile),
 			istreambuf_iterator<char>());
 		return sourceCode;
+	}
+	string readGLSLFromMemory(string filePath)
+	{
+		HRSRC hRsrc = NULL;
+		if (filePath == "2dModel.frag")
+		{
+			hRsrc = FindResource(NULL, MAKEINTRESOURCE(103), TEXT("GLSLText"));
+		}
+		else if (filePath == "2dModel.vert")
+		{
+			hRsrc = FindResource(NULL, MAKEINTRESOURCE(104), TEXT("GLSLText"));
+		}
+		else if (filePath == "3dModel.frag")
+		{
+			hRsrc = FindResource(NULL, MAKEINTRESOURCE(105), TEXT("GLSLText"));
+		}
+		else if (filePath == "3dModel.vert")
+		{
+			hRsrc = FindResource(NULL, MAKEINTRESOURCE(106), TEXT("GLSLText"));
+		}
+		 
+		if (NULL == hRsrc)
+			return NULL;
+		DWORD dwSize = SizeofResource(NULL, hRsrc);
+		if (0 == dwSize)
+			return NULL;
+		HGLOBAL hGlobal = LoadResource(NULL, hRsrc);
+		if (NULL == hGlobal)
+			return NULL;
+		LPVOID pBuffer = LockResource(hGlobal);
+		if (NULL == pBuffer)
+			return NULL;
+		string codeStr = string((const char*)pBuffer);
+		return codeStr;
 	}
 
 };

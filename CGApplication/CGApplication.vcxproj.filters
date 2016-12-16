@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="enterMenu.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -48,18 +45,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />
-    <None Include="2dModel.vert">
-      <Filter>源文件</Filter>
+    <None Include="texture2.bin">
+      <Filter>资源文件</Filter>
     </None>
-    <None Include="2dModel.frag">
-      <Filter>源文件</Filter>
-    </None>
-    <None Include="3dModel.vert">
-      <Filter>源文件</Filter>
-    </None>
-    <None Include="3dModel.frag">
-      <Filter>源文件</Filter>
-    </None>
+    <None Include="..\Release\2dModel.frag" />
+    <None Include="..\Release\2dModel.vert" />
+    <None Include="..\Release\3dModel.frag" />
+    <None Include="..\Release\3dModel.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.h">
@@ -122,5 +114,32 @@
     <ClInclude Include="entermenu.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="3dModel.frag">
+      <Filter>源文件</Filter>
+    </Text>
+    <Text Include="2dModel.frag">
+      <Filter>源文件</Filter>
+    </Text>
+    <Text Include="2dModel.vert">
+      <Filter>源文件</Filter>
+    </Text>
+    <Text Include="3dModel.vert">
+      <Filter>源文件</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\boardTexture.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>
